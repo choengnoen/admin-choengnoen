@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>งานบัญชีและการเงิน | หมวดทางหลวงเชิงเนิน</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#071b30; --navy-900:#0a2540; --navy-800:#123a5e; --navy-700:#1c4b73;
+    --orange-600:#e0620f; --orange-500:#f07a1f; --amber-400:#f2a930;
+    --paper-50:#f5f6f4; --paper-100:#eceee9; --line:#dfe2dd;
+    --ink-900:#182430; --ink-600:#4d5a66; --ink-400:#8792a0;
+    --success:#1c8a53; --success-bg:#e5f4ec; --danger:#c1402f; --danger-bg:#fbeae7;
+    --white:#ffffff; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Sarabun',sans-serif;background:var(--paper-50);color:var(--ink-900);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Kanit',sans-serif;}
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  /* หุบเหลือแถบไอคอนแคบๆ (76px) โดยปกติ ขยายเป็นแถบเต็มลอยทับเนื้อหาเมื่อเอาเมาส์ไปวาง — .main
+     เว้น margin-left คงที่ไว้ล่วงหน้าเท่ากับความกว้างตอนหุบเสมอ เนื้อหาจึงไม่ขยับตอนขยาย/หุบ */
+  .sidebar{width:76px;flex-shrink:0;background:linear-gradient(185deg,var(--navy-950),var(--navy-900) 60%);color:#dfe7f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow:hidden;transition:width .22s cubic-bezier(.2,.8,.3,1);z-index:30;}
+  .sidebar:hover{width:264px;overflow-y:auto;box-shadow:6px 0 28px -10px rgba(7,27,48,.5);}
+  .brand{padding:22px 20px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .brand-mark{width:46px;height:46px;flex-shrink:0;}
+  .brand-text{opacity:0;white-space:nowrap;transition:opacity .1s ease;}
+  .sidebar:hover .brand-text{opacity:1;transition-delay:.08s;}
+  .brand-text .t1{font-family:'Kanit';font-size:15px;font-weight:600;color:#fff;line-height:1.25;}
+  .brand-text .t2{font-size:11.5px;color:#a9bdd0;letter-spacing:.02em;}
+  .nav-group-label{font-size:10.5px;letter-spacing:.12em;color:#7a90a6;padding:18px 20px 6px;text-transform:uppercase;font-family:'Kanit';white-space:nowrap;opacity:0;transition:opacity .1s ease;}
+  .sidebar:hover .nav-group-label{opacity:1;transition-delay:.08s;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:10px 20px;margin:2px 10px;border-radius:8px;color:#c4d2df;text-decoration:none;font-size:14px;cursor:pointer;position:relative;transition:background .15s ease;white-space:nowrap;}
+  .nav-item .num{font-family:'Kanit';font-size:11px;font-weight:600;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);color:#9db2c5;flex-shrink:0;}
+  .nav-item span:not(.num){opacity:0;transition:opacity .1s ease;}
+  .sidebar:hover .nav-item span:not(.num){opacity:1;transition-delay:.1s;}
+  .nav-item.active{background:rgba(224,98,15,0.16);color:#fff;}
+  .nav-item.active .num{background:var(--orange-600);color:#fff;}
+  .nav-item.active::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;background:var(--orange-600);border-radius:2px;}
+  .nav-item.disabled{opacity:.4;cursor:not-allowed;}
+  .nav-item.disabled:hover{background:none;}
+  .nav-item:not(.disabled):not(.active):hover{background:rgba(255,255,255,0.06);}
+  .sidebar-foot{margin-top:auto;padding:16px 20px 20px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:#7a90a6;white-space:nowrap;opacity:0;transition:opacity .1s ease;}
+  .sidebar:hover .sidebar-foot{opacity:1;transition-delay:.1s;}
+
+  /* Main */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;margin-left:76px;}
+  .topbar{background:var(--white);border-bottom:1px solid var(--line);padding:14px 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;}
+  .crumb{font-size:13px;color:var(--ink-400);}
+  .crumb b{color:var(--ink-900);font-weight:600;}
+  .topbar-right{display:flex;align-items:center;gap:18px;}
+  .clock{font-size:13px;color:var(--ink-600);font-family:'Kanit';}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--orange-600);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Kanit';font-weight:600;font-size:13px;}
+  /* เมนูผู้ใช้ที่ซ่อนอยู่หลังรูปโปรไฟล์ — กดรูปเพื่อเปิด แสดงชื่อ/ตำแหน่ง/ปุ่มออกจากระบบ แทนที่จะแสดงตลอดเวลาบน topbar */
+  .user-menu-wrap{position:relative;}
+  .user-menu-panel{position:absolute;top:calc(100% + 10px);right:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 34px -10px rgba(7,27,48,.3);padding:10px;min-width:230px;display:flex;flex-direction:column;gap:4px;z-index:60;}
+  .user-menu-panel.hidden{display:none;}
+  .user-menu-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border:none;background:transparent;border-radius:9px;font-family:'Sarabun';font-size:13px;text-align:left;cursor:pointer;color:var(--ink-900);width:100%;}
+  .user-menu-item:hover{background:var(--paper-50);}
+  .user-menu-item.danger{color:var(--danger);}
+  /* ชื่อ/ตำแหน่งผู้ใช้ในเมนูลอย แสดง 2 บรรทัด (ชื่อ / ตำแหน่ง) แทนการยัดรวมบรรทัดเดียวแบบ pill ทั่วไป */
+  .user-menu-panel #login-badge{display:block;white-space:normal;text-align:center;line-height:1.5;padding:8px 10px;margin-bottom:2px;}
+  .user-menu-panel #login-badge .um-position{display:block;font-weight:500;opacity:.85;}
+
+  .content{padding:26px 30px 60px;max-width:none;}
+
+  .sec-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .sec-tab{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-600);cursor:pointer;background:var(--white);border:1px solid var(--line);}
+  .sec-tab.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900);}
+  .sec-tab:hover:not(.active){border-color:var(--orange-500);color:var(--orange-600);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;}
+  .stat-card .label{font-size:12.5px;color:var(--ink-600);margin-bottom:8px;}
+  .stat-card .val{font-family:'Kanit';font-size:28px;font-weight:600;color:var(--navy-900);}
+  .stat-card .sub{font-size:11.5px;color:var(--ink-400);margin-top:4px;}
+  .stat-card.warn .val{color:var(--orange-600);}
+  .stat-card .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--navy-800);}
+  .stat-card.warn .bar{background:var(--orange-600);}
+  /* ===== ภาพรวม (Overview) — modern grouped stat cards ===== */
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:22px;}
+  .ov-card{background:linear-gradient(180deg,#ffffff,var(--paper-50) 130%);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;box-shadow:0 1px 2px rgba(10,37,64,.04),0 10px 22px -16px rgba(10,37,64,.14);transition:box-shadow .15s ease,transform .15s ease;}
+  .ov-card:hover{box-shadow:0 4px 10px rgba(10,37,64,.06),0 16px 30px -16px rgba(10,37,64,.18);transform:translateY(-1px);}
+  .ov-card-head{display:flex;align-items:center;gap:10px;margin-bottom:13px;}
+  .ov-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ov-icon svg{width:18px;height:18px;}
+  .ov-card-head h3{font-family:'Kanit';font-size:14px;font-weight:600;color:var(--navy-900);margin:0;letter-spacing:.1px;}
+  .ov-card-head .ov-note{margin-left:auto;font-size:11px;color:var(--ink-400);font-weight:400;}
+  .ov-metrics{display:flex;gap:8px;flex-wrap:wrap;}
+  .ov-metric{flex:1 1 84px;background:var(--paper-100);border-radius:9px;padding:9px 11px;min-width:84px;}
+  .ov-metric-val{font-family:'Kanit';font-size:21px;font-weight:600;color:var(--navy-900);line-height:1.15;}
+  .ov-metric.warn{background:var(--danger-bg);}
+  .ov-metric.warn .ov-metric-val{color:var(--orange-600);}
+  .ov-metric.ok{background:var(--success-bg);}
+  .ov-metric.ok .ov-metric-val{color:var(--success);}
+  .ov-metric-label{font-size:10.8px;color:var(--ink-600);margin-top:3px;line-height:1.3;}
+  .ov-card.accent-navy{border-top:3px solid var(--navy-800);}
+  .ov-card.accent-orange{border-top:3px solid var(--orange-600);}
+  .ov-card.accent-amber{border-top:3px solid var(--amber-400);}
+  .ov-card.accent-success{border-top:3px solid var(--success);}
+  @media(max-width:640px){ .ov-grid{grid-template-columns:1fr 1fr;} }
+
+
+  .fy-picker{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:6px 14px 6px 12px;box-shadow:0 1px 2px rgba(10,37,64,.05);}
+  .fy-picker-icon{font-size:13px;line-height:1;}
+  .fy-picker-label{font-family:'Kanit';font-size:12.5px;font-weight:600;color:var(--ink-600);}
+  .fy-picker select{font-family:'Sarabun';font-size:13px;font-weight:600;padding:4px 10px;border-radius:16px;border:1px solid var(--line);background:var(--paper-50);color:var(--navy-900);cursor:pointer;}
+  .fy-picker select:hover{border-color:var(--orange-500);}
+  .section{background:var(--white);border:1px solid var(--line);border-radius:12px;margin-bottom:22px;overflow:hidden;}
+  .section-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .section-head h2{font-size:16px;font-weight:600;margin:0;color:var(--navy-900);display:flex;align-items:center;gap:9px;}
+  .section-icon{width:28px;height:28px;border-radius:7px;background:var(--navy-900);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-icon svg{width:15px;height:15px;}
+  .head-desc{font-size:12.5px;font-weight:400;color:var(--ink-400);margin-left:37px;display:block;}
+
+  .btn{font-family:'Sarabun';font-size:13px;font-weight:600;border:none;border-radius:10px;padding:9px 17px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:filter .15s ease,transform .1s ease,box-shadow .15s ease;}
+  .btn:hover{filter:brightness(1.06);}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:linear-gradient(135deg,var(--orange-500),var(--orange-600));color:#fff;box-shadow:0 4px 12px -2px rgba(224,98,15,.4);}
+  .btn-ghost{background:#fff;color:var(--ink-900);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--paper-100);}
+  .btn-sm{padding:4px 10px;font-size:12px;border-radius:6px;}
+  .btn-danger{background:var(--danger-bg);color:var(--danger);}
+  .btn-ok{background:var(--success-bg);color:var(--success);}
+  .tabs{display:flex;gap:4px;padding:0 20px;background:var(--paper-50);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .tab{padding:10px 14px;font-size:13.5px;color:var(--ink-600);cursor:pointer;border-bottom:2px solid transparent;font-weight:500;}
+  .tab.active{color:var(--navy-900);border-bottom-color:var(--orange-600);font-weight:600;}
+
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;}
+  thead th{text-align:left;background:var(--paper-50);color:var(--ink-600);font-weight:600;font-size:11px;letter-spacing:.03em;text-transform:uppercase;padding:9px 14px;border-bottom:2px solid var(--line);white-space:nowrap;position:sticky;top:0;z-index:2;}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--paper-100);vertical-align:middle;color:var(--ink-900);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#fafbfa;}
+  tbody tr:hover{background:#f2f5f8;}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  #labor-table-wrap{max-height:70vh;overflow-y:auto;}
+  @media (max-width:760px){
+    thead th{padding:8px 10px;font-size:10.5px;}
+    tbody td{padding:8px 10px;font-size:13px;}
+  }
+  th.wtr-a,td.wtr-a{background:rgba(28,75,115,.055);}
+  thead th.wtr-a{background:rgba(28,75,115,.12);box-shadow:inset 0 2px 0 var(--navy-700);}
+  th.wtr-b,td.wtr-b{background:rgba(224,98,15,.055);}
+  thead th.wtr-b{background:rgba(224,98,15,.12);box-shadow:inset 0 2px 0 var(--orange-600);}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+  .pill-in{background:#e3edf6;color:var(--navy-700);}
+  .pill-out{background:#fdefe3;color:var(--orange-600);}
+  .pill-ok{background:var(--success-bg);color:var(--success);}
+  .pill-danger{background:var(--danger-bg);color:var(--danger);}
+  .pill-warn{background:#fdf1de;color:#a3660a;}
+  .pill-neutral{background:var(--paper-100);color:var(--ink-600);}
+
+  .person{display:flex;align-items:center;gap:9px;}
+  .p-name{font-weight:500;}
+  .p-name .p-sub{white-space:normal;}
+  .p-sub{font-size:11.5px;color:var(--ink-400);}
+
+  .foot-note{font-size:12px;color:var(--ink-400);padding:12px 20px;border-top:1px solid var(--paper-100);background:var(--paper-50);}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .search-box{display:flex;align-items:center;gap:7px;background:var(--paper-50);border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:13px;color:var(--ink-600);min-width:190px;}
+  .search-box input{border:none;background:none;outline:none;font-family:'Sarabun';font-size:13px;color:var(--ink-900);width:100%;}
+  select, .edit-input{font-family:'Sarabun';font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink-900);}
+  .edit-input{width:100%;}
+  .hidden{display:none !important;}
+
+  /* countdown / alert banners */
+  .banner{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:10px;margin-bottom:18px;font-size:13.5px;}
+  .banner-info{background:#e3edf6;color:var(--navy-700);border:1px solid #c9dcee;}
+  .banner-warn{background:#fdf1de;color:#8a5a06;border:1px solid #f3d9a1;}
+  .banner-danger{background:var(--danger-bg);color:var(--danger);border:1px solid #f2c5bd;}
+  tr.row-latest{background:rgba(242,169,48,.14);box-shadow:inset 3px 0 0 var(--orange-600);}
+  tr.row-latest td{font-weight:600;}
+  .banner b{font-family:'Kanit';}
+
+  /* budget bars */
+  .budget-row{padding:14px 20px;border-bottom:1px solid var(--paper-100);}
+  .budget-row:last-child{border-bottom:none;}
+  .budget-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+  .budget-top .name{font-weight:600;color:var(--navy-900);font-size:13.5px;}
+  .budget-top .nums{font-size:12.5px;color:var(--ink-600);}
+  .budget-track{height:10px;border-radius:6px;background:var(--paper-100);overflow:hidden;}
+  .budget-fill{height:100%;border-radius:6px;background:var(--navy-800);}
+  .budget-fill.warn{background:var(--amber-400);}
+  .budget-fill.danger{background:var(--danger);}
+  .budget-note{font-size:11.5px;color:var(--ink-400);margin-top:6px;}
+
+  /* OT workflow steps */
+  .steps{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .step{font-size:11px;padding:3px 9px;border-radius:6px;background:var(--paper-100);color:var(--ink-400);}
+  .step.done{background:var(--success-bg);color:var(--success);}
+  .step.now{background:var(--orange-600);color:#fff;}
+
+  .lr-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;padding:20px;}
+  .form-card{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:#fcfcfb;}
+  .form-card h3{margin:0 0 12px;font-size:14px;color:var(--navy-900);}
+  .f-row{margin-bottom:14px;}
+  .f-row label{display:block;font-size:12px;color:var(--ink-600);margin-bottom:6px;font-weight:600;}
+  .f-row select,.f-row input,.f-row textarea{width:100%;padding:10px 13px;border:1px solid var(--line);border-radius:10px;font-family:'Sarabun';font-size:13.5px;background:#fff;color:var(--ink-900);transition:border-color .15s ease,box-shadow .15s ease;}
+  .f-row select:focus,.f-row input:focus,.f-row textarea:focus{outline:none;border-color:var(--orange-500);box-shadow:0 0 0 3px rgba(224,98,15,.12);}
+  .f-row textarea{resize:vertical;min-height:56px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .stat-mini{background:var(--paper-100);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--ink-600);margin-top:4px;}
+
+  /* floating modal system (บันทึกบิลใหม่ / บันทึกข้อมูลประจำเดือน / ยื่นขออนุมัติ OT) */
+  .modal-overlay{position:fixed;inset:0;background:rgba(7,27,48,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;z-index:100;padding:28px 20px;overflow-y:auto;animation:modalFadeIn .15s ease;}
+  .modal-overlay.hidden{display:none;}
+  @keyframes modalFadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes modalPopIn{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  .modal-box{background:#fff;border-radius:20px;width:100%;max-width:640px;max-height:none;box-shadow:0 28px 64px -14px rgba(7,27,48,.45),0 10px 26px -10px rgba(7,27,48,.22);overflow:hidden;animation:modalPopIn .18s cubic-bezier(.22,.9,.32,1.2);}
+  .modal-head{display:flex;align-items:center;gap:12px;padding:18px 22px;background:linear-gradient(135deg,var(--navy-900),var(--navy-800) 75%);}
+  .modal-head h3{margin:0;font-size:15.5px;font-family:'Kanit';font-weight:600;color:#fff;}
+  .modal-head-icon{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .modal-head-icon svg{width:19px;height:19px;}
+  .modal-close{background:none;border:none;font-size:15px;color:#a9bbcc;cursor:pointer;line-height:1;padding:4px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;transition:background .15s ease,color .15s ease;}
+  .modal-close:hover{background:rgba(255,255,255,.14);color:#fff;}
+  .modal-body{padding:20px 22px 22px;}
+  .modal-foot{display:flex;align-items:center;gap:8px;padding:16px 22px 20px;background:var(--paper-50);border-top:1px solid var(--line);}
+  .dw-group{border:1px solid var(--line);border-radius:14px;padding:16px 18px 6px;margin-bottom:14px;background:var(--paper-50);}
+  .dw-group-title{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;color:var(--navy-800);margin-bottom:14px;text-transform:uppercase;letter-spacing:.3px;}
+  .dw-group-title .dot{width:20px;height:20px;border-radius:7px;background:linear-gradient(135deg,var(--orange-500),var(--orange-600));flex:none;box-shadow:0 2px 6px rgba(224,98,15,.3);position:relative;}
+  .dw-group-title .dot::after{content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;border-radius:50%;background:#fff;}
+
+  /* attendance grid (labor wage) */
+  .att-table thead th{text-align:center;}
+  .att-table td.att-cell{padding:2px 0;text-align:center;width:24px;min-width:24px;}
+  .att-cell button, .att-chip{width:22px;height:22px;margin:0 auto;border:none;border-radius:6px;cursor:default;font-family:'Kanit';font-weight:700;font-size:11px;display:inline-flex;align-items:center;justify-content:center;opacity:1;}
+  .att-cell button:disabled{opacity:1;-webkit-text-fill-color:currentColor;}
+  .att-cell button.c-1{background:transparent;color:var(--success);}
+  .att-chip.c-1{background:var(--success-bg);color:var(--success);}
+  .att-cell button.c-p, .att-chip.c-p{background:#fdf1de;color:#a3660a;}
+  .att-cell button.c-w, .att-chip.c-w{background:#e3edf6;color:var(--navy-700);}
+  .att-cell button.c-x, .att-chip.c-x{background:var(--danger-bg);color:var(--danger);}
+  .att-cell button.c-k, .att-chip.c-k{background:#f2e6f8;color:#8e44ad;}
+  .att-cell button.c-c, .att-chip.c-c{background:#fbe2ec;color:#d6336c;}
+  .att-cell button.c-r, .att-chip.c-r{background:#dff3f7;color:#0d8aa6;}
+  .att-cell button.c-off, .att-chip.c-off{background:#eef0f2;color:#8a9099;font-weight:600;}
+  .att-cell button:hover{filter:brightness(0.95);}
+  th.day-th{text-align:center;padding:5px 2px;font-size:10px;}
+  th.day-th .day-dow{font-size:9px;color:var(--ink-400);font-weight:500;margin-top:1px;}
+  th.day-th.day-off{background:#eef0f2;color:var(--ink-400);}
+  th.day-th.day-off .day-dow{color:var(--ink-400);}
+  th.day-th.day-hol{background:#fdecc8;color:#a3660a;}
+  th.day-th.day-hol .day-dow{color:#a3660a;}
+  td.att-cell.att-hol{background:#fff3d6;}
+  th.ss-col,td.ss-col{width:90px;max-width:90px;}
+  .col-center{text-align:center;}
+  .att-table th.col-center,.att-table td.col-center{text-align:center;}
+  .att-table td.name-col{max-width:150px;}
+  th.idx-col,td.idx-col{width:34px;max-width:34px;padding-left:8px;padding-right:8px;}
+  .labor-summary{display:flex;gap:14px;flex-wrap:wrap;padding:18px 20px 10px;}
+  .labor-summary .ov-metric{
+    flex:1 1 200px;
+    text-align:center;
+    padding:16px 14px;
+    border-radius:14px;
+    background:linear-gradient(135deg,#eef1f5,#e1e6ec);
+    box-shadow:0 4px 12px -2px rgba(10,37,64,.18);
+    transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .labor-summary .ov-metric:hover{transform:translateY(-2px);box-shadow:0 6px 16px -2px rgba(10,37,64,.24);}
+  .labor-summary .ov-metric.warn{background:linear-gradient(135deg,#fdece0,#fbdec8);box-shadow:0 4px 12px -2px rgba(224,98,15,.18);}
+  .labor-summary .ov-metric.warn:hover{box-shadow:0 6px 16px -2px rgba(224,98,15,.26);}
+  .labor-summary .ov-metric.warn .ov-metric-val{color:var(--orange-600);}
+  .labor-summary .ov-metric.warn .ov-metric-label{color:#8a5a2f;}
+  .labor-summary .ov-metric.ok{background:linear-gradient(135deg,#e2f4ea,#cfecdc);box-shadow:0 4px 12px -2px rgba(28,138,83,.18);}
+  .labor-summary .ov-metric.ok:hover{box-shadow:0 6px 16px -2px rgba(28,138,83,.26);}
+  .labor-summary .ov-metric.ok .ov-metric-val{color:var(--success);}
+  .labor-summary .ov-metric.ok .ov-metric-label{color:#2f6b4d;}
+  .labor-summary .ov-metric-val{font-size:26px;}
+  .labor-summary .ov-metric-label{margin-top:6px;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 44px 10px 20px;font-size:11.5px;color:var(--ink-600);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .legend-block{position:relative;min-height:38px;background:var(--paper-50);border-top:1px solid var(--paper-100);}
+  .legend-dot-btn{position:absolute;top:6px;right:10px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink-600);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2;}
+  .legend-dot-btn:hover{background:var(--paper-100);}
+  .legend-dot-btn.is-open{background:#eef3f8;border-color:#d8e2ec;color:var(--navy-900);}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block;}
+
+  .print-only{display:none;}
+  .official-form{font-family:'Sarabun',sans-serif;font-size:14px;color:#000;line-height:1.7;max-width:210mm;margin:0 auto;}
+  .official-form .form-code{text-align:right;font-weight:600;}
+  .official-form .form-title{text-align:center;font-family:'Kanit';font-size:17px;font-weight:600;margin-bottom:2px;}
+  .official-form .form-org{text-align:center;font-size:14px;margin-bottom:10px;}
+  .official-form .writeline{text-align:right;margin-bottom:14px;}
+  .official-form p{margin:6px 0;}
+  .official-form .dotted{border-bottom:1px dotted #333;padding:0 2px;}
+  .official-form table.of-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;}
+  .official-form table.of-table th, .official-form table.of-table td{border:1px solid #333;padding:5px 7px;text-align:center;}
+  /* กันสไตล์ตารางแบบใหม่ (พื้นเทา/ตัวพิมพ์ใหญ่/sticky/สลับสีแถว) หลุดเข้าไปในแบบฟอร์มราชการที่ใช้พิมพ์จริง — ต้องคงหน้าตาเอกสารราชการปกติ */
+  .official-form table.of-table th{background:none;color:#000;font-weight:600;text-transform:none;letter-spacing:normal;position:static;}
+  .official-form table.of-table tbody tr:nth-child(even){background:none;}
+  .official-form .sig-block{text-align:right;margin-top:26px;}
+  @media print{
+    .print-only{display:none;}
+    .print-only.show-print{display:block;}
+    .sidebar,.topbar,.sec-tabs,.no-print,.page-head .toolbar{display:none !important;}
+    .content{padding:0;max-width:none;}
+  }
+  .page-head h1{margin:0 0 6px;font-size:22px;display:flex;align-items:center;gap:10px;}
+  .page-head p{margin:0;color:var(--ink-600);font-size:13.5px;max-width:900px;}
+  .ph-toggle{font-size:11.5px;font-weight:500;background:#eef3f8;color:var(--navy-900);border:1px solid #d8e2ec;border-radius:20px;padding:3px 10px;cursor:pointer;line-height:1.6;white-space:nowrap;}
+  .ph-toggle:hover{background:#e2ebf3;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-layer.js" data-page="s4"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-mark" src="logo.jpg" alt="ตรากรมทางหลวง" style="border-radius:50%;object-fit:cover;">
+      <div class="brand-text">
+        <div class="t1">หมวดทางหลวงเชิงเนิน</div>
+        <div class="t2">Choeng Noen Highway Maintenance Section</div>
+      </div>
+    </div>
+    <div class="nav-group-label" id="nav-group-main">ระบบหลัก</div>
+    <a class="nav-item" id="nav-main-link" href="choengnoen0-main.html"><span class="num">•</span><span>งานบริหารหมวด</span></a>
+    <div class="nav-group-label" id="nav-group-sub">ระบบรอง</div>
+    <a class="nav-item" href="choengnoen1-saraban.html"><span class="num">1</span><span>งานสารบรรณและบุคลากร</span></a>
+    <a class="nav-item" href="choengnoen2-statistics.html"><span class="num">2</span><span>งานสถิติและบริการประชาชน</span></a>
+    <a class="nav-item" href="choengnoen3-supplies.html"><span class="num">3</span><span>งานพัสดุและเครื่องจักร</span></a>
+    <a class="nav-item active"><span class="num">4</span><span>งานบัญชีและการเงิน</span></a>
+    <div class="sidebar-foot">หมวดทางหลวงเชิงเนิน<br>เวอร์ชันต้นแบบ 0.3</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb" id="crumb">ระบบรองที่ 4 · <b>งานบัญชีและการเงิน</b></div>
+      <div class="topbar-right no-print">
+        <div class="user-menu-wrap">
+          <div class="avatar" id="user-avatar" onclick="__toggleUserMenu(event)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg></div>
+          <div class="user-menu-panel hidden" id="user-menu-panel">
+            <span id="login-badge" class="pill pill-neutral" style="text-align:center;" title="บทบาทและสิทธิ์ของบัญชีนี้ในระบบนี้">กำลังตรวจสอบสิทธิ์…</span>
+            <button id="logout-btn" class="user-menu-item danger" onclick="doLogout()" style="display:none;">🚪 ออกจากระบบ</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-head">
+        <h1>งานบัญชีและการเงิน</h1>
+      </div>
+
+      <div class="sec-tabs no-print" id="sec-tabs">
+        <div class="sec-tab active" data-sec="labor">บัญชีแรงงานรายวัน</div>
+        <div class="sec-tab" data-sec="ot">งานนอกเวลาราชการ (OT)</div>
+        <div class="sec-tab" data-sec="budget">งบประมาณและค่าใช้จ่าย</div>
+        <div class="sec-tab" data-sec="utility">ทะเบียนคุมสาธารณูปโภค</div>
+      </div>
+
+
+      <!-- ============ LABOR WAGE (ง.3-12) ============ -->
+      <div class="panel active" id="panel-labor">
+        <div class="section">
+          <div class="section-head">
+            <h2>สรุปยอดจ่ายค่าแรงรายเดือน</h2>
+            <div class="toolbar no-print">
+              <select id="labor-fy" onchange="onLaborFYChange()"></select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="att-table" id="labor-summary-table"></table>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-head">
+            <h2>บัญชีแรงงานรายวัน (ง.3-12)</h2>
+            <div class="toolbar no-print">
+              <select id="labor-cycle" onchange="renderLabor()"></select>
+              <button class="btn btn-primary" onclick="printPaymentEvidence()">🖨️ พิมพ์หลักฐานการจ่ายเงิน</button>
+            </div>
+          </div>
+          <div class="table-wrap" id="labor-table-wrap">
+            <table class="att-table" id="labor-table"></table>
+          </div>
+          <div class="labor-summary">
+            <div class="ov-metric">
+              <div class="ov-metric-val" id="labor-total">—</div>
+              <div class="ov-metric-label">ยอดเงินรวมที่ต้องเบิกรอบนี้ (บาท)</div>
+            </div>
+            <div class="ov-metric warn">
+              <div class="ov-metric-val" id="labor-total-ss">—</div>
+              <div class="ov-metric-label">รวมหักประกันสังคม 5% (บาท)</div>
+            </div>
+            <div class="ov-metric ok">
+              <div class="ov-metric-val" id="labor-total-net">—</div>
+              <div class="ov-metric-label">รวมรับจริงทั้งหมด (บาท)</div>
+            </div>
+          </div>
+          <div class="legend-block" id="labor-legend-block">
+            <button type="button" class="legend-dot-btn no-print" id="labor-legend-toggle" onclick="__toggleLaborLegend(this)" aria-expanded="false" title="แสดง/ซ่อนคำอธิบายตัวย่อ">⋮</button>
+            <div class="legend" id="labor-legend" style="display:none;">
+              <span><span class="att-chip c-1">1</span>มาปฏิบัติงานเต็มวัน</span>
+              <span><span class="att-chip c-p">ป</span>ลาป่วย</span>
+              <span><span class="att-chip c-k">ก</span>ลากิจ</span>
+              <span><span class="att-chip c-w">พ</span>ลาพักผ่อน</span>
+              <span><span class="att-chip c-c">ค</span>ลาคลอดบุตร</span>
+              <span><span class="att-chip c-r">ร</span>ไปราชการ</span>
+              <span><span class="att-chip c-x">ข</span>ขาดงาน</span>
+              <span><span class="att-chip c-off">-</span>วันหยุด</span>
+              <span><span class="dot" style="background:#f2a930"></span>ช่องพื้นสีทอง = วันหยุดนักขัตฤกษ์ (จ่ายเสมือนมาปฏิบัติงาน)</span>
+            </div>
+            <div class="foot-note" id="labor-footnote" style="display:none;">หมายเหตุ: ผู้ปฏิบัติหน้าที่ยาม (ในหมู่คนงาน) ปฏิบัติหน้าที่จ้างรวมวันเสาร์ , เอกสารแสดงเฉพาะพนักงานตำแหน่ง คนงาน ที่ปฏิบัติงานปัจจุบัน</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ OT ============ -->
+      <div class="panel" id="panel-ot">
+        <div class="section">
+          <div class="section-head">
+            <h2>การปฏิบัติงานนอกเวลาราชการ</h2>
+            <button class="btn btn-primary no-print" onclick="openOTModal()">➕ ยื่นขออนุมัติ</button>
+          </div>
+          <div class="table-wrap"><table id="ot-table"></table></div>
+          <div class="legend-block" id="ot-note-block">
+            <button type="button" class="legend-dot-btn no-print" id="ot-note-toggle" onclick="__toggleOtNote(this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+            <div class="foot-note" id="ot-note" style="display:none;background:transparent;border-top:none;">อนุมัติล่วงหน้าอย่างน้อย 2 วันทำการ (ยกเว้นเหตุฉุกเฉินขออนุมัติภายหลังได้)</div>
+          </div>
+        </div>
+        <div id="ot-modal-overlay" class="modal-overlay hidden no-print">
+          <div class="modal-box">
+            <div class="modal-head">
+              <div class="modal-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+              <h3>ยื่นขออนุมัติปฏิบัติงานนอกเวลาราชการ</h3>
+              <button type="button" class="modal-close" onclick="closeOTModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="dw-group">
+                <div class="dw-group-title"><span class="dot"></span>รายละเอียดการปฏิบัติงาน</div>
+                <div class="f-row">
+                  <label>ผู้ขอปฏิบัติงาน / ทีมงาน</label>
+                  <select id="ot-name"></select>
+                </div>
+                <div class="two-col">
+                  <div class="f-row"><label>วันที่ปฏิบัติงาน</label><input type="date" id="ot-date"></div>
+                  <div class="f-row"><label>ช่วงเวลา</label><input type="text" id="ot-time" placeholder="เช่น 16.30 - 20.30 น."></div>
+                </div>
+                <div class="f-row"><label>ลักษณะงานที่ทำ</label><input type="text" id="ot-task" placeholder="เช่น งานซ่อมแซมไฟฟ้าแสงสว่างฉุกเฉิน"></div>
+                <div class="f-row"><label>จำนวนเงินค่าตอบแทน (บาท)</label><input type="number" id="ot-amount" placeholder="0.00"></div>
+              </div>
+              <div class="stat-mini">สถานะจะขึ้นเป็น "รออนุมัติ" ให้หัวหน้าหมวดพิจารณาก่อน จากนั้นเมื่อปฏิบัติงานเสร็จสิ้น ระบบจะนับถอยหลัง 5 วัน ให้รายงานผลและแนบหลักฐานการจ่ายเงิน</div>
+            </div>
+            <div class="modal-foot">
+              <div style="display:flex;gap:8px;margin-left:auto;">
+                <button class="btn btn-ghost" id="ot-cancel-btn" onclick="closeOTModal()">ยกเลิก</button>
+                <button class="btn btn-primary" id="ot-submit-btn" onclick="submitOT()">ส่งคำขออนุมัติ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ BUDGET ============ -->
+      <div class="panel" id="panel-budget">
+        <div class="section">
+          <div class="section-head">
+            <h2>การควบคุมงบประมาณและค่าใช้จ่าย</h2>
+            <div class="toolbar">
+              <button class="btn btn-ghost hidden" id="budget-edit-btn" onclick="openBudgetEditModal()">✎ แก้ไขวงเงินงบประมาณ</button>
+              <select id="budget-cycle" onchange="renderBudget()"></select>
+            </div>
+          </div>
+          <div id="budget-detail"></div>
+
+          <div id="budget-edit-overlay" class="modal-overlay hidden">
+            <div class="modal-box">
+              <div class="modal-head">
+                <h3>แก้ไขวงเงินงบประมาณ ปีงบประมาณ <span id="budget-edit-fy"></span></h3>
+                <button type="button" class="modal-close" onclick="closeBudgetEditModal()">✕</button>
+              </div>
+              <div class="modal-body" id="budget-edit-body"></div>
+              <div class="toolbar" style="justify-content:flex-end;padding:0 20px 18px;">
+                <button class="btn btn-ghost" id="budget-edit-cancel-btn" onclick="closeBudgetEditModal()">ยกเลิก</button>
+                <button class="btn btn-primary" id="budget-edit-save-btn" onclick="saveBudgetEditModal()">💾 บันทึก</button>
+              </div>
+            </div>
+          </div>
+          <div class="legend-block" id="budget-note-block">
+            <button type="button" class="legend-dot-btn no-print" id="budget-note-toggle" onclick="__toggleBudgetNote(this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+            <div class="foot-note" id="budget-note" style="display:none;background:transparent;border-top:none;">รวมยอดเบิกจ่ายค่าวัสดุจากระบบที่ 3 และค่าจ้างจากบัญชีแรงงานรายวันมาแสดงผลแบบ Real-time</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ UTILITY ============ -->
+      <div class="panel" id="panel-utility">
+        <div class="section">
+          <div class="section-head">
+            <h2>รายการสาธารณูปโภค</h2>
+            <div class="toolbar no-print">
+              <div class="fy-picker">
+                <span class="fy-picker-icon">🗓️</span>
+                <span class="fy-picker-label">ปีงบประมาณ</span>
+                <select id="util-fy-select" onchange="onUtilFyChange(this.value)"></select>
+              </div>
+              <button class="btn btn-primary" onclick="toggleUtilForm(true)">➕ บันทึกบิลใหม่</button>
+            </div>
+          </div>
+          <div id="util-form-overlay" class="modal-overlay hidden no-print">
+            <div class="modal-box">
+              <div class="modal-head">
+                <div class="modal-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M8 3h8l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9 12h6M9 16h6"/></svg></div>
+                <h3 id="util-modal-title">บันทึกบิลค่าสาธารณูปโภค</h3>
+                <button type="button" class="modal-close" onclick="toggleUtilForm()">✕</button>
+              </div>
+              <div class="modal-body">
+                <div class="dw-group">
+                  <div class="dw-group-title"><span class="dot"></span>รายละเอียดบิล</div>
+                  <div class="two-col">
+                    <div class="f-row"><label>ประเภทค่าใช้จ่าย</label>
+                      <select id="util-type"><option>ค่าไฟฟ้า</option><option>ค่าน้ำประปา</option><option>ค่าอินเตอร์เน็ต</option><option>ค่าโทรศัพท์</option></select>
+                    </div>
+                    <div class="f-row"><label>รอบบิลประจำเดือน</label><input type="month" id="util-cycle"></div>
+                    <div class="f-row"><label>จำนวนเงินที่เรียกเก็บ (บาท)</label><input type="number" id="util-amount"></div>
+                    <div class="f-row"><label>วันครบกำหนดชำระ</label><input type="date" id="util-due"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-foot">
+                <div style="display:flex;gap:8px;margin-left:auto;">
+                  <button class="btn btn-ghost" id="util-cancel-btn" onclick="toggleUtilForm()">ยกเลิก</button>
+                  <button class="btn btn-primary" id="util-save-btn" onclick="saveUtility()">บันทึก</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="util-filter-tabs" class="tabs"></div>
+          <div class="table-wrap"><table id="util-table"></table></div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <h2>สรุปค่าสาธารณูปโภค</h2>
+          </div>
+          <div id="util-report-banner"></div>
+          <div class="table-wrap"><table id="util-report-table"></table></div>
+          <div class="legend-block" id="util-report-note-block">
+            <button type="button" class="legend-dot-btn no-print" id="util-report-note-toggle" onclick="__toggleUtilReportNote(this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+            <div class="foot-note" id="util-report-note" style="display:none;background:transparent;border-top:none;">รายงานก่อนวันที่ 24 ของทุกเดือน</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <h2>คำนวนค่าน้ำประปา</h2>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-primary no-print" onclick="toggleWaterForm(true)">➕ บันทึกข้อมูลประจำเดือน</button>
+            </div>
+          </div>
+          <div id="water-filter-tabs" class="tabs"></div>
+          <div id="water-form-overlay" class="modal-overlay hidden no-print">
+            <div class="modal-box">
+              <div class="modal-head">
+                <div class="modal-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/></svg></div>
+                <h3 id="water-modal-title">บันทึกข้อมูลมิเตอร์น้ำประจำเดือน</h3>
+                <button type="button" class="modal-close" onclick="toggleWaterForm()">✕</button>
+              </div>
+              <div class="modal-body">
+                <div class="dw-group">
+                  <div class="dw-group-title"><span class="dot"></span>รอบบิล / มิเตอร์ สนง.</div>
+                  <div class="three-col">
+                    <div class="f-row"><label>รอบบิลประจำเดือน</label><input type="month" id="water-cycle"></div>
+                    <div class="f-row"><label>เลขมิเตอร์ สนง.</label><input type="number" step="any" id="water-main"></div>
+                    <div class="f-row"><label>ยอดชำระตามบิล</label><input type="number" step="any" id="water-amount"></div>
+                  </div>
+                </div>
+                <div class="dw-group">
+                  <div class="dw-group-title"><span class="dot"></span>มิเตอร์ T23787</div>
+                  <div class="three-col">
+                    <div class="f-row"><label>อ่านค่าวันนี้</label><input type="number" step="any" id="water-suba"></div>
+                    <div class="f-row"><label>วันที่ชำระ</label><input type="date" id="water-suba-paid"></div>
+                    <div class="f-row"><label>หน่วยใช้น้ำ (กรอกเองหากไม่ถูกต้อง)</label><input type="number" step="any" id="water-suba-override" placeholder="เว้นว่างไว้ตามปกติ"></div>
+                  </div>
+                </div>
+                <div class="dw-group">
+                  <div class="dw-group-title"><span class="dot"></span>มิเตอร์ W23791</div>
+                  <div class="three-col">
+                    <div class="f-row"><label>อ่านค่าวันนี้</label><input type="number" step="any" id="water-subb"></div>
+                    <div class="f-row"><label>วันที่ชำระ</label><input type="date" id="water-subb-paid"></div>
+                    <div class="f-row"><label>หน่วยใช้น้ำ (กรอกเองหากไม่ถูกต้อง)</label><input type="number" step="any" id="water-subb-override" placeholder="เว้นว่างไว้ตามปกติ"></div>
+                  </div>
+                  <div class="f-row"><label>หมายเหตุ</label><input type="text" id="water-note" placeholder="เช่น ซ่อมท่อ / เปลี่ยนมิเตอร์"></div>
+                </div>
+              </div>
+              <div class="modal-foot">
+                <div style="display:flex;gap:8px;margin-left:auto;">
+                  <button class="btn btn-ghost" id="water-cancel-btn" onclick="toggleWaterForm()">ยกเลิก</button>
+                  <button class="btn btn-primary" id="water-save-btn" onclick="saveWaterMeter()">บันทึก</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="water-table"></table></div>
+          <div class="legend-block" id="water-footer-note-block">
+            <button type="button" class="legend-dot-btn no-print" id="water-footer-note-toggle" onclick="__toggleWaterNote(this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+            <div class="foot-note" id="water-footer-note" style="display:none;background:transparent;border-top:none;">ทุกวันที่ 1 ของเดือน อ่าน/ถ่ายรูปมิเตอร์ทั้ง 3 จุด (สนง., T23787, W23791) และกรอกยอดบิล (ถ้ามาแล้ว) ลงในรอบเดือนปัจจุบันแถวเดียว ระบบคำนวณหน่วยใช้น้ำและค่าใช้จ่ายให้ครบทันที</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRINT-ONLY OFFICIAL FORMS ============ -->
+<div class="print-only" id="print-area"></div>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const TODAY = new Date();
+
+/* ============================================================
+   เชื่อมต่อฐานข้อมูลกลาง (Google Sheets ผ่าน Google Apps Script Web App)
+   คัดลอกมาจาก choengnoen1-saraban.html แบบเดียวกันทุกจุด — ใช้แทน
+   localStorage สำหรับ utility_bills, water_meter_log, ot_requests, budget_allocations
+   หมายเหตุ: ต้องส่ง Content-Type เป็น text/plain;charset=utf-8 ตอน POST
+   (ไม่ใช่ application/json) ไม่งั้น Apps Script จะโดน CORS preflight บล็อก
+   ============================================================ */
+/* ============================================================
+   เชื่อมต่อฐานข้อมูลกลาง — Firebase Firestore ผ่าน firebase-layer.js
+   (แทน Google Apps Script เดิม: ฟังก์ชัน apiGet/apiGetMultiple/apiPost ใช้แบบเดิมทุกประการ
+    แต่ข้อมูลอยู่ใน Firestore แบบ realtime + แคชในเครื่อง ต้องล็อกอินก่อน สิทธิ์บังคับที่ฐานข้อมูล
+    และการลบทุกครั้งย้ายรายการไป "ถังขยะ" ที่ระบบหลัก กู้คืนได้)
+   options (อาร์กิวเมนต์ที่ 5 ของ apiPost) = {trash:false} ใช้กับการลบเพื่อบันทึกทับ ไม่ต้องเก็บลงถังขยะ
+   ============================================================ */
+function apiCurrentUsername(){ return (window.FBL && FBL.user && FBL.user.name) || 'ไม่ระบุผู้ใช้'; }
+async function apiGet(table){ return FBL.apiGet(table); }
+async function apiGetMultiple(tableNames){ return FBL.apiGetMultiple(tableNames); }
+async function apiPost(action, table, data, id, options){ return FBL.apiPost(action, table, data, id, options); }
+/* ============ จบส่วนเชื่อมต่อฐานข้อมูลกลาง ============ */
+
+// เชื่อมโยงรายชื่อพนักงานจริงจากระบบที่ 1 (ฐานข้อมูลบุคลากร) แทนการจำลอง —
+// ระบบที่ 1 เขียนรายชื่อพนักงานลง localStorage คีย์นี้ทุกครั้งที่บันทึกข้อมูล (ดู __saveSharedStaff ในไฟล์ระบบที่ 1)
+const __SHARED_STAFF_KEY = 'saraban_shared_staff_v1';
+/* อ่านรายชื่อบุคลากรจาก Firestore โดยตรง (โหลดไว้ตอนเปิดหน้าใน __initApiData) — เดิมอ่าน localStorage ที่มีเฉพาะเครื่องที่เคยเปิดระบบที่ 1 */
+function loadRealStaffRoster(){
+  if(!(window.FBL && FBL.rows)) return [];
+  return FBL.rows('staff').map(s=>({name:s.name, role:s.role||null, duty:s.duty||null, ptype:s.ptype, rate:(s.rate===''||s.rate==null)?null:Number(s.rate), status:s.status}));
+}
+// รายชื่อสำรอง ใช้เฉพาะกรณีที่ยังไม่เคยเปิด/บันทึกข้อมูลบุคลากรในระบบที่ 1 เลย (localStorage ที่ใช้ร่วมกันยังว่างอยู่)
+const FALLBACK_STAFF_ROSTER = [
+  {name:"นางสาววันทนา  มีมานะ", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางอุบลจันทน์  สุขคุ้ม", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางเพียงใจ  เงินแท้", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางสาวพนารี แวววงษ์", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายดำรัส ทิพนาค", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายธานี  เนตรหลับ", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายสายยัน  วิเชียรรัตน์", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางสำเนียง  นุ่มดี", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางดวงใจ  ช่างไม้", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายประเสริฐ  งามสุวรรณ์", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางสมเพชร  เนตรหลับ", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายอรัญ สุขคุ้ม", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางสาวพรนพิน  คุชนาค", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางมาลินี  ท้าวธรรมศรี", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางพิศมัย  ประสิทธิ์", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายสมเดช  ประสิทธิ์", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายทูล  กุยแก้วพะเนา", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายณภัทร  ประสิทธิ์", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นางธนัญกรณ์  ธูปขุนทด", role:"คนงาน", duty:null, rate:377.85, status:"ok"},
+  {name:"นายสุรศักดิ์  สุขคุ้ม", role:"คนงาน", duty:"ยาม", rate:377.85, status:"ok"},
+];
+// บัญชีแรงงานรายวัน (ง.3-12) แสดงเฉพาะพนักงานที่ยังปฏิบัติงานอยู่และมีตำแหน่ง "คนงาน" เท่านั้น
+// แก้ไขข้อมูลเก่าที่อาจยังไม่อัปเดตจากระบบที่ 1 (เผื่อกรณีเปิดระบบที่ 4 ก่อนที่ระบบที่ 1 จะเคยโหลด/บันทึกด้วยเวอร์ชันล่าสุด)
+// นายสุรศักดิ์ สุขคุ้ม ตำแหน่งจริงคือ "คนงาน" (หน้าที่พิเศษ "ยาม") — ถ้าพบข้อมูลเก่าที่ยังเป็นตำแหน่ง "ยาม" ให้แก้ไขก่อนกรอง
+function __normalizeStaffSource(source){
+  return source.map(s=>{
+    if(s.name==='นายสุรศักดิ์  สุขคุ้ม' && s.role==='ยาม'){
+      return {...s, role:'คนงาน', duty: s.duty || 'ยาม'};
+    }
+    return s;
+  });
+}
+function buildLaborRoster(){
+  const real = loadRealStaffRoster();
+  const source = __normalizeStaffSource(real.length ? real : FALLBACK_STAFF_ROSTER);
+  return source
+    .filter(s=>s.status==='ok' && s.role==='คนงาน')
+    .map(s=>({name:s.name, role:s.role, duty:s.duty||null, rate:s.rate||0}));
+}
+let laborRoster = buildLaborRoster();
+function __refreshLaborRoster(){ laborRoster = buildLaborRoster(); }
+
+// วันหยุดนักขัตฤกษ์ต่อรอบบิล (YYYY-MM) — จ่ายค่าจ้างเสมือนมาปฏิบัติงานตามหมายเหตุที่ระบุ
+// เพิ่ม/แก้ไขได้ตามประกาศวันหยุดราชการจริงของแต่ละปี
+const THAI_HOLIDAYS = {
+  '2026-04': [
+    {day:6,  name:'วันจักรี'},
+    {day:13, name:'วันสงกรานต์ (วันผู้สูงอายุ)'},
+    {day:14, name:'วันสงกรานต์ (วันครอบครัว)'},
+    {day:15, name:'วันสงกรานต์ (วันเถลิงศก)'},
+  ],
+  '2026-05': [
+    {day:1, name:'วันแรงงานแห่งชาติ'},
+    {day:4, name:'วันฉัตรมงคล'},
+    {day:9, name:'วันพืชมงคล'},
+  ],
+  '2026-07': [
+    {day:28, name:'วันเฉลิมพระชนมพรรษา ร.10'},
+    {day:29, name:'วันอาสาฬหบูชา'},
+    {day:30, name:'วันเข้าพรรษา'},
+  ],
+};
+/* รวมวันหยุดนักขัตฤกษ์จากตาราง public_holidays (จัดการได้ที่ระบบที่ 1 → การลา → วันหยุดนักขัตฤกษ์) กับรายการที่ตั้งไว้ในโค้ดด้านบน
+   — เดิมใช้เฉพาะรายการในโค้ด (มีแค่บางเดือน) ต้องมาแก้โค้ดทุกปี ตอนนี้เพิ่มวันหยุดที่ระบบที่ 1 แล้วบัญชีแรงงานใช้ตามทันที */
+function cycleHolidays(cycleKey){
+  const list = (THAI_HOLIDAYS[cycleKey] || []).slice();
+  if(window.FBL && FBL.rows){
+    FBL.rows('public_holidays').forEach(h=>{
+      const iso = String(h.date||'');
+      if(iso.slice(0,7)!==cycleKey) return;
+      const day = parseInt(iso.slice(8,10),10);
+      if(day && !list.some(x=>x.day===day)) list.push({day, name:h.name||'วันหยุดนักขัตฤกษ์'});
+    });
+  }
+  return list.sort((a,b)=>a.day-b.day);
+}
+function holidayNameOn(cycleKey, day){ const h = cycleHolidays(cycleKey).find(x=>x.day===day); return h?h.name:''; }
+
+// เชื่อมโยงข้อมูลลาจริงจาก "ระบบที่ 1" (บัญชีลงเวลาการปฏิบัติราชการ/บันทึกข้อมูลการลา)
+// ระบบที่ 1 เขียนคำขอลาที่บันทึกไว้ทั้งหมดลง localStorage คีย์นี้ทุกครั้งที่มีการบันทึก/แก้ไข (ดู __saveSharedLeaveRequests ในไฟล์ระบบที่ 1)
+const __SHARED_LEAVE_KEY = 'saraban_shared_leave_requests_v1';
+// แผนที่ประเภทการลา (ระบบที่ 1) → รหัสลงเวลาที่ใช้ในตาราง ง.3-12
+const LEAVE_TYPE_CODE = {'ป่วย':'ป','กิจ':'ก','พักผ่อน':'พ','คลอดบุตร':'ค','ไปราชการ':'ร','ขาดงาน':'ข'};
+/* อ่านการลาจาก Firestore โดยตรง (โหลดไว้ตอนเปิดหน้าใน __initApiData) — เดิมอ่าน localStorage ที่มีเฉพาะเครื่องที่เคยเปิดระบบที่ 1 */
+function loadRealLeaveRequests(){
+  return (window.FBL && FBL.rows) ? FBL.rows('leave_requests') : [];
+}
+// คืนรหัสลาของพนักงานคนนี้ในวันที่ dateISO ถ้ามีคำขอลาที่ยื่นเข้าระบบครอบคลุมวันนั้น
+// (ตัดการกรองสถานะ "อนุมัติแล้ว" ออก — งานเอกสารลาจริงต้องผ่านการลงนามบนใบลาด้วยปากกาอยู่แล้ว
+// การมีสถานะอนุมัติดิจิทัลแยกต่างหากไม่มีความหมายในทางปฏิบัติ ถือว่าคำขอลาที่ยื่นเข้าระบบ = ลาจริงทั้งหมด
+// ยกเว้น cancelled ซึ่งหมายถึงยกเลิกคำขอนั้นไปแล้วจริงๆ)
+function leaveCodeForDay(approvedLeaves, name, dateISO){
+  const hit = approvedLeaves.find(r=>r.name===name && r.status!=='cancelled' && dateISO>=r.from && dateISO<=r.to);
+  return hit ? (LEAVE_TYPE_CODE[hit.type] || null) : null;
+}
+let attendanceCache = {}; // cycleKey -> {name -> [codes...]} — แคชในหน่วยความจำระหว่างเปิดหน้านี้เท่านั้น (ไม่บันทึกลง localStorage เพราะข้อมูลต้นทางที่ระบบที่ 1 เปลี่ยนแปลงได้ตลอด)
+function daysInCycle(key){ const [y,m]=key.split('-').map(Number); return new Date(y,m,0).getDate(); }
+function generateAttendance(cycleKey){
+  if(attendanceCache[cycleKey]) return attendanceCache[cycleKey];
+  const [y,m] = cycleKey.split('-').map(Number);
+  const nDays = daysInCycle(cycleKey);
+  const holidays = new Set(cycleHolidays(cycleKey).map(h=>h.day));
+  const approvedLeaves = loadRealLeaveRequests();
+  const map = {};
+  laborRoster.forEach(emp=>{
+    const codes = [];
+    for(let d=1; d<=nDays; d++){
+      const dateISO = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dow = new Date(y,m-1,d).getDay();
+      if(holidays.has(d)){ codes.push('1'); continue; } // วันหยุดนักขัตฤกษ์ จ่ายค่าจ้างเสมือนมาปฏิบัติงาน
+      if(dow===0){ codes.push('-'); continue; } // อาทิตย์หยุดทุกตำแหน่ง
+      if(dow===6 && emp.duty!=='ยาม'){ codes.push('-'); continue; } // เสาร์หยุด ยกเว้นผู้ปฏิบัติหน้าที่ยามที่จ้างรวมวันเสาร์
+      const leaveCode = leaveCodeForDay(approvedLeaves, emp.name, dateISO);
+      codes.push(leaveCode || '1'); // ไม่มีคำขอลาที่อนุมัติในวันนี้ → ถือว่ามาปฏิบัติงาน
+    }
+    map[emp.name] = codes;
+  });
+  attendanceCache[cycleKey] = map;
+  return map;
+}
+function __clearAttendanceCache(){ attendanceCache = {}; }
+const WORKDAY_CODES = new Set(['1','ป','ก','พ','ค','ร']); // มาปฏิบัติงานเต็มวัน + ลาที่ได้รับอนุมัติทุกประเภท นับเป็นวันทำงาน (ไม่รวม ข/ขาดงาน และ -/วันหยุด)
+function workDaysOf(cycleKey, name){
+  const codes = generateAttendance(cycleKey)[name] || [];
+  return codes.filter(c=>WORKDAY_CODES.has(c)).length;
+}
+function codeClass(c){ return c==='1'?'c-1':c==='ป'?'c-p':c==='พ'?'c-w':c==='ข'?'c-x':c==='ก'?'c-k':c==='ค'?'c-c':c==='ร'?'c-r':c==='-'?'c-off':''; }
+
+// รอบบิลที่มีให้เลือก (ย้อนหลัง 4 เดือนจากปัจจุบัน)
+function cycleList(){
+  const list=[];
+  let y=TODAY.getFullYear(), m=TODAY.getMonth()+1;
+  for(let i=0;i<4;i++){
+    list.push(`${y}-${String(m).padStart(2,'0')}`);
+    m--; if(m===0){m=12;y--;}
+  }
+  return list;
+}
+function cycleLabel(key){
+  const months=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const [y,m]=key.split('-').map(Number);
+  return `บช-${String(m).padStart(2,'0')}/${y+543} (${months[m]} ${y+543})`;
+}
+
+// ============ ปีงบประมาณ (ต.ค. - ก.ย.) สำหรับบัญชีแรงงานรายวัน ============
+// ปีงบประมาณ พ.ศ. X ครอบคลุม 1 ต.ค. (X-1) ถึง 30 ก.ย. X — ใช้เลขปี พ.ศ. (บวก 543) เป็นค่าที่แสดงและเก็บใน select
+function fiscalYearOfCycle(cyc){
+  const [y,m] = cyc.split('-').map(Number);
+  return (m>=10 ? y+1 : y) + 543; // คืนค่าเป็นปีงบประมาณ พ.ศ.
+}
+function currentFiscalYear(){ return fiscalYearOfCycle(currentCycle()); }
+// ระบบมีข้อมูลบัญชีแรงงานรายวันจริงตั้งแต่ปีงบประมาณ 2569 เป็นต้นไปเท่านั้น (เหมือนกับ UTIL_FY_MIN ของฝั่งสาธารณูปโภค)
+// ไม่ต้องแสดงตัวเลือกปีก่อนหน้านี้เพราะไม่มีข้อมูลจริงให้ดู จะโชว์ตารางว่างเปล่าเปล่าๆ
+const LABOR_FY_MIN = 2569;
+// รายชื่อปีงบประมาณที่เลือกได้ (ปีปัจจุบันย้อนหลังไป n ปี แต่ไม่ต่ำกว่า LABOR_FY_MIN)
+function fiscalYearOptions(n=3){
+  const cur = currentFiscalYear();
+  const arr=[]; for(let i=0;i<n;i++){ const fy=cur-i; if(fy>=LABOR_FY_MIN) arr.push(fy); }
+  return arr;
+}
+// รายชื่อรอบเดือน (YYYY-MM ค.ศ.) ทั้งหมดในปีงบประมาณที่ระบุ (พ.ศ.) เรียงจาก ต.ค. → ก.ย.
+// ถ้าเป็นปีงบประมาณปัจจุบัน จะตัดรอบเดือนที่ยังไม่ถึงออก (ยังไม่เกิดขึ้นจริง)
+function cyclesInFiscalYear(fyBE){
+  const fyCE = fyBE - 543; // ปี ค.ศ. ที่ปีงบประมาณนี้สิ้นสุด
+  let y = fyCE-1, m = 10;
+  const list=[];
+  for(let i=0;i<12;i++){
+    list.push(`${y}-${String(m).padStart(2,'0')}`);
+    m++; if(m===13){m=1;y++;}
+  }
+  if(fyBE===currentFiscalYear()) return list.filter(c=>c<=currentCycle());
+  return list;
+}
+function populateLaborFY(){
+  const sel = document.getElementById('labor-fy');
+  sel.innerHTML = fiscalYearOptions().map(fy=>`<option value="${fy}">ปีงบประมาณ ${fy}</option>`).join('');
+  sel.value = currentFiscalYear();
+}
+function onLaborFYChange(){
+  populateLaborCycles();
+  renderLaborSummary();
+  renderLabor();
+}
+
+// การปฏิบัติงานนอกเวลาราชการ
+// สถานะ "ส่งบัญชีแรงงานรายวันแล้ว" ต่อรอบเดือน — ติ๊กด้วยมือ ไม่ผูกกับปุ่มพิมพ์ใดๆ
+// เพราะเจ้าหน้าที่อาจพิมพ์เอกสารจากไฟล์ภายนอกระบบก็ได้ คีย์คือ "YYYY-MM" ค่าเป็น true/false
+let laborSentStatus = {};
+/* แปลง ot_requests ระหว่างรูปแบบภายใน (name/date/task/approvedOn/reportedOn) กับคอลัมน์
+   Sheet (staffName/workDate/reason/approvedDate/reportDate) — otRequests ใช้ array index (i)
+   เป็น key ภายในโค้ดหน้านี้อยู่แล้วหลายจุด เก็บ __backendId ไว้คู่กันสำหรับ update ที่ backend
+   ต้องใช้ id จริง (no ยังคงเป็นเลขที่เอกสารที่ frontend คีย์เอง ส่งขึ้น backend ตรงๆ ได้เลย) */
+function otFromApi(row){
+  return { __backendId:row.id, no:row.no, name:row.staffName, team:row.team||'', date:row.workDate,
+    time:row.time||'', task:row.reason, amount:Number(row.amount)||0,
+    /* ข้อมูลเก่า (ก่อนตัดขั้นตอนอนุมัติดิจิทัลออก) อาจมี status เป็น pending/approved/rejected ค้างอยู่ — แปลงเป็น awaiting_work ทั้งหมด */
+    status:['pending','approved','rejected'].includes(row.status) ? 'awaiting_work' : (row.status||'awaiting_work'),
+    approvedOn:row.approvedDate||undefined, reportedOn:row.reportDate||undefined };
+}
+function otToApi(o){
+  return { id:o.__backendId, no:o.no, staffName:o.name, team:o.team||'', workDate:o.date, time:o.time||'',
+    reason:o.task, amount:o.amount||0, status:o.status||'awaiting_work', approvedDate:o.approvedOn, reportDate:o.reportedOn };
+}
+/* ข้อมูล OT จริงย้ายไปอยู่ที่ Google Sheets แท็บ "ot_requests" แล้ว
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน loadOtRequestsFromApi() ด้านล่าง */
+let otRequests = [];
+async function loadOtRequestsFromApi(){
+  try{
+    otRequests = (await apiGet('ot_requests')).map(otFromApi);
+  }catch(err){
+    console.error('โหลดข้อมูล OT จากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูล OT จากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+let otCounter = 1;
+
+// งบประมาณต่อรอบเดือน — schema เดิม (fiscalYear + category เป็นหลายแถวต่อปี) ถูกต้องอยู่แล้ว
+// จุดที่ผิดคือ frontend เดิมใช้ object แบนค่าคงที่ 0 ตลอด ไม่มี UI ให้กรอกวงเงินจริงเลย
+// (ดู setBudgetAllocation()/openBudgetEditModal() ด้านล่าง ที่เพิ่มเข้ามาแก้ปัญหานี้)
+let budgetCategories = ["งบดำเนินงาน","ค่าวัสดุ","ค่าสาธารณูปโภค","งบซ่อมบำรุง"];
+/* แปลง budget_allocations ระหว่างรูปแบบภายใน กับคอลัมน์ Sheet — field ชื่อตรงกันอยู่แล้ว
+   ยกเว้น amount<-allocatedAmount */
+function budgetAllocFromApi(row){
+  return { id:row.id, fiscalYear:Number(row.fiscalYear), category:row.category, amount:Number(row.allocatedAmount)||0 };
+}
+function budgetAllocToApi(b){
+  return { id:b.id, fiscalYear:b.fiscalYear, category:b.category, allocatedAmount:b.amount||0 };
+}
+/* ข้อมูลวงเงินงบประมาณจริงย้ายไปอยู่ที่ Google Sheets แท็บ "budget_allocations" แล้ว
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน loadBudgetAllocationsFromApi() ด้านล่าง */
+let budgetAllocations = [];
+async function loadBudgetAllocationsFromApi(){
+  try{
+    budgetAllocations = (await apiGet('budget_allocations')).map(budgetAllocFromApi);
+  }catch(err){
+    console.error('โหลดข้อมูลวงเงินงบประมาณจากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลวงเงินงบประมาณจากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+function getBudgetAllocation(fy, cat){
+  const r = budgetAllocations.find(x=>x.fiscalYear===fy && x.category===cat);
+  return r ? r.amount : 0;
+}
+async function setBudgetAllocation(fy, cat, amount){
+  const existing = budgetAllocations.find(x=>x.fiscalYear===fy && x.category===cat);
+  if(existing){
+    existing.amount = amount;
+    await apiPost('update', 'budget_allocations', budgetAllocToApi(existing));
+  } else {
+    const saved = await apiPost('add', 'budget_allocations', budgetAllocToApi({fiscalYear:fy, category:cat, amount}));
+    budgetAllocations.push(budgetAllocFromApi(saved));
+  }
+}
+// ยอดค่าวัสดุที่ดึงจากระบบที่ 3 จริง (เดิมเป็นค่า 0 ตายตัว ไม่เคยเชื่อมข้อมูลจริงเลย)
+// อ่านจาก materialTransactions ของระบบที่ 3 ตรงๆ (origin เดียวกัน) นับเฉพาะรายการ "รับเข้าคลัง" (kind:'receive')
+// ในรอบบิลนั้น เพราะเป็นจุดที่มีการจ่ายเงินซื้อจริง (มี unitPrice/totalPrice บันทึกไว้) — รายการ "เบิกจ่ายออก"
+// ไปใช้งานภาคสนาม (kind:'issue') ไม่มีราคาต่อหน่วยบันทึกไว้ในระบบที่ 3 เลย จึงคำนวณเป็นมูลค่าไม่ได้
+/* เดิมอ่านยอดรับเข้าวัสดุของระบบรองที่ 3 ผ่าน localStorage คีย์ 'saraban_subsystem3_v2'
+   แต่ตั้งแต่ระบบรองที่ 3 ย้าย material_transactions ไปอยู่บนฐานข้อมูลกลางแล้ว (ไม่เขียน
+   localStorage อีกต่อไป) ฟังก์ชันนี้จะได้ [] เสมอ (ยอดค่าวัสดุเงียบๆ กลายเป็น 0 ตลอด) —
+   แก้โดยโหลด material_transactions จาก apiGet ครั้งเดียวตอนเปิดหน้าแทน (ดู
+   __subsys3MaterialTx / loadSubsys3MaterialTxFromApi ท้ายไฟล์) แล้วอ่านจาก cache นี้ */
+let __subsys3MaterialTx = [];
+async function loadSubsys3MaterialTxFromApi(){
+  try{
+    __subsys3MaterialTx = await apiGet('material_transactions');
+  }catch(err){
+    console.error('โหลดข้อมูลยอดรับเข้าวัสดุจากระบบรองที่ 3 ล้มเหลว', err);
+  }
+}
+function materialSpendingOf(cycleKey){
+  return __subsys3MaterialTx.filter(t=>t.type==='receive' && (t.date||'').slice(0,7)===cycleKey)
+    .reduce((s,t)=>s+(Number(t.totalPrice)||0),0);
+}
+
+// ทะเบียนคุมค่าสาธารณูปโภค
+// ข้อมูลย้อนหลังจริง (ต.ค.2568 - ก.ค.2569) ตามรูปที่ผู้ใช้แนบ — เก็บเป็นค่าคงที่แยกไว้
+// เพื่อให้ __ensureHistoricalUtilitySeed() เติมเข้าไปให้เสมอ แม้เบราว์เซอร์จะมีข้อมูลเก่าที่บันทึกไว้ใน localStorage อยู่ก่อนแล้วก็ตาม
+const UTILITY_HISTORICAL_SEED = [
+  {type:'ค่าไฟฟ้า', cycle:'2025-10', amount:2787.00, due:'2025-10-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2025-10', amount:958.72, due:'2025-10-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2025-10', amount:524.00, due:'2025-10-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2025-10', amount:102.00, due:'2025-10-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2025-11', amount:2577.00, due:'2025-11-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2025-11', amount:651.63, due:'2025-11-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2025-11', amount:524.00, due:'2025-11-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2025-11', amount:108.00, due:'2025-11-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2025-12', amount:2160.00, due:'2025-12-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2025-12', amount:586.36, due:'2025-12-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2025-12', amount:524.30, due:'2025-12-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2025-12', amount:101.65, due:'2025-12-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2026-01', amount:2782.00, due:'2026-01-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-01', amount:947.22, due:'2026-01-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2026-01', amount:524.00, due:'2026-01-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2026-01', amount:105.00, due:'2026-01-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2026-02', amount:1974.52, due:'2026-02-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-02', amount:733.17, due:'2026-02-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2026-02', amount:524.30, due:'2026-02-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2026-02', amount:101.65, due:'2026-02-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2026-03', amount:2549.91, due:'2026-03-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-03', amount:916.46, due:'2026-03-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2026-03', amount:524.30, due:'2026-03-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2026-03', amount:119.95, due:'2026-03-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2026-04', amount:3139.81, due:'2026-04-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-04', amount:529.84, due:'2026-04-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2026-04', amount:524.30, due:'2026-04-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2026-04', amount:104.70, due:'2026-04-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2026-05', amount:3222.35, due:'2026-05-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-05', amount:481.70, due:'2026-05-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2026-05', amount:524.30, due:'2026-05-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2026-05', amount:113.85, due:'2026-05-24', status:'จ่ายแล้ว'},
+  {type:'ค่าไฟฟ้า', cycle:'2026-06', amount:3021.24, due:'2026-06-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-06', amount:451.05, due:'2026-06-24', status:'จ่ายแล้ว'},
+  {type:'ค่าอินเตอร์เน็ต', cycle:'2026-06', amount:524.30, due:'2026-06-24', status:'จ่ายแล้ว'},
+  {type:'ค่าโทรศัพท์', cycle:'2026-06', amount:104.70, due:'2026-06-24', status:'จ่ายแล้ว'},
+  {type:'ค่าน้ำประปา', cycle:'2026-07', amount:699.12, due:'2026-07-24', status:'จ่ายแล้ว'},
+];
+/* แปลง utility_bills ระหว่างรูปแบบภายใน (type/amount/due) กับคอลัมน์ Sheet
+   (billType/billAmount/dueDate) — utilityBills ใช้ array index (i) เป็น key ภายในโค้ดหน้านี้
+   อยู่แล้วหลายจุด (editUtility(i)/deleteUtility(i)/toggleUtilPaid(i)) จึงเก็บ __backendId
+   ไว้คู่กันสำหรับ update/delete แทนที่จะรื้อทุกจุดมาใช้ id จริง */
+function utilFromApi(row){
+  return { __backendId:row.id, type:row.billType, cycle:row.cycle, amount:Number(row.billAmount)||0,
+    due:row.dueDate, status:row.status||'รอเบิกจ่าย' };
+}
+function utilToApi(b){
+  return { id:b.__backendId, cycle:b.cycle, billType:b.type, billAmount:b.amount, dueDate:b.due, status:b.status||'รอเบิกจ่าย', note:'' };
+}
+/* ข้อมูลบิลค่าสาธารณูปโภคจริงย้ายไปอยู่ที่ Google Sheets แท็บ "utility_bills" แล้ว
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน loadUtilityBillsFromApi() ด้านล่าง */
+let utilityBills = [];
+async function loadUtilityBillsFromApi(){
+  try{
+    utilityBills = (await apiGet('utility_bills')).map(utilFromApi);
+  }catch(err){
+    console.error('โหลดข้อมูลบิลค่าสาธารณูปโภคจากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลบิลค่าสาธารณูปโภคจากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+// ทะเบียนคุมมิเตอร์ย่อยค่าน้ำประปา (ธนิภา / ชุลีพร)
+/* แปลง water_meter_log ระหว่างรูปแบบภายใน (subA/subB/...) กับคอลัมน์ Sheet (subAReading/
+   subBReading/...) — cycle เป็น key ทางธุรกิจที่โค้ดหน้านี้ใช้ค้นหาอยู่แล้ว (editWater(cycle)/
+   deleteWater(cycle)) เก็บ __backendId ไว้คู่กันสำหรับ update/delete ที่ backend ต้องใช้ id จริง */
+function waterFromApi(row){
+  const n = v => (v!==''&&v!=null) ? Number(v) : null;
+  return { __backendId:row.id, cycle:row.cycle, mainReading:n(row.mainReading), billAmount:n(row.billAmount),
+    subA:n(row.subAReading), subAPaid:row.paidDateA||null, subAUsageOverride:n(row.usageOverrideA),
+    subB:n(row.subBReading), subBPaid:row.paidDateB||null, subBUsageOverride:n(row.usageOverrideB),
+    note:row.note||'' };
+}
+function waterToApi(r){
+  return { id:r.__backendId, cycle:r.cycle, mainReading:r.mainReading, subAReading:r.subA, subBReading:r.subB,
+    billAmount:r.billAmount, paidDateA:r.subAPaid, paidDateB:r.subBPaid,
+    usageOverrideA:r.subAUsageOverride, usageOverrideB:r.subBUsageOverride, note:r.note||'' };
+}
+/* ข้อมูลมิเตอร์น้ำจริงย้ายไปอยู่ที่ Google Sheets แท็บ "water_meter_log" แล้ว
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน loadWaterMeterLogFromApi() ด้านล่าง */
+let waterMeterLog = [];
+async function loadWaterMeterLogFromApi(){
+  try{
+    waterMeterLog = (await apiGet('water_meter_log')).map(waterFromApi);
+  }catch(err){
+    console.error('โหลดข้อมูลมิเตอร์น้ำจากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลมิเตอร์น้ำจากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+let utilFilter = 'unpaid'; // all | unpaid | paid — มุมมองการเรียกดูทะเบียนคุมค่าสาธารณูปโภค
+let waterFilter = 'unpaid'; // all | unpaid | paid — มุมมองการเรียกดูตารางรายละเอียดค่าน้ำประปา
+// การรายงานไปแขวงรายเดือน (แยกจากสถานะจ่ายเงิน) — เดือนย้อนหลังทั้งหมดที่มีบิลจริงถือว่ารายงานแขวงแล้ว ตามที่ผู้ใช้ยืนยัน
+const DISTRICT_REPORT_HISTORICAL_SEED = [...new Set(UTILITY_HISTORICAL_SEED.map(b=>b.cycle))].map(cycle=>({cycle, reported:true, reportedDate:`${cycle}-24`}));
+let districtReports = DISTRICT_REPORT_HISTORICAL_SEED.map(d=>({...d}));
+
+/* ============================================================
+   LOGIN (ใช้รูปแบบเดียวกับระบบที่ 1)
+   ============================================================ */
+const ADMIN_NAMES = ["นายอิศรินทร์  อรุณสวัสดิ์", "นางสาวนันท์นภัสธ์  รัตนเสถียร", "นางเพียงใจ  เงินแท้", "นางอุบลจันทน์  สุขคุ้ม"];
+const SYSTEM_USERS = ["นายอิศรินทร์  อรุณสวัสดิ์", "นางสาวนันท์นภัสธ์  รัตนเสถียร", "นางสาววันทนา  มีมานะ", "นางอุบลจันทน์  สุขคุ้ม", "นางเพียงใจ  เงินแท้", "นางสาวพนารี แวววงษ์"];
+let pinCodes = { "นายอิศรินทร์  อรุณสวัสดิ์": "1234", "นางสาวนันท์นภัสธ์  รัตนเสถียร": "5678" };
+let currentUser = null;
+let adminVerified = false;
+/* บทบาท 3 ระดับ (ตั้งค่าที่ระบบหลักเท่านั้น): 'owner'/'staff' แก้ไขได้ที่นี่, 'section' เข้าดูได้แต่แก้ไขไม่ได้ */
+/* สิทธิ์แก้ไขของหน้านี้มาจากบัญชีที่ล็อกอิน (ตั้งค่าที่ระบบหลัก → ผู้ใช้งานและสิทธิ์) — บังคับจริงที่ firestore.rules */
+function isAdmin(){ return !!(window.FBL && FBL.canEdit && FBL.canEdit('s4')); }
+function populateLogin(){
+  const badge = document.getElementById('login-badge');
+  if(!badge) return;
+  const logoutBtn = document.getElementById('logout-btn');
+  const s = __getSharedSession();
+  if(s && s.name){
+    badge.innerHTML = s.name + (s.position ? '<span class="um-position">ตำแหน่ง '+s.position+'</span>' : '') + ((window.FBL && FBL.permBadgeHtml) ? FBL.permBadgeHtml() : '');
+    badge.className = 'pill ' + (isAdmin() ? 'pill-ok' : 'pill-warn');
+    if(logoutBtn) logoutBtn.style.display = 'flex';
+  } else {
+    badge.textContent = 'ดูอย่างเดียว — เข้าสู่ระบบที่ระบบหลักเพื่อแก้ไข';
+    badge.className = 'pill pill-neutral';
+    if(logoutBtn) logoutBtn.style.display = 'none';
+  }
+  __applyRoleSidebar();
+}
+/* บทบาท "เจ้าหน้าที่" (staff) มองไม่เห็นระบบหลัก (งานบริหารหมวด) เลย — ซ่อนทั้งลิงก์และหัวข้อกลุ่ม
+   "ระบบหลัก"/"ระบบรอง" ในแถบด้านข้าง เหลือแค่รายการ 4 ระบบรองเปล่าๆ ไม่มีหัวข้อกลุ่ม */
+/* ซ่อนลิงก์ระบบที่บัญชีนี้ไม่มีสิทธิ์เข้า (จัดการโดย firebase-layer.js) */
+function __applyRoleSidebar(){ if(window.FBL && FBL.applyNav) FBL.applyNav(); }
+function doLogin(){ populateLogin(); }
+/* ออกจากระบบได้จากทุกระบบย่อย ไม่ต้องย้อนกลับไปที่ระบบหลักเสมอไป — ล้าง session ที่ใช้ร่วมกันแล้วรีเฟรชสิทธิ์/หน้าจอทันที */
+/* ออกจากระบบ (Firebase) — ใช้ได้จากทุกหน้า หลังออกจะกลับไปหน้าเข้าสู่ระบบ */
+function doLogout(){ if(window.FBL) FBL.logout(); }
+function __toggleUserMenu(e){
+  if(e) e.stopPropagation();
+  document.getElementById('user-menu-panel').classList.toggle('hidden');
+}
+document.addEventListener('click', function(e){
+  const panel = document.getElementById('user-menu-panel');
+  const wrap = document.querySelector('.user-menu-wrap');
+  if(panel && !panel.classList.contains('hidden') && wrap && !wrap.contains(e.target)){
+    panel.classList.add('hidden');
+  }
+});
+window.addEventListener('storage', function(e){
+  if(e.key==='saraban_shared_session'){ populateLogin(); renderAll(); __renderAvatar(); }
+  if(e.key===__PROFILE_KEY){ __renderAvatar(); }
+  if(e.key===__SHARED_LEAVE_KEY){ __clearAttendanceCache(); renderLabor(); } // ข้อมูลลาจากระบบที่ 1 เปลี่ยน → ล้างแคชแล้วคำนวณ ง.3-12 ใหม่
+  if(e.key===__SHARED_STAFF_KEY){ __refreshLaborRoster(); __clearAttendanceCache(); renderAll(); } // รายชื่อ/ตำแหน่ง/หน้าที่พิเศษจากระบบที่ 1 เปลี่ยน → ดึงรายชื่อใหม่ทั้งหมด
+});
+/* ============ Avatar ผู้ใช้ (รูปโปรไฟล์) ============ */
+const __PROFILE_KEY = 'saraban_user_profiles_v1';
+function __getProfiles(){
+  try{ return JSON.parse(localStorage.getItem(__PROFILE_KEY)||'{}'); }catch(e){ return {}; }
+}
+function __saveProfilePhoto(name, dataUrl){
+  const profiles = __getProfiles();
+  profiles[name] = { photo: dataUrl };
+  localStorage.setItem(__PROFILE_KEY, JSON.stringify(profiles));
+}
+function __getSharedSession(){ return (window.FBL && FBL.legacySession) ? FBL.legacySession() : null; }
+const __GUEST_AVATAR_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>';
+function __initials(name){
+  if(!name) return 'จท';
+  const cleaned = name.replace(/^นาย|^นางสาว|^นาง/,'').trim();
+  return cleaned.slice(0,2) || 'จท';
+}
+function __renderAvatar(){
+  const el = document.getElementById('user-avatar');
+  if(!el) return;
+  const s = __getSharedSession();
+  if(s && s.role==='admin'){
+    const profiles = __getProfiles();
+    const photo = (profiles[s.name] && profiles[s.name].photo) || s.photo || null;
+    if(photo){
+      el.style.backgroundImage = `url('${photo}')`;
+      el.style.backgroundSize='cover'; el.style.backgroundPosition='center';
+      el.textContent='';
+    } else {
+      el.style.backgroundImage='none';
+      el.textContent = __initials(s.name);
+    }
+    el.style.cursor='pointer';
+    el.title = s.name + ' — คลิกเพื่อดูข้อมูล/ออกจากระบบ';
+  } else {
+    el.style.backgroundImage='none';
+    el.innerHTML = __GUEST_AVATAR_SVG;
+    el.style.cursor='pointer';
+    el.title='ผู้เยี่ยมชม (ดูอย่างเดียว)';
+  }
+}
+__renderAvatar();
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function fmtMoney(n){ return (n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDateTH(iso){
+  if(!iso) return '—';
+  const d=new Date(iso+'T00:00:00');
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return d.getDate()+' '+months[d.getMonth()]+' '+(d.getFullYear()+543);
+}
+function fmtDateShortTH(iso){
+  if(!iso) return '—';
+  const d=new Date(iso+'T00:00:00');
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return d.getDate()+' '+months[d.getMonth()]+' '+String(d.getFullYear()+543).slice(-2);
+}
+function daysUntil(iso){ return Math.round((new Date(iso+'T00:00:00')-TODAY)/86400000); }
+
+/* ============================================================
+   CLOCK
+   ============================================================ */
+
+/* ============================================================
+   SECTION SWITCHING
+   ============================================================ */
+document.querySelectorAll('.sec-tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.sec-tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.sec).classList.add('active');
+  });
+});
+
+/* ============================================================
+   BUDGET CALCULATIONS (ตัวกลาง ใช้ร่วมกันหลายส่วน)
+   ============================================================ */
+function currentCycle(){ return `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}`; }
+function laborSpendOf(cycleKey){
+  return laborRoster.reduce((sum,e)=>sum + workDaysOf(cycleKey,e.name)*e.rate, 0);
+}
+function utilitySpendOf(cycleKey){
+  return utilityBills.filter(b=>b.cycle===cycleKey).reduce((s,b)=>s+b.amount,0);
+}
+/* แก้บั๊กเดิม: หมวด "งบดำเนินงาน" รวมยอด OT ทุกคำขอตั้งแต่เริ่มระบบ ไม่กรองตามรอบเดือน
+   (cycleKey) เหมือนหมวดอื่นทั้งหมด ทำให้สลับ dropdown รอบบิลแล้วตัวเลขไม่เปลี่ยน —
+   ตอนนี้กรองด้วย workDate (o.date) ให้อยู่ในรอบเดียวกับ cycleKey เหมือนหมวดอื่น */
+function budgetSpentOf(cat, cycleKey){
+  if(cat==="งบดำเนินงาน") return otRequests.filter(o=>(o.date||'').slice(0,7)===cycleKey).reduce((s,o)=>s+(o.amount||0),0);
+  if(cat==="ค่าวัสดุ") return materialSpendingOf(cycleKey);
+  if(cat==="ค่าสาธารณูปโภค") return utilitySpendOf(cycleKey);
+  if(cat==="งบซ่อมบำรุง") return laborSpendOf(cycleKey);
+  return 0;
+}
+
+
+/* ============================================================
+   LABOR WAGE (ง.3-12)
+   ============================================================ */
+// วันทำการสุดท้ายของรอบเดือน (ตามระเบียบ = กำหนดส่งบัญชีแรงงานรายวัน)
+// ไล่ถอยจากวันสุดท้ายของเดือนไปเรื่อยๆ จนเจอวันที่ไม่ใช่เสาร์/อาทิตย์ และไม่ใช่วันหยุดนักขัตฤกษ์ที่ประกาศไว้ในระบบ (THAI_HOLIDAYS)
+function lastWorkdayOfCycle(cyc){
+  const [y,m] = cyc.split('-').map(Number);
+  const holidays = new Set(cycleHolidays(cyc).map(h=>h.day));
+  for(let d=daysInCycle(cyc); d>=1; d--){
+    const dow = new Date(y,m-1,d).getDay();
+    if(dow!==0 && dow!==6 && !holidays.has(d)) return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  return `${cyc}-01`; // กรณีสุดวิสัยที่ทั้งเดือนเป็นวันหยุดหมด (ไม่น่าเกิดขึ้นจริง)
+}
+// คำนวณสถานะการส่งบัญชีของแต่ละรอบเดือน มี 3 สถานะเท่านั้น: ส่งแล้ว / เกินกำหนดส่ง / รอรอบส่ง
+function laborSentInfo(cyc){
+  if(laborSentStatus[cyc]) return {label:'ส่งแล้ว', cls:'pill-ok'};
+  if(cyc===currentCycle()){
+    const daysLeft = daysUntil(lastWorkdayOfCycle(cyc));
+    if(daysLeft < 0) return {label:'เกินกำหนดส่ง', cls:'pill-danger'};
+    return {label:'รอรอบส่ง', cls:'pill-neutral'};
+  }
+  return {label:'เกินกำหนดส่ง', cls:'pill-danger'}; // รอบเดือนเก่ากว่าปัจจุบันแล้วยังไม่ส่ง ถือว่าเกินกำหนดแน่นอน
+}
+function renderLaborSummary(){
+  const fy = Number(document.getElementById('labor-fy').value) || currentFiscalYear();
+  const rows = cyclesInFiscalYear(fy).slice().reverse().map(cyc=>{
+    const att = generateAttendance(cyc);
+    let total=0;
+    laborRoster.forEach(emp=>{
+      const wd = (att[emp.name]||[]).filter(c=>WORKDAY_CODES.has(c)).length;
+      total += wd*emp.rate;
+    });
+    const totalSS = Math.round(total*0.05);
+    const info = laborSentInfo(cyc);
+    return {cyc, total, net: total-totalSS, info};
+  });
+  const thead = `<thead><tr><th>รอบเดือน</th><th>ยอดเงินรวม</th><th>ยอดรับจริงรวม</th><th>สถานะการส่ง</th><th></th></tr></thead>`;
+  const tbody = rows.map(r=>`<tr>
+      <td style="text-align:center;"><b>${cycleLabel(r.cyc)}</b></td>
+      <td style="text-align:center;">${fmtMoney(r.total)}</td>
+      <td style="text-align:center;"><b>${fmtMoney(r.net)}</b></td>
+      <td style="text-align:center;">
+        <span class="pill ${r.info.cls}" style="cursor:pointer;" onclick="toggleLaborSentFor('${r.cyc}', ${!laborSentStatus[r.cyc]})" title="คลิกเพื่อ${laborSentStatus[r.cyc]?'ยกเลิกการทำเครื่องหมาย':'ทำเครื่องหมายว่าส่งแล้ว'}">${r.info.label}</span>
+      </td>
+      <td style="text-align:center;"><button class="btn btn-ghost btn-sm no-print" onclick="jumpToLaborCycle('${r.cyc}')">ดูรายละเอียด</button></td>
+    </tr>`).join('');
+  document.getElementById('labor-summary-table').innerHTML = thead + '<tbody>' + tbody + '</tbody>';
+}
+function toggleLaborSentFor(cyc, checked){
+  laborSentStatus[cyc] = checked;
+  renderLaborSummary();
+  if(document.getElementById('labor-cycle').value === cyc) renderLabor();
+}
+function jumpToLaborCycle(cyc){
+  document.getElementById('labor-cycle').value = cyc;
+  renderLabor();
+  document.getElementById('labor-table').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function populateLaborCycles(){
+  const sel = document.getElementById('labor-cycle');
+  const fy = Number(document.getElementById('labor-fy').value) || currentFiscalYear();
+  const cycles = cyclesInFiscalYear(fy);
+  const prevValue = sel.value;
+  sel.innerHTML = cycles.slice().reverse().map(c=>`<option value="${c}">${cycleLabel(c)}</option>`).join('');
+  // ถ้ารอบเดิมที่เลือกอยู่ยังอยู่ในปีงบประมาณใหม่ ให้คงไว้ ไม่งั้นเลือกรอบล่าสุดของปีนั้นแทน
+  sel.value = cycles.includes(prevValue) ? prevValue : (cycles[cycles.length-1] || '');
+}
+function renderLabor(){
+  const cyc = document.getElementById('labor-cycle').value || currentCycle();
+  const nDays = daysInCycle(cyc);
+  const att = generateAttendance(cyc);
+
+  const [cy,cm] = cyc.split('-').map(Number);
+  const holidays = cycleHolidays(cyc);
+  const holidaySet = new Set(holidays.map(h=>h.day));
+  const THAI_DOW_ABBR = ['อา','จ','อ','พ','พฤ','ศ','ส']; // index ตรงกับ Date.getDay()
+
+  // ไม่แสดงคอลัมน์วันอาทิตย์ เพื่อประหยัดพื้นที่ตาราง (วันอาทิตย์หยุดทุกตำแหน่งอยู่แล้ว)
+  const visibleDays = [];
+  for(let d=1; d<=nDays; d++){
+    if(new Date(cy,cm-1,d).getDay()===0) continue;
+    visibleDays.push(d);
+  }
+
+  let thead = `<thead><tr><th class="idx-col col-center">ลำดับ</th><th class="name-col">ชื่อ-สกุล</th><th class="col-center">อัตรา/วัน</th>`;
+  visibleDays.forEach(d=>{
+    const dow = new Date(cy,cm-1,d).getDay();
+    const isHol = holidaySet.has(d);
+    const cls = isHol ? 'day-hol' : (dow===6) ? 'day-off' : '';
+    thead += `<th class="day-th ${cls}" ${isHol?`title="${holidayNameOn(cyc,d)}"`:''}>${d}<div class="day-dow">${THAI_DOW_ABBR[dow]}</div></th>`;
+  });
+  thead += `<th class="col-center">วันทำงาน</th><th class="col-center">ยอดเงิน</th><th class="ss-col col-center">หักประกันสังคม<br>5%</th><th class="col-center">รับจริง</th></tr></thead>`;
+
+  let total=0, totalSS=0, totalNet=0;
+  let tbody = '<tbody>';
+  laborRoster.forEach((emp,idx)=>{
+    const codes = att[emp.name];
+    const workDays = codes.filter(c=>WORKDAY_CODES.has(c)).length;
+    const amount = workDays*emp.rate;
+    const ss = Math.round(amount*0.05);
+    const net = amount-ss;
+    total += amount; totalSS += ss; totalNet += net;
+    tbody += `<tr><td class="idx-col col-center">${idx+1}</td><td class="p-name name-col">${emp.name}<div class="p-sub">${emp.role}${emp.duty?` · ปฏิบัติหน้าที่${emp.duty}`:''}</div></td><td class="col-center">${fmtMoney(emp.rate)}</td>`;
+    visibleDays.forEach(d=>{
+      const c = codes[d-1];
+      const isHol = holidaySet.has(d);
+      tbody += `<td class="att-cell ${isHol?'att-hol':''}" ${isHol?`title="${holidayNameOn(cyc,d)} — จ่ายเสมือนมาปฏิบัติงาน"`:''}><button class="${codeClass(c)}" disabled>${c}</button></td>`;
+    });
+    tbody += `<td class="col-center"><b>${workDays}</b></td><td class="col-center"><b>${fmtMoney(amount)}</b></td><td class="ss-col col-center">${ss.toLocaleString('en-US')}</td><td class="col-center"><b>${fmtMoney(net)}</b></td></tr>`;
+  });
+  tbody += '</tbody>';
+  document.getElementById('labor-table').innerHTML = thead+tbody;
+  document.getElementById('labor-total').textContent = fmtMoney(total);
+  document.getElementById('labor-total-ss').textContent = totalSS.toLocaleString('en-US');
+  document.getElementById('labor-total-net').textContent = fmtMoney(totalNet);
+}
+function printPaymentEvidence(){
+  const cyc = document.getElementById('labor-cycle').value || currentCycle();
+  const att = generateAttendance(cyc);
+  let rows='';
+  let total=0;
+  laborRoster.forEach((emp,i)=>{
+    const workDays = att[emp.name].filter(c=>WORKDAY_CODES.has(c)).length;
+    const amount = workDays*emp.rate;
+    total+=amount;
+    rows += `<tr><td>${i+1}</td><td style="text-align:left;padding-left:6px;">${emp.name}</td><td>${workDays}</td><td>${fmtMoney(amount)}</td><td></td></tr>`;
+  });
+  const html = `
+    <div class="official-form">
+      <div class="form-code">ง.3-26</div>
+      <div class="form-title">หลักฐานการจ่ายเงินค่าจ้างลูกจ้างชั่วคราว</div>
+      <div class="form-org">หมวดทางหลวงเชิงเนิน แขวงทางหลวงระยอง</div>
+      <p>ประจำรอบบิล <span class="dotted">&nbsp;${cycleLabel(cyc)}&nbsp;</span></p>
+      <table class="of-table">
+        <thead><tr><th>ลำดับ</th><th>ชื่อ-สกุล</th><th>จำนวนวันทำงาน</th><th>จำนวนเงิน (บาท)</th><th>ลายมือชื่อผู้รับเงิน</th></tr></thead>
+        <tbody>${rows}<tr><td colspan="3" style="text-align:right;font-weight:600;">รวมทั้งสิ้น</td><td style="font-weight:600;">${fmtMoney(total)}</td><td></td></tr></tbody>
+      </table>
+      <div class="sig-block">
+        <p>ลงชื่อ .......................................... ผู้จ่ายเงิน</p>
+        <p>ลงชื่อ .......................................... หัวหน้าหมวดทางหลวงเชิงเนิน (ผู้อนุมัติ)</p>
+        <p>วันที่ ${fmtDateTH(TODAY.toISOString().slice(0,10))}</p>
+      </div>
+    </div>`;
+  doPrint(html);
+}
+
+/* ============================================================
+   OT
+   ============================================================ */
+/* ตัดขั้นตอน "อนุมัติดิจิทัล" ออกทั้งระบบ (งานเอกสารจริงต้องลงนามด้วยปากกาบนใบ "ขออนุมัติ..."
+   ที่พิมพ์จาก printOTApproval() อยู่แล้ว — การกดอนุมัติในหน้าจอไม่มีความหมายจริงในทางปฏิบัติ)
+   เหลือ 3 สถานะ: awaiting_work (ยื่นคำขอแล้ว รอปฏิบัติงาน) → awaiting_report (ปฏิบัติงานแล้ว รอรายงานผล) → reported */
+function otStatusPill(st){
+  if(st==='awaiting_work') return '<span class="pill pill-in">รอปฏิบัติงาน</span>';
+  if(st==='awaiting_report') return '<span class="pill pill-warn">รอรายงานผล/แนบหลักฐาน</span>';
+  if(st==='reported') return '<span class="pill pill-ok">เบิกจ่ายเรียบร้อย</span>';
+  return '';
+}
+function otSteps(o){
+  const steps = ['ยื่นคำขอทำงานล่วงเวลา','ปฏิบัติงาน','รายงานผล+แนบหลักฐาน'];
+  let doneUpto = 0;
+  if(o.status==='awaiting_work') doneUpto=1;
+  if(o.status==='awaiting_report') doneUpto=2;
+  if(o.status==='reported') doneUpto=3;
+  return '<div class="steps">'+steps.map((s,i)=>{
+    let cls = i<doneUpto?'done':i===doneUpto?'now':'';
+    return `<span class="step ${cls}">${i+1}. ${s}</span>`;
+  }).join('')+'</div>';
+}
+function renderOT(){
+  let rows = otRequests.map((o,i)=>{
+    const overdue = o.status==='awaiting_report' && o.approvedOn && daysUntil(new Date(new Date(o.approvedOn).getTime()+5*86400000).toISOString().slice(0,10))<0;
+    return `<tr>
+      <td><b>${o.no}</b><div class="p-sub">${fmtDateTH(o.date)} · ${o.time}</div></td>
+      <td>${o.name}</td>
+      <td style="max-width:220px;">${o.task}</td>
+      <td>${fmtMoney(o.amount)}</td>
+      <td>${otStatusPill(o.status)}${overdue?'<div class="p-sub" style="color:var(--danger);margin-top:4px;">เลยกำหนดรายงานผล 5 วัน</div>':''}${otSteps(o)}</td>
+      <td class="no-print">${otActionButtons(o,i)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ot-table').innerHTML = `<thead><tr><th>เลขที่เอกสาร</th><th>ผู้ขอปฏิบัติงาน</th><th>ลักษณะงาน</th><th>จำนวนเงิน</th><th>สถานะ / ขั้นตอน</th><th>การดำเนินการ</th></tr></thead><tbody>${rows}</tbody>`;
+
+  const sel = document.getElementById('ot-name');
+  sel.innerHTML = laborRoster.map(e=>`<option value="${e.name}">${e.name}</option>`).join('');
+}
+function otActionButtons(o,i){
+  if(!isAdmin()) return '';
+  if(o.status==='awaiting_work') return `<button class="btn btn-primary btn-sm" onclick="startAwaitOT(${i})">ปฏิบัติงานแล้ว</button> <button class="btn btn-ghost btn-sm" onclick="printOTApproval(${i})">🖨️ ใบขออนุมัติ</button>`;
+  if(o.status==='awaiting_report') return `<button class="btn btn-primary btn-sm" onclick="reportOT(${i})">บันทึกรายงานผล+จ่ายเงิน</button> <button class="btn btn-ghost btn-sm" onclick="printOTApproval(${i})">🖨️ ใบขออนุมัติ</button>`;
+  if(o.status==='reported') return `<button class="btn btn-ghost btn-sm" onclick="printOTReport(${i})">🖨️ รายงานผล+หลักฐานจ่ายเงิน</button>`;
+  return '';
+}
+/* บันทึก OT ผ่าน backend เสมอ — ถ้าไม่สำเร็จให้คืนสถานะเดิม (optimistic update) เพื่อไม่ให้
+   หน้าจอกับฐานข้อมูลกลางไม่ตรงกัน */
+async function __saveOtStatus(i, before){
+  try{
+    await apiPost('update', 'ot_requests', otToApi(otRequests[i]));
+  }catch(err){
+    Object.assign(otRequests[i], before);
+    alert('บันทึกสถานะ OT ไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+  }
+  renderAll();
+}
+function startAwaitOT(i){
+  const before = {status:otRequests[i].status, approvedOn:otRequests[i].approvedOn};
+  otRequests[i].status='awaiting_report'; otRequests[i].approvedOn = TODAY.toISOString().slice(0,10);
+  renderAll();
+  __saveOtStatus(i, before);
+}
+function reportOT(i){
+  const before = {status:otRequests[i].status, reportedOn:otRequests[i].reportedOn};
+  otRequests[i].status='reported'; otRequests[i].reportedOn = TODAY.toISOString().slice(0,10);
+  renderAll();
+  __saveOtStatus(i, before);
+}
+function openOTModal(){
+  document.getElementById('ot-date').value='';
+  document.getElementById('ot-time').value='';
+  document.getElementById('ot-task').value='';
+  document.getElementById('ot-amount').value='';
+  document.getElementById('ot-modal-overlay').classList.remove('hidden');
+}
+function closeOTModal(){
+  document.getElementById('ot-modal-overlay').classList.add('hidden');
+}
+async function submitOT(){
+  const name = document.getElementById('ot-name').value;
+  const date = document.getElementById('ot-date').value;
+  const time = document.getElementById('ot-time').value;
+  const task = document.getElementById('ot-task').value;
+  const amount = parseFloat(document.getElementById('ot-amount').value)||0;
+  if(!name||!date||!time||!task){ alert('กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
+  const rec = {no:`บช.OT-0${otCounter++}/2569`, name, team:'', date, time, task, amount, status:'awaiting_work'};
+  const saveBtn = document.getElementById('ot-submit-btn');
+  const cancelBtn = document.getElementById('ot-cancel-btn');
+  const originalLabel = saveBtn ? saveBtn.textContent : '';
+  // ป้องกันการกดซ้ำระหว่างรอผลจากเซิร์ฟเวอร์ (สาเหตุของแถวซ้ำที่เคยเกิดขึ้น) — ปิดปุ่มและแสดงสถานะกำลังบันทึกให้เห็นชัดเจน
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    const saved = await apiPost('add', 'ot_requests', otToApi(rec));
+    otRequests.unshift(otFromApi(saved));
+  }catch(err){
+    otCounter--;
+    alert('บันทึกคำขอ OT ไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+    if(cancelBtn) cancelBtn.disabled = false;
+    return;
+  }
+  if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+  if(cancelBtn) cancelBtn.disabled = false;
+  document.getElementById('ot-date').value='';
+  document.getElementById('ot-time').value='';
+  document.getElementById('ot-task').value='';
+  document.getElementById('ot-amount').value='';
+  closeOTModal();
+  renderAll();
+}
+function printOTApproval(i){
+  const o = otRequests[i];
+  const html = `
+    <div class="official-form">
+      <div class="form-title">บันทึกข้อความ</div>
+      <p>ส่วนราชการ หมวดทางหลวงเชิงเนิน แขวงทางหลวงระยอง</p>
+      <p>ที่ ${o.no} &nbsp;&nbsp; วันที่ ${fmtDateTH(TODAY.toISOString().slice(0,10))}</p>
+      <p>เรื่อง ขออนุมัติปฏิบัติงานนอกเวลาราชการ</p>
+      <p>เรียน หัวหน้าหมวดทางหลวงเชิงเนิน</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;ด้วย ${o.name} มีความประสงค์ขออนุมัติปฏิบัติงานนอกเวลาราชการ ในวันที่ ${fmtDateTH(o.date)} เวลา ${o.time} เพื่อดำเนินการ${o.task} จึงเรียนมาเพื่อโปรดพิจารณาอนุมัติ</p>
+      <table class="of-table">
+        <thead><tr><th>ผู้ปฏิบัติงาน</th><th>วัน/เวลา</th><th>ลักษณะงาน</th><th>ค่าตอบแทน (บาท)</th></tr></thead>
+        <tbody><tr><td>${o.name}</td><td>${fmtDateTH(o.date)}<br>${o.time}</td><td>${o.task}</td><td>${fmtMoney(o.amount)}</td></tr></tbody>
+      </table>
+      <div class="sig-block">
+        <p>ลงชื่อ .......................................... ผู้ขออนุมัติ</p>
+        <p>ลงชื่อ .......................................... หัวหน้าหมวดทางหลวงเชิงเนิน (ผู้อนุมัติ)</p>
+      </div>
+    </div>`;
+  doPrint(html);
+}
+function printOTReport(i){
+  const o = otRequests[i];
+  const html = `
+    <div class="official-form">
+      <div class="form-title">รายงานผลการปฏิบัติงานนอกเวลาราชการ และหลักฐานการจ่ายเงินค่าตอบแทน</div>
+      <div class="form-org">หมวดทางหลวงเชิงเนิน แขวงทางหลวงระยอง จังหวัดระยอง</div>
+      <table class="of-table">
+        <thead><tr><th>เลขที่เอกสาร</th><th>ชื่อผู้ปฏิบัติงาน</th><th>วันที่/เวลา</th><th>ลักษณะงาน</th><th>จำนวนเงิน (บาท)</th><th>ลายมือชื่อผู้รับเงิน</th></tr></thead>
+        <tbody><tr><td>${o.no}</td><td>${o.name}</td><td>${fmtDateTH(o.date)}<br>${o.time}</td><td>${o.task}</td><td>${fmtMoney(o.amount)}</td><td></td></tr></tbody>
+      </table>
+      <p>รวมเป็นเงินทั้งสิ้น .................................................. บาท</p>
+      <div class="sig-block">
+        <p>ลงชื่อ .......................................... ผู้รายงาน/ผู้จ่ายเงิน</p>
+        <p>ลงชื่อ .......................................... หัวหน้าหมวดทางหลวงเชิงเนิน</p>
+        <p>วันที่รายงาน ${fmtDateTH(o.reportedOn || TODAY.toISOString().slice(0,10))}</p>
+      </div>
+    </div>`;
+  doPrint(html);
+}
+
+/* ============================================================
+   BUDGET
+   ============================================================ */
+function populateBudgetCycles(){
+  const sel = document.getElementById('budget-cycle');
+  sel.innerHTML = cycleList().map(c=>`<option value="${c}">${cycleLabel(c)}</option>`).join('');
+}
+function renderBudget(){
+  const cyc = document.getElementById('budget-cycle').value || currentCycle();
+  const fy = cycleFiscalYearBE(cyc);
+  const editBtn = document.getElementById('budget-edit-btn');
+  if(editBtn) editBtn.classList.toggle('hidden', !isAdmin());
+  let html = '';
+  budgetCategories.forEach(cat=>{
+    const alloc = getBudgetAllocation(fy, cat);
+    const spent = budgetSpentOf(cat, cyc);
+    const pct = alloc>0 ? Math.min(100, Math.round((spent/alloc)*100)) : 0;
+    const remainPct = 100-pct;
+    const cls = remainPct<10?'danger':remainPct<20?'warn':'';
+    let src = '';
+    if(cat==="ค่าวัสดุ") src = 'อ้างอิงยอดเบิกวัสดุ/ยางแอสฟัลท์จากระบบที่ 3 (งานพัสดุและเครื่องจักร)';
+    if(cat==="งบซ่อมบำรุง") src = 'รวมค่าจ้างลูกจ้างชั่วคราวจากบัญชีแรงงานรายวันของรอบนี้';
+    if(cat==="ค่าสาธารณูปโภค") src = 'รวมยอดบิลค่าไฟฟ้า/น้ำประปา/อินเตอร์เน็ต/โทรศัพท์ของรอบนี้';
+    if(cat==="งบดำเนินงาน") src = 'รวมค่าตอบแทนนอกเวลาราชการและค่าใช้จ่ายเบ็ดเตล็ด';
+    html += `<div class="budget-row">
+      <div class="budget-top"><span class="name">${cat}${remainPct<20?' <span class="pill pill-warn">เหลือน้อยกว่า 20%</span>':''}</span><span class="nums">${fmtMoney(spent)} / ${fmtMoney(alloc)} บาท</span></div>
+      <div class="budget-track"><div class="budget-fill ${cls}" style="width:${pct}%;"></div></div>
+      <div class="budget-note">คงเหลือ ${fmtMoney(alloc-spent)} บาท (${remainPct}%) — ${src}</div>
+    </div>`;
+  });
+  document.getElementById('budget-detail').innerHTML = html;
+}
+/* แก้ปัญหาเดิม: budget_allocations ไม่เคยมี UI ให้กรอกวงเงินจริงเลย (ค่าเป็น 0 ตลอด ทำให้
+   แถบ % งบใช้ไปไม่มีความหมาย) — เปิดฟอร์มกรอกวงเงินจัดสรรของปีงบประมาณที่กำลังดูอยู่ ทีละ 4 หมวด */
+function openBudgetEditModal(){
+  if(!isAdmin()) return;
+  const cyc = document.getElementById('budget-cycle').value || currentCycle();
+  const fy = cycleFiscalYearBE(cyc);
+  document.getElementById('budget-edit-fy').textContent = fy;
+  document.getElementById('budget-edit-body').innerHTML = budgetCategories.map(cat=>`
+    <div class="f-row" style="margin-bottom:12px;">
+      <label style="display:block;margin-bottom:4px;">${cat}</label>
+      <input type="number" min="0" step="0.01" class="edit-input" id="budget-edit-${cat}" value="${getBudgetAllocation(fy,cat)}">
+    </div>`).join('');
+  document.getElementById('budget-edit-overlay').classList.remove('hidden');
+}
+function closeBudgetEditModal(){
+  document.getElementById('budget-edit-overlay').classList.add('hidden');
+}
+async function saveBudgetEditModal(){
+  if(!isAdmin()) return;
+  const cyc = document.getElementById('budget-cycle').value || currentCycle();
+  const fy = cycleFiscalYearBE(cyc);
+  const saveBtn = document.getElementById('budget-edit-save-btn');
+  const cancelBtn = document.getElementById('budget-edit-cancel-btn');
+  const originalLabel = saveBtn ? saveBtn.textContent : '';
+  // ป้องกันการกดซ้ำระหว่างรอผลจากเซิร์ฟเวอร์ (สาเหตุของแถวซ้ำที่เคยเกิดขึ้น) — ปิดปุ่มและแสดงสถานะกำลังบันทึกให้เห็นชัดเจน
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    for(const cat of budgetCategories){
+      const amount = parseFloat(document.getElementById('budget-edit-'+cat).value)||0;
+      await setBudgetAllocation(fy, cat, amount);
+    }
+  }catch(err){
+    alert('บันทึกวงเงินงบประมาณไปยังฐานข้อมูลกลางไม่สำเร็จ (บางหมวดอาจบันทึกไปแล้ว): ' + err.message);
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+    if(cancelBtn) cancelBtn.disabled = false;
+    renderAll();
+    return;
+  }
+  if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+  if(cancelBtn) cancelBtn.disabled = false;
+  closeBudgetEditModal();
+  renderAll();
+}
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+let utilEditIndex = null;
+function toggleUtilForm(forceNew){
+  if(forceNew){
+    utilEditIndex = null;
+    document.getElementById('util-type').selectedIndex = 0;
+    document.getElementById('util-cycle').value='';
+    document.getElementById('util-amount').value='';
+    document.getElementById('util-due').value='';
+    document.getElementById('util-save-btn').textContent = 'บันทึก';
+    document.getElementById('util-modal-title').textContent = 'บันทึกบิลค่าสาธารณูปโภค';
+  }
+  document.getElementById('util-form-overlay').classList.toggle('hidden');
+}
+function editUtility(i){
+  if(!isAdmin()) return;
+  const b = utilityBills[i];
+  utilEditIndex = i;
+  document.getElementById('util-type').value = b.type;
+  document.getElementById('util-cycle').value = b.cycle;
+  document.getElementById('util-amount').value = b.amount;
+  document.getElementById('util-due').value = b.due;
+  document.getElementById('util-save-btn').textContent = 'บันทึกการแก้ไข';
+  document.getElementById('util-modal-title').textContent = 'แก้ไขบิลค่าสาธารณูปโภค';
+  document.getElementById('util-form-overlay').classList.remove('hidden');
+}
+async function deleteUtility(i){
+  if(!isAdmin()) return;
+  if(!confirm('ยืนยันการลบรายการนี้?')) return;
+  try{
+    await apiPost('delete', 'utility_bills', null, utilityBills[i].__backendId);
+  }catch(err){
+    alert('ลบบิลค่าสาธารณูปโภคในฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    return;
+  }
+  utilityBills.splice(i,1);
+  if(utilEditIndex===i){ utilEditIndex=null; document.getElementById('util-form-overlay').classList.add('hidden'); }
+  renderAll();
+}
+async function saveUtility(){
+  const type = document.getElementById('util-type').value;
+  const cycle = document.getElementById('util-cycle').value;
+  const amount = parseFloat(document.getElementById('util-amount').value)||0;
+  const due = document.getElementById('util-due').value;
+  if(!cycle||!amount||!due){ alert('กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
+  const saveBtn = document.getElementById('util-save-btn');
+  const cancelBtn = document.getElementById('util-cancel-btn');
+  const originalLabel = saveBtn ? saveBtn.textContent : '';
+  // ป้องกันการกดซ้ำระหว่างรอผลจากเซิร์ฟเวอร์ (สาเหตุของแถวซ้ำที่เคยเกิดขึ้น) — ปิดปุ่มและแสดงสถานะกำลังบันทึกให้เห็นชัดเจน
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    if(utilEditIndex!=null){
+      const merged = {...utilityBills[utilEditIndex], type, cycle, amount, due};
+      await apiPost('update', 'utility_bills', utilToApi(merged));
+      utilityBills[utilEditIndex] = merged;
+      utilEditIndex = null;
+    } else {
+      const saved = await apiPost('add', 'utility_bills', utilToApi({type, cycle, amount, due, status:'รอเบิกจ่าย'}));
+      utilityBills.unshift(utilFromApi(saved));
+    }
+  }catch(err){
+    alert('บันทึกบิลค่าสาธารณูปโภคไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+    if(cancelBtn) cancelBtn.disabled = false;
+    return;
+  }
+  if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = 'บันทึก'; }
+  if(cancelBtn) cancelBtn.disabled = false;
+  document.getElementById('util-amount').value='';
+  toggleUtilForm();
+  selectedUtilFY = cycleFiscalYearBE(cycle);
+  renderAll();
+}
+async function toggleUtilPaid(i){
+  if(!isAdmin())return;
+  const b = utilityBills[i];
+  const before = b.status;
+  b.status = b.status==='จ่ายแล้ว'?'รอเบิกจ่าย':'จ่ายแล้ว';
+  renderAll();
+  try{
+    await apiPost('update', 'utility_bills', utilToApi(b));
+  }catch(err){
+    b.status = before;
+    alert('บันทึกสถานะจ่ายเงินไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    renderAll();
+  }
+}
+function setUtilFilter(f){ utilFilter = f; renderUtility(); }
+function renderUtility(){
+  populateUtilFYSelect();
+  // จำกัดขอบเขตทั้งตารางและตัวนับตามปีงบประมาณที่เลือกไว้ (selectedUtilFY) ก่อน แล้วค่อยกรองซ้ำด้วยสถานะจ่าย/ไม่จ่าย
+  const billsInFY = utilityBills.map((b,i)=>({b,i})).filter(({b})=>cycleFiscalYearBE(b.cycle)===selectedUtilFY);
+  const unpaidCount = billsInFY.filter(({b})=>b.status!=='จ่ายแล้ว').length;
+  const paidCount = billsInFY.filter(({b})=>b.status==='จ่ายแล้ว').length;
+  const tabsDef = [
+    {key:'unpaid', label:'ยังไม่ชำระ', count:unpaidCount},
+    {key:'paid', label:'ชำระแล้ว', count:paidCount},
+    {key:'all', label:'ทั้งหมด', count:billsInFY.length},
+  ];
+  document.getElementById('util-filter-tabs').innerHTML = tabsDef.map(t=>
+    `<div class="tab${utilFilter===t.key?' active':''}" onclick="setUtilFilter('${t.key}')">${t.label} (${t.count})</div>`
+  ).join('');
+  let rows = billsInFY.filter(({b})=>utilFilter==='all' ? true : utilFilter==='paid' ? b.status==='จ่ายแล้ว' : b.status!=='จ่ายแล้ว').sort((a,b)=>a.b.cycle<b.b.cycle?-1:a.b.cycle>b.b.cycle?1:0).map(({b,i})=>{
+    const dleft = daysUntil(b.due);
+    let dueBadge = '';
+    if(b.status==='รอเบิกจ่าย'){
+      if(dleft<0) dueBadge = `<span class="pill pill-danger">เลยกำหนด ${Math.abs(dleft)} วัน</span>`;
+      else if(dleft<=5) dueBadge = `<span class="pill pill-warn">อีก ${dleft} วันครบกำหนด</span>`;
+    }
+    return `<tr>
+      <td>${b.type}</td>
+      <td>${cycleLabel(b.cycle)}</td>
+      <td>${fmtMoney(b.amount)}</td>
+      <td>${fmtDateTH(b.due)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${isAdmin()?`<span class="pill ${b.status==='จ่ายแล้ว'?'pill-ok':'pill-neutral'}" style="cursor:pointer;" onclick="toggleUtilPaid(${i})">${b.status==='จ่ายแล้ว'?'จ่ายแล้ว':'รอเบิกจ่าย'}</span>`:(b.status==='จ่ายแล้ว'?'<span class="pill pill-ok">จ่ายแล้ว</span>':'<span class="pill pill-neutral">รอเบิกจ่าย</span>')} ${dueBadge} ${isAdmin()?`<button class="btn btn-ghost btn-sm no-print" onclick="editUtility(${i})">✏️ แก้ไข</button> <button class="btn btn-danger btn-sm no-print" onclick="deleteUtility(${i})">🗑️ ลบ</button>`:''}</div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('util-table').innerHTML = `<thead><tr><th>ประเภทค่าใช้จ่าย</th><th>รอบบิล</th><th>จำนวนเงิน</th><th>วันครบกำหนดชำระ</th><th>สถานะ</th></tr></thead><tbody>${rows || `<tr><td colspan="5" style="text-align:center;color:var(--ink-400);padding:20px;">${billsInFY.length?'ไม่มีข้อมูลตามเงื่อนไขที่เลือกในปีงบนี้':`ยังไม่มีข้อมูลในปีงบประมาณ ${selectedUtilFY}`}</td></tr>`}</tbody>`;
+}
+
+/* ============================================================
+   สรุปรายจ่ายประจำเดือน + การรายงานไปแขวง
+   ============================================================ */
+const UTIL_TYPES = ['ค่าไฟฟ้า','ค่าน้ำประปา','ค่าอินเตอร์เน็ต','ค่าโทรศัพท์'];
+// ปีงบประมาณไทย (พ.ศ.) ของรอบบิล "YYYY-MM": ต.ค.-ธ.ค. ของปี ค.ศ. Y นับเป็นปีงบ (Y+1+543), ม.ค.-ก.ย. ของปี ค.ศ. Y นับเป็นปีงบ (Y+543)
+function cycleFiscalYearBE(cycle){
+  const [y,m] = cycle.split('-').map(Number);
+  const adFY = m>=10 ? y+1 : y;
+  return adFY + 543;
+}
+function utilityCyclesList(fyBE){
+  // แสดงครบทั้ง 12 เดือนของปีงบประมาณที่เลือกเสมอ แม้เดือนนั้นจะยังไม่มีข้อมูล (ต.ค. ปี ค.ศ. fyBE-544 ถึง ก.ย. ปี ค.ศ. fyBE-543)
+  const adFY = fyBE - 543;
+  const list = [];
+  let y = adFY - 1, m = 10;
+  for(let i=0;i<12;i++){
+    list.push(`${y}-${String(m).padStart(2,'0')}`);
+    m++; if(m===13){ m=1; y++; }
+  }
+  return list;
+}
+function currentFiscalYearBE(){ return cycleFiscalYearBE(currentCycle()); }
+const UTIL_FY_MIN = 2569; // ระบบเริ่มมีข้อมูลจริงตั้งแต่ปีงบประมาณ 2569 เป็นต้นไป (เดือน ก.ย.2568 ในข้อมูลมิเตอร์น้ำเป็นแถวอ้างอิงคำนวณเท่านั้น ไม่นับเป็นปีงบ)
+function availableUtilFiscalYears(){
+  const set = new Set([currentFiscalYearBE()]);
+  utilityBills.forEach(b=>set.add(cycleFiscalYearBE(b.cycle)));
+  waterMeterLog.forEach(w=>set.add(cycleFiscalYearBE(w.cycle)));
+  return Array.from(set).filter(fy=>fy>=UTIL_FY_MIN).sort((a,b)=>b-a);
+}
+// ปีงบประมาณที่เลือกไว้ ณ ตอนนี้ — ใช้ร่วมกันทั้ง 3 ส่วนของแท็บ "ทะเบียนคุมสาธารณูปโภค"
+// (รายการสาธารณูปโภค / สรุปค่าสาธารณูปโภค / คำนวนค่าน้ำประปา) เปลี่ยนที่เดียว มีผลทั้งแท็บ
+let selectedUtilFY = null; // ตั้งค่าเป็นปีงบประมาณปัจจุบันตอนเรนเดอร์ครั้งแรก
+function onUtilFyChange(val){
+  selectedUtilFY = Number(val);
+  renderUtility();
+  renderUtilReport();
+  renderWaterTable();
+}
+function populateUtilFYSelect(){
+  if(selectedUtilFY===null) selectedUtilFY = currentFiscalYearBE();
+  const fySelectEl = document.getElementById('util-fy-select');
+  const fyOptions = availableUtilFiscalYears();
+  // ถ้าปีที่เคยเลือกไว้ไม่มีอยู่ในรายการแล้ว (เช่นข้อมูลถูกลบ) ให้กลับไปปีงบปัจจุบัน
+  if(!fyOptions.includes(selectedUtilFY)) selectedUtilFY = currentFiscalYearBE();
+  fySelectEl.innerHTML = fyOptions.map(fy=>`<option value="${fy}"${fy===selectedUtilFY?' selected':''}>ปีงบประมาณ ${fy}</option>`).join('');
+}
+function utilityTypesTotal(cycle){
+  const byType = {};
+  UTIL_TYPES.forEach(t=>{ byType[t] = utilityBills.filter(b=>b.cycle===cycle && b.type===t).reduce((s,b)=>s+b.amount,0); });
+  // ค่าน้ำประปาในตารางสรุปนี้ใช้ "ยอด สนง." (ส่วนของสำนักงานหลังหักมิเตอร์ย่อยแล้ว) จากหัวข้อรายละเอียดคำนวณค่าน้ำประปาแทนยอดบิลเต็ม
+  const waterRow = computeWaterRows().find(r=>r.cycle===cycle);
+  byType['ค่าน้ำประปา'] = (waterRow && waterRow.officeCost!=null) ? waterRow.officeCost : 0;
+  return byType;
+}
+function utilityPaidCount(cycle){
+  return UTIL_TYPES.filter(t=>utilityBills.some(b=>b.cycle===cycle && b.type===t && b.status==='จ่ายแล้ว')).length;
+}
+function districtReportOf(cycle){ return districtReports.find(d=>d.cycle===cycle); }
+function toggleDistrictReport(cycle){
+  if(!isAdmin()) return;
+  let rec = districtReportOf(cycle);
+  if(!rec){ rec = {cycle, reported:false, reportedDate:null}; districtReports.push(rec); }
+  rec.reported = !rec.reported;
+  rec.reportedDate = rec.reported ? new Date().toISOString().slice(0,10) : null;
+  renderAll();
+}
+function renderUtilReport(){
+  const cur = currentCycle();
+  const curPaid = utilityPaidCount(cur);
+  const curReported = !!districtReportOf(cur)?.reported;
+  const dayOfMonth = TODAY.getDate();
+  let bannerHtml = '';
+  if(!(curPaid===4 && curReported)){
+    if(dayOfMonth >= 24){
+      bannerHtml = `<div class="banner banner-danger">⚠️ <div><b>เลยกำหนดวันที่ 24 แล้ว</b> — เดือนนี้จ่ายบิลแล้ว ${curPaid}/4 รายการ และ${curReported?'รายงานแขวงแล้ว':'ยังไม่ได้รายงานแขวง'} กรุณาดำเนินการโดยด่วน</div></div>`;
+    } else if(dayOfMonth >= 18){
+      bannerHtml = `<div class="banner banner-warn">⏰ <div><b>ใกล้ถึงกำหนดวันที่ 24</b> — เดือนนี้จ่ายบิลแล้ว ${curPaid}/4 รายการ และ${curReported?'รายงานแขวงแล้ว':'ยังไม่ได้รายงานแขวง'} โปรดจ่ายให้ครบและรายงานแขวงให้ทัน</div></div>`;
+    }
+  }
+  document.getElementById('util-report-banner').innerHTML = bannerHtml;
+
+  populateUtilFYSelect();
+  const cycles = utilityCyclesList(selectedUtilFY);
+  const records = cycles.map(cy=>{
+    const bt = utilityTypesTotal(cy);
+    const total = UTIL_TYPES.reduce((s,t)=>s+bt[t],0);
+    const paidCount = utilityPaidCount(cy);
+    const rec = districtReportOf(cy);
+    const reported = !!rec?.reported;
+    return {cy, bt, total, paidCount, rec, reported};
+  });
+  const latestCycle = currentCycle();
+  const rows = records.map(r=>`<tr${r.cy===latestCycle?' class="row-latest"':''}>
+      <td>${cycleLabel(r.cy)}</td>
+      <td>${fmtMoney(r.bt['ค่าไฟฟ้า'])}</td>
+      <td>${fmtMoney(r.bt['ค่าน้ำประปา'])}</td>
+      <td>${fmtMoney(r.bt['ค่าอินเตอร์เน็ต'])}</td>
+      <td>${fmtMoney(r.bt['ค่าโทรศัพท์'])}</td>
+      <td><b>${fmtMoney(r.total)}</b></td>
+      <td>${r.paidCount===4?'<span class="pill pill-ok">ครบ 4 บิล</span>':`<span class="pill pill-warn">${r.paidCount}/4</span>`}</td>
+      <td>${isAdmin()?`<span class="pill ${r.reported?'pill-ok':'pill-neutral'}" style="cursor:pointer;" onclick="toggleDistrictReport('${r.cy}')">${r.reported?'รายงานแล้ว':'ยังไม่รายงาน'}</span>`:(r.reported?'<span class="pill pill-ok">รายงานแล้ว</span>':'<span class="pill pill-neutral">ยังไม่รายงาน</span>')}</td>
+    </tr>`).join('');
+  const totalElec = records.reduce((s,r)=>s+r.bt['ค่าไฟฟ้า'],0);
+  const totalWater = records.reduce((s,r)=>s+r.bt['ค่าน้ำประปา'],0);
+  const totalInternet = records.reduce((s,r)=>s+r.bt['ค่าอินเตอร์เน็ต'],0);
+  const totalPhone = records.reduce((s,r)=>s+r.bt['ค่าโทรศัพท์'],0);
+  const totalAll = records.reduce((s,r)=>s+r.total,0);
+  const totalRow = records.length ? `<tr style="font-weight:600;background:#fafafa;">
+      <td>รวม</td>
+      <td>${fmtMoney(totalElec)}</td>
+      <td>${fmtMoney(totalWater)}</td>
+      <td>${fmtMoney(totalInternet)}</td>
+      <td>${fmtMoney(totalPhone)}</td>
+      <td><b>${fmtMoney(totalAll)}</b></td>
+      <td></td><td></td>
+    </tr>` : '';
+  document.getElementById('util-report-table').innerHTML = `<thead><tr><th>เดือน</th><th>ค่าไฟฟ้า</th><th>ค่าน้ำประปา</th><th>ค่าอินเตอร์เน็ต</th><th>ค่าโทรศัพท์</th><th>รวม</th><th>จ่ายบิล</th><th>รายงานแขวง</th></tr></thead><tbody>${rows}${totalRow}</tbody>`;
+}
+
+/* ============================================================
+   ค่าน้ำประปา — มิเตอร์หลัก + มิเตอร์ย่อย 2 จุด
+   ============================================================ */
+function addMonthsToCycle(cycle, n){
+  let [y,m] = cycle.split('-').map(Number);
+  m += n;
+  while(m>12){ m-=12; y++; }
+  while(m<1){ m+=12; y--; }
+  return `${y}-${String(m).padStart(2,'0')}`;
+}
+function toggleWaterForm(forceNew){
+  if(forceNew){
+    ['water-cycle','water-main','water-amount','water-suba','water-suba-override','water-subb','water-subb-override','water-note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('water-cycle').disabled = false;
+    document.getElementById('water-save-btn').textContent = 'บันทึก';
+    document.getElementById('water-modal-title').textContent = 'บันทึกข้อมูลมิเตอร์น้ำประจำเดือน';
+    // ตั้งค่ารอบบิลเริ่มต้นเป็นเดือนปัจจุบันตามปฏิทิน (หรือรอบถัดจากรายการล่าสุดที่มีอยู่ ถ้ามากกว่า) เพื่อให้ผู้ใช้ไม่ต้องเลือกเองทุกครั้ง — แก้ไขเป็นเดือนอื่นได้ตามต้องการ
+    const sorted = [...waterMeterLog].sort((a,b)=>a.cycle.localeCompare(b.cycle));
+    const latest = sorted.length ? sorted[sorted.length-1].cycle : null;
+    const suggested = (latest && latest >= currentCycle()) ? addMonthsToCycle(latest,1) : currentCycle();
+    document.getElementById('water-cycle').value = suggested;
+  }
+  document.getElementById('water-form-overlay').classList.toggle('hidden');
+}
+/* ============================================================
+   ข้อมูลย้อนหลังปีงบประมาณ 2569 (ต.ค.2568 - ก.ย.2569) ตามไฟล์อ้างอิงที่ผู้ใช้แนบมา
+   ใช้ปุ่ม "นำเข้าข้อมูลย้อนหลัง" เพื่อโหลดเข้าระบบ (จะไม่โหลดอัตโนมัติ เพื่อไม่ให้ทับข้อมูลที่กรอกไว้แล้วโดยไม่ตั้งใจ)
+   ============================================================ */
+// ปรับข้อมูลชุดนี้แล้ว (ปรับครั้งเดียวตอนย้ายไปใช้การคำนวณแบบ backward-diff): subA/subB ของแต่ละแถวตอนนี้คือเลขมิเตอร์ที่อ่าน/ถ่ายรูปจริง "ในเดือนของแถวนั้นเอง"
+// (เดิมเก็บเป็นเลขเริ่มของเดือนถัดไป) ตัวเลขจึงเลื่อนขึ้นมา 1 แถวจากชุดข้อมูลเดิม ส่วน mainReading/billAmount/วันที่ชำระ/หมายเหตุ อยู่รอบเดิมไม่เปลี่ยน
+function editWater(cycle){
+  if(!isAdmin()) return;
+  const r = waterMeterLog.find(w=>w.cycle===cycle);
+  if(!r) return;
+  document.getElementById('water-cycle').value = r.cycle;
+  document.getElementById('water-cycle').disabled = true; // แก้ไขได้เฉพาะตัวเลข ไม่เปลี่ยนรอบบิล (ป้องกันการสร้างรายการซ้ำ)
+  document.getElementById('water-main').value = r.mainReading!=null ? r.mainReading : '';
+  document.getElementById('water-amount').value = r.billAmount!=null ? r.billAmount : '';
+  document.getElementById('water-suba').value = r.subA;
+  document.getElementById('water-suba-paid').value = r.subAPaid||'';
+  document.getElementById('water-suba-override').value = r.subAUsageOverride!=null ? r.subAUsageOverride : '';
+  document.getElementById('water-subb').value = r.subB;
+  document.getElementById('water-subb-paid').value = r.subBPaid||'';
+  document.getElementById('water-subb-override').value = r.subBUsageOverride!=null ? r.subBUsageOverride : '';
+  document.getElementById('water-note').value = r.note||'';
+  document.getElementById('water-save-btn').textContent = 'บันทึกการแก้ไข';
+  document.getElementById('water-modal-title').textContent = 'แก้ไขข้อมูลมิเตอร์น้ำ';
+  document.getElementById('water-form-overlay').classList.remove('hidden');
+}
+async function deleteWater(cycle){
+  if(!isAdmin()) return;
+  if(!confirm('ยืนยันการลบรายการเลขมิเตอร์รอบบิลนี้? (จะไม่ลบรายการบิลในทะเบียนคุมค่าสาธารณูปโภคด้านบน)')) return;
+  const idx = waterMeterLog.findIndex(w=>w.cycle===cycle);
+  if(idx<0) return;
+  try{
+    await apiPost('delete', 'water_meter_log', null, waterMeterLog[idx].__backendId);
+  }catch(err){
+    alert('ลบข้อมูลมิเตอร์น้ำในฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    return;
+  }
+  waterMeterLog.splice(idx,1);
+  renderAll();
+}
+async function saveWaterMeter(){
+  const cycle = document.getElementById('water-cycle').value;
+  const mainReadingRaw = parseFloat(document.getElementById('water-main').value);
+  const billAmountRaw = parseFloat(document.getElementById('water-amount').value);
+  const subARaw = parseFloat(document.getElementById('water-suba').value);
+  const subAPaid = document.getElementById('water-suba-paid').value || null;
+  const subAOverrideRaw = parseFloat(document.getElementById('water-suba-override').value);
+  const subBRaw = parseFloat(document.getElementById('water-subb').value);
+  const subBPaid = document.getElementById('water-subb-paid').value || null;
+  const subBOverrideRaw = parseFloat(document.getElementById('water-subb-override').value);
+  const note = document.getElementById('water-note').value.trim();
+  if(!cycle){ alert('กรุณาเลือกรอบบิลประจำเดือน'); return; }
+  const mainReading = isNaN(mainReadingRaw) ? null : mainReadingRaw;
+  const billAmount = isNaN(billAmountRaw) ? null : billAmountRaw;
+  const subA = isNaN(subARaw) ? null : subARaw;
+  const subB = isNaN(subBRaw) ? null : subBRaw;
+  const subAUsageOverride = isNaN(subAOverrideRaw) ? null : subAOverrideRaw;
+  const subBUsageOverride = isNaN(subBOverrideRaw) ? null : subBOverrideRaw;
+  const existingIdx = waterMeterLog.findIndex(w=>w.cycle===cycle);
+  const rec = {__backendId: existingIdx>=0 ? waterMeterLog[existingIdx].__backendId : undefined,
+    cycle, mainReading, billAmount, subA, subAPaid, subAUsageOverride, subB, subBPaid, subBUsageOverride, note};
+
+  const saveBtn = document.getElementById('water-save-btn');
+  const cancelBtn = document.getElementById('water-cancel-btn');
+  const originalLabel = saveBtn ? saveBtn.textContent : '';
+  // ป้องกันการกดซ้ำระหว่างรอผลจากเซิร์ฟเวอร์ (สาเหตุของแถวซ้ำที่เคยเกิดขึ้น) — ปิดปุ่มและแสดงสถานะกำลังบันทึกให้เห็นชัดเจน
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    if(existingIdx>=0){
+      await apiPost('update', 'water_meter_log', waterToApi(rec));
+      waterMeterLog[existingIdx] = rec;
+    } else {
+      const saved = await apiPost('add', 'water_meter_log', waterToApi(rec));
+      waterMeterLog.push(waterFromApi(saved));
+    }
+
+    // บันทึกยอดบิลลงทะเบียนบิลรวม (ค่าน้ำประปา) ให้อัตโนมัติ ป้องกันการกรอกซ้ำ — เฉพาะเมื่อมียอดบิลแล้วเท่านั้น
+    if(billAmount!=null){
+      const due = cycle + '-24';
+      const uidx = utilityBills.findIndex(b=>b.type==='ค่าน้ำประปา' && b.cycle===cycle);
+      if(uidx>=0){
+        utilityBills[uidx].amount = billAmount;
+        await apiPost('update', 'utility_bills', utilToApi(utilityBills[uidx]));
+      } else {
+        const savedBill = await apiPost('add', 'utility_bills', utilToApi({type:'ค่าน้ำประปา', cycle, amount:billAmount, due, status:'รอเบิกจ่าย'}));
+        utilityBills.unshift(utilFromApi(savedBill));
+      }
+    }
+  }catch(err){
+    alert('บันทึกข้อมูลมิเตอร์น้ำไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+    if(cancelBtn) cancelBtn.disabled = false;
+    renderAll();
+    return;
+  }
+
+  if(saveBtn) saveBtn.disabled = false;
+  if(cancelBtn) cancelBtn.disabled = false;
+  document.getElementById('water-cycle').disabled = false;
+  document.getElementById('water-save-btn').textContent = 'บันทึก';
+  ['water-main','water-amount','water-suba','water-suba-paid','water-suba-override','water-subb','water-subb-paid','water-subb-override','water-note'].forEach(id=>document.getElementById(id).value='');
+  toggleWaterForm();
+  selectedUtilFY = cycleFiscalYearBE(cycle);
+  renderAll();
+}
+function computeWaterRows(){
+  // หน่วยน้ำที่ใช้ในรอบบิล ทั้งมิเตอร์หลักและมิเตอร์ย่อยทั้ง 2 จุด = เทียบกับเดือนก่อนหน้า (backward diff) เหมือนกันทั้งหมด
+  // เลขมิเตอร์ที่กรอกในแถวของเดือนใด คือค่าที่อ่าน/ถ่ายรูปจริงในเดือนนั้น (ไม่ใช่เดือนถัดไป) จึงคำนวณหน่วยใช้ + ค่าใช้จ่ายได้ทันทีที่กรอกครบในแถวเดียวกัน
+  // ราคาต่อหน่วยของมิเตอร์ย่อยใช้ราคา/หน่วยของรอบบิลเดียวกัน ตามวิธีคำนวณในตารางอ้างอิงของหน่วยงาน (คำนวนประปา.xlsx)
+  const rows = [...waterMeterLog].sort((a,b)=>a.cycle.localeCompare(b.cycle));
+  return rows.map((r,i)=>{
+    const prev = i>0 ? rows[i-1] : null;
+    const mainUsage = (prev && r.mainReading!=null && prev.mainReading!=null) ? Math.round((r.mainReading - prev.mainReading)*1000)/1000 : null;
+    const unitPrice = (mainUsage!=null && mainUsage>0 && r.billAmount!=null) ? r.billAmount/mainUsage : null;
+    const rawSubA = (prev && prev.subA!=null && r.subA!=null) ? Math.floor(r.subA - prev.subA) : null;
+    const rawSubB = (prev && prev.subB!=null && r.subB!=null) ? Math.floor(r.subB - prev.subB) : null;
+    // เดือนที่เปลี่ยนมิเตอร์ เลขมิเตอร์ของเดือนนี้จะไม่ต่อเนื่องกับเดือนก่อน (ค่า diff ติดลบ)
+    // ให้ผู้ดูแลกรอกหน่วยใช้น้ำจริงของเดือนนั้นเองผ่าน subAUsageOverride/subBUsageOverride แทนการคำนวณอัตโนมัติ
+    const subAAnomaly = (rawSubA!=null && rawSubA<0 && r.subAUsageOverride==null);
+    const subBAnomaly = (rawSubB!=null && rawSubB<0 && r.subBUsageOverride==null);
+    const subADuplicate = (prev && prev.subA!=null && r.subA!=null && prev.subA===r.subA);
+    const subBDuplicate = (prev && prev.subB!=null && r.subB!=null && prev.subB===r.subB);
+    const anomaly = (mainUsage!=null && mainUsage<0) || subAAnomaly || subBAnomaly || subADuplicate || subBDuplicate;
+    const subAOverridden = r.subAUsageOverride!=null;
+    const subBOverridden = r.subBUsageOverride!=null;
+    const subAUsage = subAOverridden ? r.subAUsageOverride : ((rawSubA!=null && rawSubA>=0) ? rawSubA : null);
+    const subBUsage = subBOverridden ? r.subBUsageOverride : ((rawSubB!=null && rawSubB>=0) ? rawSubB : null);
+    const subACost = (subAUsage!=null && unitPrice!=null) ? subAUsage*unitPrice : null;
+    const subBCost = (subBUsage!=null && unitPrice!=null) ? subBUsage*unitPrice : null;
+    const officeCost = (subACost!=null && subBCost!=null && r.billAmount!=null) ? r.billAmount - subACost - subBCost : null;
+    return {...r, mainUsage, unitPrice, subAUsage, subBUsage, subACost, subBCost, officeCost, anomaly, subAOverridden, subBOverridden, subADuplicate, subBDuplicate};
+  });
+}
+// isWaterRowPaid / แท็บกรอง ที่นี่ติดตามการ "เก็บเงินคืนจากผู้ใช้น้ำย่อย" (T23787/W23791)
+// ซึ่งเป็นคนละเรื่องกับสถานะ "จ่ายแล้ว/รอเบิกจ่าย" ของบิลค่าน้ำในทะเบียนคุมค่าสาธารณูปโภค (หมวดจ่ายบิลให้การประปา)
+// ตั้งใจใช้คำว่า "เก็บเงินคืน" แยกจาก "ชำระ" เพื่อไม่ให้สับสนกับสถานะจ่ายบิลของหมวด
+function isWaterRowPaid(r){ return !!(r.subAPaid && r.subBPaid); }
+function setWaterFilter(f){ waterFilter = f; renderWaterTable(); }
+function renderWaterTable(){
+  const allRowsFull = computeWaterRows();
+  populateUtilFYSelect();
+  const allRows = allRowsFull.filter(r=>cycleFiscalYearBE(r.cycle)===selectedUtilFY);
+  const unpaidCount = allRows.filter(r=>!isWaterRowPaid(r)).length;
+  const paidCount = allRows.filter(r=>isWaterRowPaid(r)).length;
+  const tabsDef = [
+    {key:'unpaid', label:'ยังไม่เก็บเงินคืน', count:unpaidCount},
+    {key:'paid', label:'เก็บเงินคืนแล้ว', count:paidCount},
+    {key:'all', label:'ทั้งหมด', count:allRows.length},
+  ];
+  document.getElementById('water-filter-tabs').innerHTML = tabsDef.map(t=>
+    `<div class="tab${waterFilter===t.key?' active':''}" onclick="setWaterFilter('${t.key}')">${t.label} (${t.count})</div>`
+  ).join('');
+  const rows = allRows.filter(r=>waterFilter==='all' ? true : waterFilter==='paid' ? isWaterRowPaid(r) : !isWaterRowPaid(r));
+  const trs = rows.map(r=>`<tr>
+      <td>${cycleLabel(r.cycle)}</td>
+      <td>${r.mainReading!=null?r.mainReading:'<span class="pill pill-neutral">รอบิล</span>'}</td>
+      <td>${r.mainUsage!=null?r.mainUsage.toLocaleString('th-TH'):'<span class="pill pill-neutral">รอข้อมูล</span>'}</td>
+      <td>${r.unitPrice!=null?r.unitPrice.toFixed(2):'—'}</td>
+      <td>${r.billAmount!=null?fmtMoney(r.billAmount):'—'}</td>
+      <td>${r.officeCost!=null?fmtMoney(r.officeCost):'—'}</td>
+      <td class="wtr-a">${r.subA!=null?r.subA:'—'}</td>
+      <td class="wtr-a">${r.subAUsage!=null?r.subAUsage.toLocaleString('th-TH')+(r.subAOverridden?' <span class="pill pill-neutral" title="กรอกหน่วยใช้น้ำเอง (ค่าจากบิลจริง/ตัวเลขที่ยืนยันแล้ว)">ปรับเอง</span>':''):'<span class="pill pill-neutral">รอข้อมูล</span>'}</td>
+      <td class="wtr-a">${r.subACost!=null?fmtMoney(r.subACost):'—'}</td>
+      <td class="wtr-a">${r.subAPaid?fmtDateShortTH(r.subAPaid):'—'}</td>
+      <td class="wtr-b">${r.subB!=null?r.subB:'—'}</td>
+      <td class="wtr-b">${r.subBUsage!=null?r.subBUsage.toLocaleString('th-TH')+(r.subBOverridden?' <span class="pill pill-neutral" title="กรอกหน่วยใช้น้ำเอง (ค่าจากบิลจริง/ตัวเลขที่ยืนยันแล้ว)">ปรับเอง</span>':''):'<span class="pill pill-neutral">รอข้อมูล</span>'}</td>
+      <td class="wtr-b">${r.subBCost!=null?fmtMoney(r.subBCost):'—'}</td>
+      <td class="wtr-b">${r.subBPaid?fmtDateShortTH(r.subBPaid):'—'}</td>
+      <td>${r.note||''}${(r.subADuplicate||r.subBDuplicate)?' <span class="pill pill-danger" title="เลขมิเตอร์เท่ากับเดือนก่อนเป๊ะ น่าจะยังไม่ได้อัปเดตค่าที่อ่านจริงของเดือนนี้">⚠️ เลขซ้ำเดือนก่อน</span>':(r.anomaly?' <span class="pill pill-danger">ตรวจสอบเลขมิเตอร์</span>':'')}</td>
+      <td class="no-print">${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="editWater('${r.cycle}')">✏️ แก้ไข</button> <button class="btn btn-danger btn-sm" onclick="deleteWater('${r.cycle}')">🗑️ ลบ</button>`:''}</td>
+    </tr>`).join('');
+  const totalMainUsage = rows.reduce((s,r)=>s+(r.mainUsage||0),0);
+  const totalSubAUsage = rows.reduce((s,r)=>s+(r.subAUsage||0),0);
+  const totalSubACost = rows.reduce((s,r)=>s+(r.subACost||0),0);
+  const totalSubBUsage = rows.reduce((s,r)=>s+(r.subBUsage||0),0);
+  const totalSubBCost = rows.reduce((s,r)=>s+(r.subBCost||0),0);
+  const totalBill = rows.reduce((s,r)=>s+(r.billAmount||0),0);
+  const totalOffice = rows.reduce((s,r)=>s+(r.officeCost||0),0);
+  const totalRow = rows.length ? `<tr style="font-weight:600;background:#fafafa;">
+      <td>รวม</td><td></td>
+      <td>${totalMainUsage.toLocaleString('th-TH')}</td>
+      <td></td>
+      <td>${fmtMoney(totalBill)}</td>
+      <td>${fmtMoney(totalOffice)}</td>
+      <td class="wtr-a"></td>
+      <td class="wtr-a">${totalSubAUsage.toLocaleString('th-TH')}</td>
+      <td class="wtr-a">${fmtMoney(totalSubACost)}</td>
+      <td class="wtr-a"></td>
+      <td class="wtr-b"></td>
+      <td class="wtr-b">${totalSubBUsage.toLocaleString('th-TH')}</td>
+      <td class="wtr-b">${fmtMoney(totalSubBCost)}</td>
+      <td class="wtr-b"></td>
+      <td></td><td class="no-print"></td>
+    </tr>` : '';
+  document.getElementById('water-table').innerHTML = `<thead><tr><th>เดือน</th><th>มิเตอร์ สนง.</th><th>หน่วยใช้น้ำ</th><th>ราคาต่อหน่วย</th><th>ยอดชำระตามบิล</th><th>ยอด สนง.</th><th class="wtr-a">มิเตอร์ T23787</th><th class="wtr-a">T23787 (หน่วย)</th><th class="wtr-a">T23787 (เงิน)</th><th class="wtr-a">T23787 (วันที่ชำระ)</th><th class="wtr-b">มิเตอร์ W23791</th><th class="wtr-b">W23791 (หน่วย)</th><th class="wtr-b">W23791 (เงิน)</th><th class="wtr-b">W23791 (วันที่ชำระ)</th><th>หมายเหตุ</th><th class="no-print">การดำเนินการ</th></tr></thead><tbody>${trs || `<tr><td colspan="16" style="text-align:center;color:var(--ink-400);padding:20px;">${allRows.length?'ไม่มีข้อมูลตามเงื่อนไขที่เลือก':'ยังไม่มีข้อมูล'}</td></tr>`}${totalRow}</tbody>`;
+}
+
+/* ============================================================
+   PRINT HELPER
+   ============================================================ */
+function doPrint(html){
+  document.querySelectorAll('.print-only').forEach(p=>p.classList.remove('show-print'));
+  const area = document.getElementById('print-area');
+  area.innerHTML = html;
+  area.classList.add('show-print');
+  setTimeout(()=>{ window.print(); }, 50);
+}
+
+/* ============================================================
+   RENDER ALL / INIT
+   ============================================================ */
+function renderAll(){
+  renderLaborSummary();
+  renderLabor();
+  renderOT();
+  renderBudget();
+  renderUtility();
+  renderUtilReport();
+  renderWaterTable();
+}
+populateLogin();
+populateLaborFY();
+populateLaborCycles();
+populateBudgetCycles();
+
+/* ============================================================
+   บันทึกข้อมูลอัตโนมัติ (localStorage) — สำหรับช่วงทดลองใช้งาน
+   หมายเหตุ: ข้อมูลนี้อยู่เฉพาะเบราว์เซอร์/เครื่องนี้เท่านั้น
+   ============================================================ */
+const __STORAGE_KEY = 'saraban_subsystem4_v2';
+
+/* otRequests/utilityBills/waterMeterLog/budgetAllocations ย้ายไปอยู่บนฐานข้อมูลกลาง
+   (Google Sheets) แล้ว ไม่เก็บซ้ำใน localStorage อีกต่อไป — ยกเว้น budgetSpentSnapshot และ
+   budgetAllocation (ชื่อคีย์เดิมเจตนาคงไว้) ที่ยังคงเขียนไว้เป็นค่า snapshot อ่านอย่างเดียว
+   เพราะ choengnoen0-main.html (หน้าบริหารหมวด) ยังอ่านค่าสองตัวนี้จาก localStorage คีย์นี้อยู่
+   (บริหารหมวดไม่ได้อยู่ในขอบเขตงานเชื่อมต่อ backend รอบนี้ — เชื่อม 3 ระบบรองเท่านั้น) districtReports/
+   laborSentStatus เป็น local-only จริงๆ (ไม่มีตารางฝั่ง backend รองรับแนวคิดนี้) */
+function __collectState(){
+  const cyc = currentCycle();
+  const fy = cycleFiscalYearBE(cyc);
+  const budgetSpentSnapshot = {};
+  const budgetAllocation = {};
+  budgetCategories.forEach(cat=>{
+    budgetSpentSnapshot[cat] = budgetSpentOf(cat, cyc);
+    budgetAllocation[cat] = getBudgetAllocation(fy, cat);
+  });
+  return { districtReports, budgetSpentSnapshot, budgetAllocation, laborSentStatus };
+}
+function __applyState(saved){
+  if(saved.districtReports){ districtReports.length=0; districtReports.push(...saved.districtReports); }
+  if(saved.laborSentStatus){ Object.keys(laborSentStatus).forEach(k=>delete laborSentStatus[k]); Object.assign(laborSentStatus, saved.laborSentStatus); }
+}
+function __loadPersistedState(){
+  try{
+    const raw = localStorage.getItem(__STORAGE_KEY);
+    if(raw) __applyState(JSON.parse(raw));
+  }catch(e){ console.error('โหลดข้อมูลที่บันทึกไว้ล้มเหลว', e); }
+}
+let __lastSavedJSON = '';
+/* ค่าสถานะนี้ใช้ร่วมกันทุกเครื่องผ่าน Firestore (app_state/s4) — ระบบหลักอ่านงบประมาณคงเหลือ/สถานะรายงานแขวงจากที่นี่
+   ห้ามเขียนขึ้นฐานข้อมูลก่อนโหลดค่าเดิมมาครบ (__stateLoadedFromServer) ไม่งั้นจะเขียนค่าว่างทับข้อมูลของคนอื่น
+   ผู้ที่ดูอย่างเดียว FBL.stateSet จะไม่เขียนอะไรเลย */
+let __stateLoadedFromServer = false;
+function __saveState(){
+  try{
+    const obj = __collectState();
+    const json = JSON.stringify(obj);
+    if(json !== __lastSavedJSON){
+      localStorage.setItem(__STORAGE_KEY, json);
+      __lastSavedJSON = json;
+      if(__stateLoadedFromServer && window.FBL && FBL.stateSet) FBL.stateSet('s4', obj);
+    }
+  }catch(e){ console.error('บันทึกข้อมูลล้มเหลว', e); }
+}
+setInterval(__saveState, 3000);
+window.addEventListener('beforeunload', __saveState);
+window.addEventListener('storage', function(e){
+  if(e.key === __STORAGE_KEY && e.newValue){
+    try{
+      __applyState(JSON.parse(e.newValue));
+      __lastSavedJSON = e.newValue;
+      renderAll();
+    }catch(err){ console.error('ซิงก์ข้อมูลจากระบบหลักล้มเหลว', err); }
+  }
+});
+
+
+
+function __toggleLaborLegend(btn){
+  const legend = document.getElementById('labor-legend');
+  const foot = document.getElementById('labor-footnote');
+  if(!legend) return;
+  const show = legend.style.display === 'none';
+  legend.style.display = show ? 'flex' : 'none';
+  if(foot) foot.style.display = show ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(show));
+  btn.classList.toggle('is-open', show);
+}
+
+function __toggleOtNote(btn){
+  const note = document.getElementById('ot-note');
+  if(!note) return;
+  const show = note.style.display === 'none';
+  note.style.display = show ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(show));
+  btn.classList.toggle('is-open', show);
+}
+function __toggleBudgetNote(btn){
+  const note = document.getElementById('budget-note');
+  if(!note) return;
+  const show = note.style.display === 'none';
+  note.style.display = show ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(show));
+  btn.classList.toggle('is-open', show);
+}
+function __toggleUtilReportNote(btn){
+  const note = document.getElementById('util-report-note');
+  if(!note) return;
+  const show = note.style.display === 'none';
+  note.style.display = show ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(show));
+  btn.classList.toggle('is-open', show);
+}
+function __toggleWaterNote(btn){
+  const note = document.getElementById('water-footer-note');
+  if(!note) return;
+  const show = note.style.display === 'none';
+  note.style.display = show ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(show));
+  btn.classList.toggle('is-open', show);
+}
+// รับประกันว่าบิลย้อนหลังจริง (UTILITY_HISTORICAL_SEED) และสถานะรายงานแขวงของเดือนเหล่านั้น
+// จะมีอยู่ในระบบเสมอ แม้ localStorage ของเบราว์เซอร์นี้จะเคยมีข้อมูลชุดเก่า (เช่นข้อมูลตัวอย่าง/ทดลอง) อยู่ก่อนแล้ว
+// เติมเฉพาะรายการที่ยังไม่มี (ไม่ทับของที่ผู้ใช้แก้ไขเองไปแล้วสำหรับ type+cycle เดียวกัน)
+/* utilityBills/waterMeterLog ย้ายไปอยู่บนฐานข้อมูลกลางแล้ว (โหลดจาก apiGet ตอนเปิดหน้า
+   แทน) ฟังก์ชันนี้จึงดูแลเฉพาะ districtReports ซึ่งยังเป็น local-only จริงๆ (ไม่มีตาราง backend
+   รองรับแนวคิด "รายงานแขวงต่อรอบเดือน" นี้) */
+function __ensureHistoricalDistrictReportSeed(){
+  let changed = false;
+  DISTRICT_REPORT_HISTORICAL_SEED.forEach(seed=>{
+    const exists = districtReports.some(d=>d.cycle===seed.cycle);
+    if(!exists){ districtReports.push({...seed}); changed = true; }
+  });
+  if(changed) __saveState();
+}
+__loadPersistedState();
+__ensureHistoricalDistrictReportSeed();
+/* ============ จบส่วนบันทึกข้อมูล ============ */
+
+renderAll();
+(async function __initApiData(){
+  // Firestore โหลดพร้อมกันได้ทุกตาราง (ไม่มีปัญหา quota แบบ Apps Script เดิม)
+  // staff/leave_requests/public_holidays (ระบบ 1) ใช้คำนวณบัญชีแรงงานรายวัน ง.3-12
+  try{ await apiGetMultiple(['staff','leave_requests','public_holidays']); }catch(e){ console.error('โหลดรายชื่อบุคลากร/การลา/วันหยุดจากระบบที่ 1 ไม่สำเร็จ', e); }
+  __refreshLaborRoster();
+  if(typeof __clearAttendanceCache==='function') __clearAttendanceCache();
+  // ค่าสถานะที่ใช้ร่วมกัน (สถานะรายงานแขวง / การส่งบัญชีแรงงาน) จาก Firestore — แทน localStorage เครื่องเดียว
+  try{
+    const shared = await FBL.stateGet('s4');
+    __applyState(shared || {});
+    __ensureHistoricalDistrictReportSeed();
+    FBL.stateMarkLoaded('s4', shared || {});
+  }catch(e){ console.error('โหลดค่าสถานะที่ใช้ร่วมกันของระบบที่ 4 ไม่สำเร็จ', e); }
+  await Promise.all([
+    loadUtilityBillsFromApi(),
+    loadWaterMeterLogFromApi(),
+    loadOtRequestsFromApi(),
+    loadBudgetAllocationsFromApi(),
+    loadSubsys3MaterialTxFromApi()
+  ]);
+  // เริ่มเขียนค่าสถานะขึ้น Firestore ได้หลังโหลดข้อมูลครบแล้วเท่านั้น (ยอดงบคงเหลือจะได้ไม่เป็น 0 ชั่วคราว)
+  __stateLoadedFromServer = true;
+  __lastSavedJSON = ''; __saveState(); // ส่งยอดงบประมาณคงเหลือล่าสุดให้ระบบหลักทันที (stateSet ข้ามเองถ้าค่าไม่เปลี่ยน)
+  // เลขที่เอกสาร OT (otCounter) ต้องเริ่มถัดจากเลขสูงสุดที่มีอยู่จริงใน backend เสมอ กันเลขซ้ำ
+  const otNums = otRequests.map(o=>{ const m = String(o.no||'').match(/OT-0*(\d+)/); return m ? Number(m[1]) : 0; });
+  otCounter = otNums.length ? Math.max(...otNums)+1 : 1;
+  renderAll();
+})();
+
+/* ปิด Modal ด้วย Esc — มาตรฐานเดียวกันทุกระบบ ปิดได้เฉพาะปุ่ม ✕ กับ Esc เท่านั้น (ไม่ปิดด้วยคลิกนอกกรอบ) */
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Escape') return;
+  document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(function(overlay){
+    overlay.classList.add('hidden');
+  });
+});
+
+</script>
+</body>
+</html>

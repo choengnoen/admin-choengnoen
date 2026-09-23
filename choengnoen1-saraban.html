@@ -1,0 +1,2963 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>งานสารบรรณและบุคลากร | หมวดทางหลวงเชิงเนิน</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#071b30; --navy-900:#0a2540; --navy-800:#123a5e; --navy-700:#1c4b73;
+    --orange-600:#e0620f; --orange-500:#f07a1f; --amber-400:#f2a930;
+    --paper-50:#f5f6f4; --paper-100:#eceee9; --line:#dfe2dd;
+    --ink-900:#182430; --ink-600:#4d5a66; --ink-400:#8792a0;
+    --success:#1c8a53; --success-bg:#e5f4ec; --danger:#c1402f; --danger-bg:#fbeae7;
+    --white:#ffffff; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Sarabun',sans-serif;background:var(--paper-50);color:var(--ink-900);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Kanit',sans-serif;}
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  /* หุบเหลือแถบไอคอนแคบๆ (76px) โดยปกติ ขยายเป็นแถบเต็มลอยทับเนื้อหาเมื่อเอาเมาส์ไปวาง — .main
+     เว้น margin-left คงที่ไว้ล่วงหน้าเท่ากับความกว้างตอนหุบเสมอ เนื้อหาจึงไม่ขยับตอนขยาย/หุบ */
+  .sidebar{width:76px;flex-shrink:0;background:linear-gradient(185deg,var(--navy-950),var(--navy-900) 60%);color:#dfe7f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow:hidden;transition:width .22s cubic-bezier(.2,.8,.3,1);z-index:30;}
+  .sidebar:hover{width:264px;overflow-y:auto;box-shadow:6px 0 28px -10px rgba(7,27,48,.5);}
+  .brand{padding:22px 20px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .brand-mark{width:46px;height:46px;flex-shrink:0;}
+  .brand-text{opacity:0;white-space:nowrap;transition:opacity .1s ease;}
+  .sidebar:hover .brand-text{opacity:1;transition-delay:.08s;}
+  .brand-text .t1{font-family:'Kanit';font-size:15px;font-weight:600;color:#fff;line-height:1.25;}
+  .brand-text .t2{font-size:11.5px;color:#a9bdd0;letter-spacing:.02em;}
+  .nav-group-label{font-size:10.5px;letter-spacing:.12em;color:#7a90a6;padding:18px 20px 6px;text-transform:uppercase;font-family:'Kanit';white-space:nowrap;opacity:0;transition:opacity .1s ease;}
+  .sidebar:hover .nav-group-label{opacity:1;transition-delay:.08s;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:10px 20px;margin:2px 10px;border-radius:8px;color:#c4d2df;text-decoration:none;font-size:14px;cursor:pointer;position:relative;transition:background .15s ease;white-space:nowrap;}
+  .nav-item .num{font-family:'Kanit';font-size:11px;font-weight:600;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);color:#9db2c5;flex-shrink:0;}
+  .nav-item span:not(.num){opacity:0;transition:opacity .1s ease;}
+  .sidebar:hover .nav-item span:not(.num){opacity:1;transition-delay:.1s;}
+  .nav-item.active{background:rgba(224,98,15,0.16);color:#fff;}
+  .nav-item.active .num{background:var(--orange-600);color:#fff;}
+  .nav-item.active::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;background:var(--orange-600);border-radius:2px;}
+  .nav-item.disabled{opacity:.4;cursor:not-allowed;}
+  .nav-item.disabled:hover{background:none;}
+  .nav-item:not(.disabled):not(.active):hover{background:rgba(255,255,255,0.06);}
+  .sidebar-foot{margin-top:auto;padding:16px 20px 20px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:#7a90a6;white-space:nowrap;opacity:0;transition:opacity .1s ease;}
+  .sidebar:hover .sidebar-foot{opacity:1;transition-delay:.1s;}
+
+  /* Main */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;margin-left:76px;}
+  .topbar{background:var(--white);border-bottom:1px solid var(--line);padding:14px 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5;}
+  .crumb{font-size:13px;color:var(--ink-400);}
+  .crumb b{color:var(--ink-900);font-weight:600;}
+  .topbar-right{display:flex;align-items:center;gap:18px;}
+  .clock{font-size:13px;color:var(--ink-600);font-family:'Kanit';}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--orange-600);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Kanit';font-weight:600;font-size:13px;}
+  /* เมนูผู้ใช้ที่ซ่อนอยู่หลังรูปโปรไฟล์ — กดรูปเพื่อเปิด แสดงชื่อ/ตำแหน่ง/ปุ่มออกจากระบบ แทนที่จะแสดงตลอดเวลาบน topbar */
+  .user-menu-wrap{position:relative;}
+  .user-menu-panel{position:absolute;top:calc(100% + 10px);right:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 34px -10px rgba(7,27,48,.3);padding:10px;min-width:230px;display:flex;flex-direction:column;gap:4px;z-index:60;}
+  .user-menu-panel.hidden{display:none;}
+  .user-menu-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border:none;background:transparent;border-radius:9px;font-family:'Sarabun';font-size:13px;text-align:left;cursor:pointer;color:var(--ink-900);width:100%;}
+  .user-menu-item:hover{background:var(--paper-50);}
+  .user-menu-item.danger{color:var(--danger);}
+  /* ชื่อ/ตำแหน่งผู้ใช้ในเมนูลอย แสดง 2 บรรทัด (ชื่อ / ตำแหน่ง) แทนการยัดรวมบรรทัดเดียวแบบ pill ทั่วไป */
+  .user-menu-panel #login-badge{display:block;white-space:normal;text-align:center;line-height:1.5;padding:8px 10px;margin-bottom:2px;}
+  .user-menu-panel #login-badge .um-position{display:block;font-weight:500;opacity:.85;}
+
+  .content{padding:26px 30px 60px;max-width:none;}
+  .page-head{margin-bottom:16px;}
+  .page-head h1{font-size:22px;font-weight:600;margin:0 0 4px;color:var(--navy-900);display:flex;align-items:center;gap:10px;}
+  .page-head p{margin:0;color:var(--ink-600);font-size:13.5px;max-width:760px;}
+
+
+  /* section switch tabs */
+  .sec-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .sec-tab{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink-600);cursor:pointer;background:var(--white);border:1px solid var(--line);}
+  .sec-tab.active{background:var(--navy-900);color:#fff;border-color:var(--navy-900);}
+  .sec-tab:hover:not(.active){border-color:var(--orange-500);color:var(--orange-600);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;}
+  .stat-card .label{font-size:12.5px;color:var(--ink-600);margin-bottom:8px;}
+  .stat-card .val{font-family:'Kanit';font-size:28px;font-weight:600;color:var(--navy-900);}
+  .stat-card .sub{font-size:11.5px;color:var(--ink-400);margin-top:4px;}
+  .stat-card.warn .val{color:var(--orange-600);}
+  .stat-card .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--navy-800);}
+  .stat-card.warn .bar{background:var(--orange-600);}
+  /* ===== ภาพรวม (Overview) — modern grouped stat cards ===== */
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:22px;}
+  .ov-card{background:linear-gradient(180deg,#ffffff,var(--paper-50) 130%);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;box-shadow:0 1px 2px rgba(10,37,64,.04),0 10px 22px -16px rgba(10,37,64,.14);transition:box-shadow .15s ease,transform .15s ease;}
+  .ov-card:hover{box-shadow:0 4px 10px rgba(10,37,64,.06),0 16px 30px -16px rgba(10,37,64,.18);transform:translateY(-1px);}
+  .ov-card-head{display:flex;align-items:center;gap:10px;margin-bottom:13px;}
+  .ov-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ov-icon svg{width:18px;height:18px;}
+  .ov-card-head h3{font-family:'Kanit';font-size:14px;font-weight:600;color:var(--navy-900);margin:0;letter-spacing:.1px;}
+  .ov-card-head .ov-note{margin-left:auto;font-size:11px;color:var(--ink-400);font-weight:400;}
+  .ov-metrics{display:flex;gap:8px;flex-wrap:wrap;}
+  .ov-metric{flex:1 1 84px;background:var(--paper-100);border-radius:9px;padding:9px 11px;min-width:84px;}
+  .ov-metric-val{font-family:'Kanit';font-size:21px;font-weight:600;color:var(--navy-900);line-height:1.15;}
+  .ov-metric.warn{background:var(--danger-bg);}
+  .ov-metric.warn .ov-metric-val{color:var(--orange-600);}
+  .ov-metric.ok{background:var(--success-bg);}
+  .ov-metric.ok .ov-metric-val{color:var(--success);}
+  .ov-metric-label{font-size:10.8px;color:var(--ink-600);margin-top:3px;line-height:1.3;}
+  .ov-card.accent-navy{border-top:3px solid var(--navy-800);}
+  .ov-card.accent-orange{border-top:3px solid var(--orange-600);}
+  .ov-card.accent-amber{border-top:3px solid var(--amber-400);}
+  .ov-card.accent-success{border-top:3px solid var(--success);}
+  @media(max-width:640px){ .ov-grid{grid-template-columns:1fr 1fr;} }
+
+
+  .section{background:var(--white);border:1px solid var(--line);border-radius:12px;margin-bottom:22px;overflow:hidden;}
+  .section-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .section-head h2{font-size:16px;font-weight:600;margin:0;color:var(--navy-900);display:flex;align-items:center;gap:9px;}
+  .section-icon{width:28px;height:28px;border-radius:7px;background:var(--navy-900);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .section-icon svg{width:15px;height:15px;}
+  .head-desc{font-size:12.5px;font-weight:400;color:var(--ink-400);margin-left:37px;display:block;}
+
+  .btn{font-family:'Sarabun';font-size:13px;font-weight:600;border:none;border-radius:10px;padding:9px 17px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:filter .15s ease,transform .1s ease,box-shadow .15s ease;}
+  .btn:hover{filter:brightness(1.06);}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:linear-gradient(135deg,var(--orange-500),var(--orange-600));color:#fff;box-shadow:0 4px 12px -2px rgba(224,98,15,.4);}
+  .btn-ghost{background:#fff;color:var(--ink-900);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--paper-100);}
+  .btn-sm{padding:4px 10px;font-size:12px;border-radius:6px;}
+  .btn-danger{background:var(--danger-bg);color:var(--danger);}
+  .btn-ok{background:var(--success-bg);color:var(--success);}
+  .tabs{display:flex;gap:4px;padding:0 20px;background:var(--paper-50);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .tab{padding:10px 14px;font-size:13.5px;color:var(--ink-600);cursor:pointer;border-bottom:2px solid transparent;font-weight:500;}
+  .tab.active{color:var(--navy-900);border-bottom-color:var(--orange-600);font-weight:600;}
+
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;}
+  thead th{text-align:left;background:var(--paper-50);color:var(--ink-600);font-weight:600;font-size:11px;letter-spacing:.03em;text-transform:uppercase;padding:9px 14px;border-bottom:2px solid var(--line);white-space:nowrap;position:sticky;top:0;z-index:2;}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--paper-100);vertical-align:middle;color:var(--ink-900);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#fafbfa;}
+  tbody tr:hover{background:#f2f5f8;}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table-wrap-scroll{max-height:62vh;overflow-y:auto;}
+  .table-wrap-scroll thead th{box-shadow:0 1px 0 var(--line);}
+  /* ตาราง "ติดตามคำร้องทุกข์": หัวตารางกับข้อมูลอยู่กึ่งกลางแนวนอนทุกคอลัมน์ ยกเว้น "เรื่อง"/"หมายเหตุ" (คอลัมน์ที่ 6,7) ที่เป็นข้อความยาวจึงชิดซ้ายตามเดิม */
+  #panel-complaints table thead th{text-align:center;}
+  #complaint-body td{text-align:center;}
+  #complaint-body td:nth-child(6), #complaint-body td:nth-child(7){text-align:left;}
+  @media (max-width:760px){
+    thead th{padding:8px 10px;font-size:10.5px;}
+    tbody td{padding:8px 10px;font-size:13px;}
+  }
+
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+  .pill-in{background:#e3edf6;color:var(--navy-700);}
+  .pill-out{background:#fdefe3;color:var(--orange-600);}
+  .pill-ok{background:var(--success-bg);color:var(--success);}
+  .pill-danger{background:var(--danger-bg);color:var(--danger);}
+  .pill-warn{background:#fdf1de;color:#a3660a;}
+  .pill-neutral{background:var(--paper-100);color:var(--ink-600);}
+
+  .person{display:flex;align-items:center;gap:9px;}
+  .p-avatar{width:28px;height:28px;border-radius:50%;background:var(--navy-800);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Kanit';font-size:11px;font-weight:600;flex-shrink:0;}
+  .p-name{font-weight:500;}
+  .p-sub{font-size:11.5px;color:var(--ink-400);}
+  .attach{color:var(--navy-700);font-size:12.5px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
+  .attach:hover{text-decoration:underline;}
+
+  .hazard{background:repeating-linear-gradient(-45deg,var(--amber-400) 0 12px,var(--navy-950) 12px 24px);color:#fff;font-family:'Kanit';font-weight:600;font-size:11px;padding:4px 12px;border-radius:5px;display:inline-flex;align-items:center;gap:6px;text-shadow:0 1px 2px rgba(0,0,0,.5);white-space:nowrap;}
+  .hazard-soft{border:1.5px dashed var(--orange-600);color:var(--orange-600);background:#fff8f2;font-family:'Kanit';font-weight:600;font-size:11px;padding:3px 10px;border-radius:5px;white-space:nowrap;}
+  .alert-notice{background:#fff4e5;border:1px solid #f2c078;color:#8a4b00;font-size:12.5px;font-weight:500;padding:8px 13px;border-radius:8px;display:flex;align-items:flex-start;gap:8px;line-height:1.55;white-space:normal;}
+  .alert-notice .ic{flex-shrink:0;font-size:14px;line-height:1.55;}
+
+  .foot-note{font-size:12px;color:var(--ink-400);padding:12px 20px;border-top:1px solid var(--paper-100);background:var(--paper-50);}
+  .legend-block{position:relative;min-height:38px;background:var(--paper-50);border-top:1px solid var(--paper-100);}
+  .legend-dot-btn{position:absolute;top:6px;right:10px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink-600);cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2;}
+  .legend-dot-btn:hover{background:var(--paper-100);}
+  .legend-dot-btn.is-open{background:#eef3f8;border-color:#d8e2ec;color:var(--navy-900);}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  #doc-toolbar select{width:180px;flex:0 0 auto;}
+  .search-box{display:flex;align-items:center;gap:7px;background:var(--paper-50);border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:13px;color:var(--ink-600);min-width:190px;}
+  .search-box input{border:none;background:none;outline:none;font-family:'Sarabun';font-size:13px;color:var(--ink-900);width:100%;}
+  select, .edit-input{font-family:'Sarabun';font-size:13px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink-900);}
+  .edit-input{width:100%;}
+  .hidden{display:none !important;}
+
+  /* modal (บันทึกหนังสือใหม่) */
+  .modal-overlay{position:fixed;inset:0;background:rgba(7,27,48,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;animation:modalFadeIn .15s ease;}
+  @keyframes modalFadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes modalPopIn{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  /* max-height + overflow อยู่ที่ modal-body ไม่ใช่ modal-box ทั้งกล่อง เพื่อให้แถบเลื่อนขึ้นลงอยู่ใต้หัวโมดัลลอย (modal-head) เท่านั้น ไม่ทับหัวโมดัล */
+  .modal-box{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 28px 64px -14px rgba(7,27,48,.45),0 10px 26px -10px rgba(7,27,48,.22);animation:modalPopIn .18s cubic-bezier(.22,.9,.32,1.2);}
+  .modal-head{padding:18px 22px;border-bottom:none;display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--navy-900),var(--navy-800) 75%);border-radius:20px 20px 0 0;position:sticky;top:0;z-index:1;}
+  .modal-head h3{margin:0;color:#fff;font-size:15.5px;font-family:'Kanit';display:flex;align-items:center;gap:8px;font-weight:600;}
+  .modal-head-icon{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
+  .modal-head-icon svg{width:19px;height:19px;}
+  .modal-close{background:none;border:none;color:#a9bbcc;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-left:auto;transition:background .15s ease,color .15s ease;}
+  /* modal ยืนยันการทำรายการ (ใช้แทน window.confirm ของเบราว์เซอร์) */
+  .confirm-modal-box{max-width:460px;}
+  .confirm-modal-msg{font-size:13.5px;line-height:1.7;color:var(--ink-700,#2b3a4a);white-space:pre-line;text-align:center;}
+  .confirm-warn{margin-top:12px;padding:10px 13px;background:#fff6e6;border:1px solid #f3d9a3;border-radius:11px;font-size:12.8px;line-height:1.65;color:#8a5a00;white-space:pre-line;text-align:left;}
+  .modal-close:hover{background:rgba(255,255,255,.14);color:#fff;}
+  .modal-body{padding:20px 22px 4px;overflow-y:auto;flex:1 1 auto;min-height:0;}
+  .modal-foot{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;background:var(--paper-50);border-radius:0 0 20px 20px;position:sticky;bottom:0;}
+  .field-group{border:1px solid var(--line);border-radius:14px;padding:16px 18px 6px;margin-bottom:14px;background:var(--paper-50);}
+  .field-group-title{font-size:12.5px;font-weight:700;color:var(--navy-800);margin:0 0 12px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.3px;}
+
+  /* document timeline (ไทม์ไลน์เอกสาร) */
+  .tl-step{display:flex;gap:12px;position:relative;padding-bottom:22px;}
+  .tl-step:last-child{padding-bottom:2px;}
+  .tl-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--paper-100);border:2px solid var(--line);color:var(--ink-400);z-index:1;}
+  .tl-step.done .tl-dot{background:var(--success);border-color:var(--success);color:#fff;}
+  .tl-step.current .tl-dot{background:var(--orange-500);border-color:var(--orange-500);color:#fff;}
+  .tl-step:not(:last-child)::before{content:"";position:absolute;left:10px;top:22px;bottom:0;width:2px;background:var(--line);}
+  .tl-step.done:not(:last-child)::before{background:var(--success);}
+  .tl-label{font-weight:600;font-size:13.5px;color:var(--navy-900);}
+  .tl-date{font-size:12px;color:var(--ink-400);margin-top:2px;}
+  .receive-subgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+  @media (max-width:600px){ .receive-subgrid{grid-template-columns:1fr;} }
+  @media (max-width:640px){
+    #doc-toolbar{gap:8px 10px;}
+    #doc-toolbar .search-box{flex:1 1 150px;min-width:120px;}
+    #doc-toolbar select{flex:1 1 110px;min-width:100px;width:auto;}
+    #doc-toolbar .btn-primary{flex:1 1 100%;}
+  }
+  .receive-sub{background:#fff;border:1px solid var(--line);border-left:3px solid var(--navy-700);border-radius:8px;padding:10px 12px 4px;}
+  .receive-sub.receive-sub-section{border-left-color:var(--orange-500);}
+  .receive-sub-title{font-size:12.5px;font-weight:600;color:var(--navy-800);margin:0 0 8px;display:flex;align-items:center;gap:5px;}
+  .receive-sub .f-row label{font-size:11px;color:var(--ink-400);text-transform:uppercase;letter-spacing:.02em;}
+  .complaint-toggle-box{border:1.5px dashed var(--orange-500);border-radius:10px;padding:12px 14px;margin-bottom:16px;background:#fff8f2;}
+  .complaint-toggle-box label{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--orange-600);cursor:pointer;font-size:13.5px;}
+  .complaint-toggle-box input[type=checkbox]{width:16px;height:16px;accent-color:var(--orange-600);cursor:pointer;}
+  .order-toggle-box{border:1.5px dashed var(--navy-700);border-radius:10px;padding:12px 14px;margin-bottom:16px;background:#eef4f9;}
+  .order-toggle-box > label{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--navy-700);cursor:pointer;font-size:13.5px;}
+  .order-toggle-box input[type=checkbox]{width:16px;height:16px;accent-color:var(--navy-700);cursor:pointer;}
+  .check-chip-group{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
+  .chip-break{flex-basis:100%;height:0;margin:0;padding:0;}
+  .check-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:20px;background:#fff;font-size:12.5px;line-height:1.35;color:var(--ink-600);cursor:pointer;user-select:none;}
+  .check-chip input[type=checkbox]{width:14px;height:14px;accent-color:var(--navy-700);cursor:pointer;margin:0;}
+  .check-chip.checked{border-color:var(--navy-700);background:#e3edf6;color:var(--navy-800);font-weight:600;}
+  .chip-group-block{flex:1 1 100%;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line);}
+  .chip-group-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .chip-group-head{margin-bottom:7px;}
+  .chip-group-head .check-chip{background:var(--paper-50);}
+  .chip-group-sub{display:flex;flex-wrap:wrap;gap:6px;margin-left:20px;}
+  .chip-group-sub .check-chip{font-size:12px;padding:5px 10px;}
+  .row-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex-wrap:wrap;}
+  .order-badge{margin-top:4px;font-size:11.5px;color:var(--navy-700);background:#eef4f9;border:1px solid #cfe0ee;border-radius:6px;padding:4px 8px;display:inline-block;}
+
+  .expand-row td{background:var(--paper-50);padding:16px 22px;}
+  .detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 20px;font-size:12.5px;}
+  .detail-grid .d-label{color:var(--ink-400);font-size:11px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
+  .detail-grid .d-val{color:var(--ink-900);font-weight:500;}
+
+  /* leave request form */
+  .lr-grid{display:grid;grid-template-columns:1fr;gap:18px;padding:20px;}
+  .lr-count-line{font-size:12px;color:var(--ink-400);margin:0 0 10px;}
+  .lr-tbl{table-layout:fixed;}
+  .lr-tbl td,.lr-tbl th{overflow-wrap:break-word;word-break:break-word;}
+  .lr-tbl col.c-name{width:22%;}
+  .lr-tbl col.c-type{width:12%;}
+  .lr-tbl col.c-range{width:20%;}
+  .lr-tbl col.c-status{width:14%;}
+  .lr-tbl col.c-actions{width:32%;}
+  .lr-actions-cell{white-space:normal;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .lr-subtabs{display:flex;gap:4px;margin:0 0 10px;border-bottom:1px solid var(--line);}
+  .lr-subtabs .tab{padding:7px 12px;}
+  .form-card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#fcfcfb;}
+  .form-card h3{margin:0 0 10px;font-size:14px;color:var(--navy-900);}
+  .f-row{margin-bottom:12px;}
+  .f-row label{display:block;font-size:12px;color:var(--ink-600);margin-bottom:5px;font-weight:600;}
+  .f-row select,.f-row input,.f-row textarea{width:100%;padding:10px 13px;border:1px solid var(--line);border-radius:10px;font-family:'Sarabun';font-size:13.5px;background:#fff;color:var(--ink-900);transition:border-color .15s ease,box-shadow .15s ease;}
+  .f-row select:focus,.f-row input:focus,.f-row textarea:focus{outline:none;border-color:var(--orange-500);box-shadow:0 0 0 3px rgba(224,98,15,.12);}
+  .f-row textarea{resize:vertical;min-height:38px;}
+  .lr-meta{font-size:11.5px;color:var(--ink-400);margin-top:4px;}
+  .lr-compact-grid{display:grid;grid-template-columns:1fr 1fr .95fr 1.6fr;gap:10px;}
+  @media (max-width:760px){ .lr-compact-grid{grid-template-columns:1fr 1fr;} }
+  .lrng-grid{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px;}
+  @media (max-width:760px){ .lrng-grid{grid-template-columns:1fr 1fr;} .lrng-grid .f-row:last-child{grid-column:1 / -1;} }
+
+  .reg-controlbar{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;padding:14px 20px 18px;background:var(--paper-50);border-bottom:1px solid var(--line);}
+  .reg-controlbar .f-row{margin-bottom:0;}
+  .reg-actions{display:flex;gap:8px;margin-left:auto;}
+  @media (max-width:700px){ .reg-controlbar{align-items:stretch;} .reg-actions{margin-left:0;width:100%;} .reg-actions .btn{flex:1;} }
+  .reg-summary{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;background:linear-gradient(180deg,#ffffff,var(--paper-50) 140%);border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .reg-table thead th{text-align:center;}
+  .reg-table tbody td{text-align:center;}
+  .lr-inline-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:2px;}
+  .lr-inline-row .lr-stat-panel{margin-top:0;flex:1 1 auto;}
+  #lr-warning{flex:1 1 260px;min-width:220px;}
+  .ac-suggest{position:absolute;z-index:20;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:11px;margin-top:6px;max-height:240px;overflow-y:auto;overflow-x:hidden;box-shadow:0 12px 28px -8px rgba(10,37,64,.22),0 2px 6px rgba(10,37,64,.08);padding:5px;}
+  .ac-suggest .ac-item{padding:9px 12px;font-size:13.5px;line-height:1.3;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:7px;color:var(--ink-900);}
+  .ac-suggest .ac-item+.ac-item{margin-top:1px;}
+  .ac-suggest .ac-item:hover{background:var(--paper-100);color:var(--orange-600);}
+  .radio-group{display:flex;gap:14px;flex-wrap:wrap;}
+  .radio-group label{display:flex;align-items:center;gap:6px;font-weight:400;font-size:13px;color:var(--ink-900);}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .lr-stat-panel{background:var(--paper-100);border-radius:10px;padding:11px 14px;margin-top:4px;display:flex;flex-direction:column;gap:7px;}
+  .lr-stat-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .lr-stat-label{font-size:11px;color:var(--ink-400);font-weight:600;min-width:88px;}
+  .lr-stat-chip{display:inline-flex;align-items:baseline;gap:4px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:3px 11px;font-size:12px;color:var(--ink-600);}
+  .lr-stat-chip b{font-size:13px;color:var(--ink-900);}
+  .lr-stat-divider{height:1px;background:var(--line);}
+
+  /* attendance grid */
+  .att-table td.att-cell{padding:0;text-align:center;width:26px;min-width:26px;}
+  .att-cell button{width:100%;height:34px;border:none;background:transparent;cursor:pointer;font-family:'Kanit';font-weight:600;font-size:12px;color:var(--ink-400);}
+  .att-cell button.c-1{color:var(--success);}
+  .att-cell button.c-p{color:#a3660a;}
+  .att-cell button.c-w{color:var(--navy-700);}
+  .att-cell button.c-x{color:var(--danger);}
+  .att-cell button.c-off{color:#c7ccc3;}
+  .att-cell button:hover{background:var(--paper-100);}
+  th.day-th{text-align:center;padding:6px 3px;font-size:10px;}
+  th.day-th .dow{display:block;font-size:9px;color:var(--ink-400);text-transform:none;font-weight:500;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 20px;font-size:11.5px;color:var(--ink-600);background:var(--paper-50);border-top:1px solid var(--paper-100);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block;}
+
+  .print-only{display:none;}
+  .official-form{font-family:'Sarabun',sans-serif;font-size:14px;color:#000;line-height:1.7;max-width:210mm;margin:0 auto;}
+  .official-form .form-code{text-align:right;font-weight:600;}
+  /* หัวฟอร์ม: ชื่อฟอร์มกึ่งกลาง, "กรมทางหลวง" + เลขแบบฟอร์มชิดขวาบน ให้ตรงตำแหน่งกับแบบฟอร์มจริง (จ.3-05/จ.3-06) */
+  .official-form .form-header{position:relative;text-align:center;margin-bottom:12px;min-height:36px;}
+  .official-form .form-org-block{position:absolute;top:0;right:0;text-align:right;font-size:13px;font-weight:600;line-height:1.5;}
+  .official-form .form-title{text-align:center;font-family:'Kanit';font-size:17px;font-weight:600;margin-bottom:2px;}
+  .official-form .writeline{text-align:right;margin-bottom:14px;}
+  .official-form p{margin:6px 0;}
+  .official-form .dotted{border-bottom:1px dotted #333;padding:0 2px;}
+  .official-form table.of-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px;}
+  .official-form table.of-table th, .official-form table.of-table td{border:1px solid #333;padding:5px 7px;text-align:center;}
+  /* กันสไตล์ตารางแบบใหม่ (พื้นเทา/ตัวพิมพ์ใหญ่/sticky/สลับสีแถว) หลุดเข้าไปในแบบฟอร์มราชการที่ใช้พิมพ์จริง — ต้องคงหน้าตาเอกสารราชการปกติ */
+  .official-form table.of-table th{background:none;color:#000;font-weight:600;text-transform:none;letter-spacing:normal;position:static;}
+  .official-form table.of-table tbody tr:nth-child(even){background:none;}
+  .official-form .sig-block{text-align:right;margin-top:26px;}
+  .official-form .two-box{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #333;margin-top:10px;}
+  .official-form .two-box>div{padding:10px 14px;}
+  .official-form .two-box>div:first-child{border-right:1px solid #333;}
+  .official-form .cmd-box{border-top:1px solid #333;padding-top:10px;margin-top:10px;}
+  @media print{
+    .print-only{display:none;}
+    .print-only.show-print{display:block;}
+    .sidebar,.topbar,.sec-tabs,.no-print,.page-head .toolbar{display:none !important;}
+    .content{padding:0;max-width:none;}
+    .section{border:none;box-shadow:none;}
+    .panel{display:none !important;}
+    body{background:#fff;}
+  }
+
+  @media (max-width:1100px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .lr-grid{grid-template-columns:1fr;}
+    .detail-grid{grid-template-columns:repeat(2,1fr);}
+    .sidebar{width:76px;}
+    .brand-text,.nav-item span:not(.num),.nav-group-label,.sidebar-foot{display:none;}
+    .brand{justify-content:center;}
+    .nav-item{justify-content:center;padding:12px;}
+  }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-layer.js" data-page="s1"></script>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-mark" src="logo.jpg" alt="ตรากรมทางหลวง" style="border-radius:50%;object-fit:cover;">
+      <div class="brand-text">
+        <div class="t1">หมวดทางหลวงเชิงเนิน</div>
+        <div class="t2">Choeng Noen Highway Maintenance Section</div>
+      </div>
+    </div>
+    <div class="nav-group-label" id="nav-group-main">ระบบหลัก</div>
+    <a class="nav-item" id="nav-main-link" href="choengnoen0-main.html"><span class="num">•</span><span>งานบริหารหมวด</span></a>
+    <div class="nav-group-label" id="nav-group-sub">ระบบรอง</div>
+    <a class="nav-item active" id="nav-saraban"><span class="num">1</span><span>งานสารบรรณและบุคลากร</span></a>
+    <a class="nav-item" href="choengnoen2-statistics.html"><span class="num">2</span><span>งานสถิติและบริการประชาชน</span></a>
+    <a class="nav-item" href="choengnoen3-supplies.html"><span class="num">3</span><span>งานพัสดุและเครื่องจักร</span></a>
+    <a class="nav-item" href="choengnoen4-finance.html"><span class="num">4</span><span>งานบัญชีและการเงิน</span></a>
+    <div class="sidebar-foot">หมวดทางหลวงเชิงเนิน<br>เวอร์ชันต้นแบบ 0.3</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb" id="crumb">ระบบรองที่ 1 · <b>งานสารบรรณและบุคลากร</b></div>
+      <div class="topbar-right no-print">
+        <div class="user-menu-wrap">
+          <div class="avatar" id="user-avatar" onclick="__toggleUserMenu(event)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg></div>
+          <div class="user-menu-panel hidden" id="user-menu-panel">
+            <span id="login-badge" class="pill pill-neutral" style="text-align:center;" title="บทบาทและสิทธิ์ของบัญชีนี้ในระบบนี้">กำลังตรวจสอบสิทธิ์…</span>
+            <button id="logout-btn" class="user-menu-item danger" onclick="doLogout()" style="display:none;">🚪 ออกจากระบบ</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-head">
+        <h1>งานสารบรรณและบุคลากร</h1>
+      </div>
+
+      <div class="sec-tabs no-print" id="sec-tabs">
+        <div class="sec-tab active" data-sec="complaints">ติดตามคำร้องทุกข์</div>
+        <div class="sec-tab" data-sec="staff">ฐานข้อมูลบุคลากร</div>
+        <div class="sec-tab" data-sec="leave-request">การลา</div>
+        <div class="sec-tab" data-sec="leave-registry">ทะเบียนคุมลา</div>
+      </div>
+
+      <!-- ============ STAFF DETAIL / EDIT MODAL ============ -->
+      <div id="staff-detail-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:640px;">
+          <div class="modal-head">
+            <div class="modal-head-icon">👤</div>
+            <h3 id="sd-title">ข้อมูลเจ้าหน้าที่</h3>
+            <button type="button" class="modal-close" onclick="closeStaffDetail()">✕</button>
+          </div>
+          <div class="modal-body" id="sd-body"></div>
+          <div class="modal-foot" id="sd-foot"></div>
+        </div>
+      </div>
+
+      <!-- ============ ADD STAFF MODAL ============ -->
+      <div id="add-staff-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:640px;">
+          <div class="modal-head">
+            <div class="modal-head-icon">➕</div>
+            <h3>เพิ่มเจ้าหน้าที่ใหม่</h3>
+            <button type="button" class="modal-close" onclick="closeAddStaff()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="two-col">
+              <div class="f-row"><label>ชื่อ-สกุล *</label><input class="edit-input" id="as-name" placeholder="ชื่อ นามสกุล"></div>
+              <div class="f-row"><label>ชื่อเล่น</label><input class="edit-input" id="as-nickname" placeholder="ชื่อเล่น"></div>
+            </div>
+            <div class="two-col">
+              <div class="f-row"><label>ตำแหน่งทางราชการ</label><input class="edit-input" id="as-role" placeholder="เช่น นายช่างโยธาปฏิบัติงาน"></div>
+              <div class="f-row"><label>ประเภทบุคลากร</label><select class="edit-input" id="as-ptype">
+                <option>ข้าราชการ</option><option>ลูกจ้างประจำ</option><option>พนักงานราชการ</option><option selected>ลูกจ้างชั่วคราว</option>
+              </select></div>
+            </div>
+            <div class="f-row"><label>หน้าที่พิเศษ (ถ้ามี เช่น ปฏิบัติหน้าที่ยาม)</label><input class="edit-input" id="as-duty" placeholder="ไม่มี"></div>
+            <div class="two-col">
+              <div class="f-row"><label>สถานะ</label><select class="edit-input" id="as-status">
+                <option value="ok" selected>ปฏิบัติงาน</option>
+                <option value="resigned">ลาออก</option>
+              </select></div>
+              <div class="f-row"><label>วันเกิด</label><input type="date" class="edit-input" id="as-birth"></div>
+            </div>
+            <div class="two-col">
+              <div class="f-row"><label>วันที่เริ่มงาน</label><input type="date" class="edit-input" id="as-startdate"></div>
+              <div class="f-row" style="align-self:end;font-size:12px;color:var(--ink-400);padding-bottom:8px;">* ใช้คำนวณสิทธิ์การลาของตำแหน่ง "คนงาน" (ไม่มีสิทธิ์ลาภายใน 6 เดือนแรก)</div>
+            </div>
+            <div class="two-col">
+              <div class="f-row"><label>อัตราค่าจ้าง/วัน (บาท)</label><input type="number" class="edit-input" id="as-rate" placeholder="0.00"></div>
+              <div class="f-row"><label>ไซส์เสื้อ</label><input class="edit-input" id="as-shirt" placeholder="เช่น L, XL"></div>
+            </div>
+            <div class="two-col">
+              <div class="f-row"><label>ข้อมูลการรักษาพยาบาล</label><input class="edit-input" id="as-med" placeholder="สิทธิ/สถานพยาบาล"></div>
+              <div class="f-row"><label>กรุ๊ปเลือด</label><input class="edit-input" id="as-blood" placeholder="เช่น O, A, B, AB"></div>
+            </div>
+            <div class="two-col">
+              <div class="f-row"><label>เบอร์โทรศัพท์</label><input class="edit-input" id="as-phone" placeholder="เช่น 08x-xxx-xxxx"></div>
+              <div class="f-row"><label>วุฒิการศึกษา</label><input class="edit-input" id="as-education"></div>
+            </div>
+            <div class="f-row"><label>ที่อยู่ปัจจุบัน</label><input class="edit-input" id="as-address"></div>
+            <div class="two-col">
+              <div class="f-row"><label>ผู้ติดต่อฉุกเฉิน</label><input class="edit-input" id="as-emergency-contact" placeholder="ชื่อ-สกุล / ความสัมพันธ์"></div>
+              <div class="f-row"><label>เบอร์โทรผู้ติดต่อฉุกเฉิน</label><input class="edit-input" id="as-emergency-phone"></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn btn-ghost" id="as-cancel-btn" onclick="closeAddStaff()">ยกเลิก</button>
+            <button class="btn btn-primary" id="as-save-btn" onclick="submitAddStaff()">บันทึกเจ้าหน้าที่</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ COMPLAINTS TRACKING ============ -->
+      <div class="panel active" id="panel-complaints">
+        <div class="section">
+          <div class="section-head">
+            <h2><span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2a930" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 4.3 2.6 18a1.8 1.8 0 0 0 1.6 2.7h15.6a1.8 1.8 0 0 0 1.6-2.7L13.7 4.3a1.8 1.8 0 0 0-3.4 0Z"/></svg></span>
+              ติดตามคำร้องทุกข์
+            </h2>
+            <div class="toolbar">
+              <select id="complaint-route-filter" class="edit-input" style="width:130px;" onchange="renderComplaints()">
+                <option value="all">ทุกสายทาง</option>
+              </select>
+              <button class="btn btn-primary" onclick="openAddComplaint()">+ เพิ่มคำร้องทุกข์</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>ลำดับที่</th><th>วันที่</th><th>เลขรับแขวง</th><th>สาย</th><th>กม. คำร้องทุกข์</th><th>เรื่อง</th><th>หมายเหตุ</th><th>สถานะความคืบหน้า</th><th>จำนวนวันหลังรับเรื่อง</th></tr></thead>
+            <tbody id="complaint-body"></tbody>
+          </table></div>
+          <div class="legend-block" id="complaint-foot-block">
+            <button type="button" class="legend-dot-btn no-print" id="complaint-foot-toggle" onclick="__toggleNote('complaint-foot',this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+            <div class="foot-note" id="complaint-foot" style="display:none;background:transparent;border-top:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ COMPLAINT DETAIL / ADD / EDIT MODAL ============ -->
+      <div id="complaint-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:560px;">
+          <div class="modal-head">
+            <div class="modal-head-icon" id="cp-icon">📝</div>
+            <h3 id="cp-title">คำร้องทุกข์</h3>
+            <button type="button" class="modal-close" onclick="closeComplaintModal()">✕</button>
+          </div>
+          <div class="modal-body" id="cp-body"></div>
+          <div class="modal-foot" id="cp-foot"></div>
+        </div>
+      </div>
+
+      <!-- ============ STAFF ============ -->
+      <div class="panel" id="panel-staff">
+        <div class="section">
+          <div class="section-head">
+            <h2><span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2a930" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M5 21c0-4 3.2-6.5 7-6.5s7 2.5 7 6.5"/></svg></span>
+              ฐานข้อมูลบุคลากร
+            </h2>
+            <div class="toolbar">
+              <div class="search-box">🔍 <input id="staff-search" placeholder="ค้นหาชื่อ / ชื่อเล่น"></div>
+              <button class="btn btn-primary" onclick="openAddStaff()">+ เพิ่มเจ้าหน้าที่</button>
+            </div>
+          </div>
+          <div class="tabs" id="staff-tabs">
+            <div class="tab active" data-stafftab="all">ทั้งหมด</div>
+            <div class="tab" data-stafftab="ข้าราชการ">ข้าราชการ</div>
+            <div class="tab" data-stafftab="ลูกจ้างประจำ">ลูกจ้างประจำ</div>
+            <div class="tab" data-stafftab="พนักงานราชการ">พนักงานราชการ</div>
+            <div class="tab" data-stafftab="ลูกจ้างชั่วคราว">ลูกจ้างชั่วคราว</div>
+          </div>
+          <div class="table-wrap table-wrap-scroll"><table>
+            <thead><tr><th>ชื่อ-สกุล</th><th>ตำแหน่งทางราชการ</th><th>ประเภทบุคลากร</th><th>สถานะ</th></tr></thead>
+            <tbody id="staff-body"></tbody>
+          </table></div>
+          <div class="legend-block" id="staff-foot-block">
+            <button type="button" class="legend-dot-btn no-print" id="staff-foot-toggle" onclick="__toggleNote('staff-foot',this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+            <div class="foot-note" id="staff-foot" style="display:none;background:transparent;border-top:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ LEAVE REQUEST ============ -->
+      <div class="panel" id="panel-leave-request">
+        <div class="section">
+          <div class="section-head">
+            <h2><span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2a930" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+              การลา และเดินทางไปราชการ
+            </h2>
+            <div class="toolbar">
+              <button class="btn btn-ghost" onclick="openHolidayModal()">🗓 วันหยุดนักขัตฤกษ์</button>
+              <button class="btn btn-primary" onclick="openLeaveModal()">+ บันทึกข้อมูลการลา</button>
+            </div>
+          </div>
+          <div class="lr-grid">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+              <h3 style="font-size:14px;color:var(--navy-900);margin:0;">รายการลา</h3>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span id="lr-last-updated" class="pill pill-neutral" style="font-size:11px;font-weight:500;"></span>
+                <select id="lr-approved-fy" onchange="renderLeaveRequestList()"></select>
+                <div class="search-box" style="min-width:170px;">🔍 <input id="lr-approved-search" placeholder="ค้นหาชื่อผู้ลา" oninput="renderLeaveRequestList()"></div>
+              </div>
+            </div>
+            <div class="table-wrap table-wrap-scroll" style="max-height:65vh;"><table class="lr-tbl">
+              <colgroup><col class="c-name"><col class="c-type"><col class="c-range"><col class="c-status"><col class="c-actions"></colgroup>
+              <thead><tr><th>ผู้ลา</th><th>ประเภท</th><th>ช่วงวันที่</th><th>สถานะ</th><th></th></tr></thead>
+              <tbody id="lr-list-body"></tbody>
+            </table></div>
+            <div class="legend-block" id="leave-approved-foot-block">
+              <button type="button" class="legend-dot-btn no-print" id="leave-approved-foot-toggle" onclick="__toggleNote('leave-approved-foot',this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
+              <div class="foot-note" id="leave-approved-foot" style="display:none;background:transparent;border-top:none;">การลางาน:&nbsp;<br>1. ลาพักผ่อน / ลากิจ / ไปราชการ ต้องยื่นล่วงหน้าอย่างน้อย 3 วัน&nbsp;&nbsp;<br>2. ลาป่วย ยื่นภายใน 3 วันหลังกลับมาปฏิบัติงานได้<br>3. คำขอลาที่ยื่นเข้าระบบแล้วถือเป็นข้อมูลลาจริง (ผ่านการลงนามในใบลาตามระเบียบแล้ว) — การลบรายการต้องมีสิทธิ์ผู้ดูแลระบบ หากลาไปแล้วต้องการยกเลิกให้ใช้ปุ่ม "ใบขอยกเลิกวันลา" เท่านั้น<br>4. พิมพ์ใบลาได้หลังจากบันทึกข้อมูลการลาแล้วเท่านั้น โดยกดปุ่ม "🖶 พิมพ์ใบลา" ที่รายการในตาราง<br>5. การลาต่อเนื่องหลายวัน ระบบจะไม่นับวันเสาร์-อาทิตย์และวันหยุดนักขัตฤกษ์เป็นวันลา (ดู/แก้ไขรายการวันหยุดได้ที่ปุ่ม "🗓 วันหยุดนักขัตฤกษ์")</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ LEAVE REQUEST MODAL ============ -->
+      <div id="leave-request-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:640px;">
+          <div class="modal-head">
+            <div class="modal-head-icon">📝</div>
+            <h3>บันทึกข้อมูลการลา</h3>
+            <button type="button" class="modal-close" onclick="closeLeaveModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="two-col">
+              <div class="f-row" style="position:relative;">
+                <label>ผู้ลา / ไปราชการ</label>
+                <input id="lr-name" placeholder="พิมพ์เพื่อค้นหาชื่อ" autocomplete="off" oninput="__filterNameSuggest(); onLeaveNameChange();">
+                <div id="lr-name-suggest" class="ac-suggest hidden"></div>
+                <div class="lr-meta" id="lr-meta"></div>
+              </div>
+              <div class="f-row">
+                <label>ประเภทการลา</label>
+                <select id="lr-type" onchange="checkLrWarning()">
+                  <option value="ป่วย">ป่วย</option>
+                  <option value="กิจ">กิจส่วนตัว</option>
+                  <option value="พักผ่อน">พักผ่อน</option>
+                  <option value="คลอดบุตร">คลอดบุตร</option>
+                  <option value="ไปราชการ">ไปราชการ</option>
+                  <option value="ขาดงาน">ขาดงาน (ไม่จ่ายค่าจ้าง)</option>
+                </select>
+              </div>
+            </div>
+            <div class="lr-compact-grid">
+              <div class="f-row"><label>ตั้งแต่วันที่</label><input type="date" id="lr-from" onchange="calcLrDays()"></div>
+              <div class="f-row"><label>ถึงวันที่</label><input type="date" id="lr-to" onchange="calcLrDays()"></div>
+              <div class="f-row"><label style="white-space:nowrap;">กำหนด (วันทำการ)</label><input id="lr-days" disabled></div>
+              <div class="f-row"><label>เหตุผลการลา</label><textarea id="lr-reason" placeholder="ระบุเหตุผลการลา" rows="1"></textarea></div>
+            </div>
+            <div class="two-col">
+              <div class="f-row" style="position:relative;">
+                <label>ผู้รักษาราชการแทน</label>
+                <input id="lr-cover" placeholder="พิมพ์เพื่อค้นหาชื่อ" autocomplete="off" oninput="__filterCoverSuggest()">
+                <div id="lr-cover-suggest" class="ac-suggest hidden"></div>
+              </div>
+              <div class="f-row"><label>ติดต่อระหว่างลาที่</label><input id="lr-contact" placeholder="เบอร์โทร / ที่อยู่"></div>
+            </div>
+            <div class="lr-inline-row">
+              <div class="lr-stat-panel" id="lr-stats"></div>
+              <div id="lr-warning"></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button id="lr-cancel-btn" class="btn btn-ghost" onclick="closeLeaveModal()">ยกเลิก</button>
+            <button id="lr-save-btn" class="btn btn-primary" onclick="submitLeaveRequest()">บันทึกคำขอลา</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ EDIT LEAVE REQUEST MODAL (admin only) ============ -->
+      <div id="edit-leave-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:560px;">
+          <div class="modal-head">
+            <div class="modal-head-icon">✏️</div>
+            <h3>แก้ไขคำขอลา <span id="el-name-tag" style="font-weight:400;font-size:13px;opacity:.75;"></span></h3>
+            <button type="button" class="modal-close" onclick="closeEditLeave()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="f-row"><label>ประเภทการลา</label>
+              <select id="el-type">
+                <option value="ป่วย">ป่วย</option>
+                <option value="กิจ">กิจส่วนตัว</option>
+                <option value="พักผ่อน">พักผ่อน</option>
+                <option value="คลอดบุตร">คลอดบุตร</option>
+                <option value="ไปราชการ">ไปราชการ</option>
+                <option value="ขาดงาน">ขาดงาน (ไม่จ่ายค่าจ้าง)</option>
+              </select>
+            </div>
+            <div class="lr-compact-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="f-row"><label>ตั้งแต่วันที่</label><input type="date" id="el-from"></div>
+              <div class="f-row"><label>ถึงวันที่</label><input type="date" id="el-to"></div>
+              <div class="f-row"><label>เหตุผลการลา</label><textarea id="el-reason" rows="1"></textarea></div>
+            </div>
+            <div class="two-col">
+              <div class="f-row"><label>ผู้รักษาราชการแทน</label><input id="el-cover"></div>
+              <div class="f-row"><label>ติดต่อระหว่างลาที่</label><input id="el-contact"></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button id="el-cancel-btn" class="btn btn-ghost" onclick="closeEditLeave()">ยกเลิก</button>
+            <button id="el-save-btn" class="btn btn-primary" onclick="saveEditLeave()">บันทึกการแก้ไข</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PUBLIC HOLIDAYS MODAL ============ -->
+      <div id="holiday-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:540px;">
+          <div class="modal-head">
+            <div class="modal-head-icon">🗓</div>
+            <h3>วันหยุดนักขัตฤกษ์ในระบบ</h3>
+            <button type="button" class="modal-close" onclick="closeHolidayModal()">✕</button>
+          </div>
+          <div class="modal-body" id="holiday-modal-body"></div>
+          <div class="modal-foot">
+            <button class="btn btn-ghost" onclick="closeHolidayModal()">ปิด</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="confirm-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box confirm-modal-box">
+          <div class="modal-head">
+            <div class="modal-head-icon" id="confirm-modal-icon">❓</div>
+            <h3 id="confirm-modal-title">ยืนยันการทำรายการ</h3>
+            <button type="button" class="modal-close" onclick="closeConfirmModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="confirm-modal-msg" id="confirm-modal-msg"></div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn btn-ghost" id="confirm-modal-cancel" onclick="closeConfirmModal()">ยกเลิก</button>
+            <button class="btn btn-danger" id="confirm-modal-ok" onclick="__confirmModalOk()">ตกลง</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="leave-range-modal" class="modal-overlay hidden no-print">
+        <div class="modal-box" style="max-width:720px;">
+          <div class="modal-head">
+            <div class="modal-head-icon">🔍</div>
+            <h3>ค้นหาข้อมูลการลาตามช่วงวันที่</h3>
+            <button type="button" class="modal-close" onclick="closeLeaveRangeModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="lrng-grid">
+              <div class="f-row"><label>ตั้งแต่วันที่</label><input type="date" id="lrng-from"></div>
+              <div class="f-row"><label>ถึงวันที่</label><input type="date" id="lrng-to"></div>
+              <div class="f-row" style="position:relative;">
+                <label>ชื่อ (เว้นว่าง = ทุกคน)</label>
+                <input id="lrng-name" placeholder="พิมพ์เพื่อค้นหาชื่อ" autocomplete="off" oninput="__filterRangeNameSuggest()">
+                <div id="lrng-name-suggest" class="ac-suggest hidden"></div>
+              </div>
+            </div>
+            <div class="toolbar" style="margin:4px 0 12px;">
+              <button class="btn btn-primary" onclick="searchLeaveRange()">ค้นหา</button>
+              <button class="btn btn-ghost" onclick="clearLeaveRange()">ล้างเงื่อนไข</button>
+            </div>
+            <div id="leave-range-results"></div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn btn-ghost" onclick="closeLeaveRangeModal()">ปิด</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ LEAVE REGISTRY จ.3-03 ============ -->
+      <div class="panel" id="panel-leave-registry">
+        <div class="section">
+          <div class="section-head" style="border-bottom:none;">
+            <h2><span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2a930" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5M8 17h3"/></svg></span>
+              ทะเบียนการลาและการขาดราชการ (จ.3-03)
+            </h2>
+          </div>
+          <div class="reg-controlbar">
+            <div class="f-row" style="position:relative;flex:1 1 220px;min-width:200px;">
+              <label>ค้นหาพนักงาน</label>
+              <input id="reg-name" placeholder="พิมพ์เพื่อค้นหาชื่อ" autocomplete="off" oninput="__filterRegNameSuggest()" onchange="renderRegistry()" onfocus="this.select()" onclick="this.select()">
+              <div id="reg-name-suggest" class="ac-suggest hidden"></div>
+            </div>
+            <div class="f-row" style="flex:0 0 168px;">
+              <label>ปีงบประมาณ</label>
+              <select id="reg-fy" onchange="renderRegistry()"></select>
+            </div>
+            <div class="reg-actions">
+              <button class="btn btn-ghost" onclick="openLeaveRangeModal()">🔍 ค้นหาช่วงวันที่</button>
+              <button class="btn btn-primary" onclick="printRegistry()">🖶 พิมพ์ จ.3-03</button>
+            </div>
+          </div>
+          <div id="registry-onscreen"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- print-only staff roster -->
+<!-- print-only leave form -->
+<div class="print-only" id="print-leave-form"></div>
+<!-- print-only cancellation form -->
+<div class="print-only" id="print-cancel-form"></div>
+<!-- print-only leave registry (จ.3-03) -->
+<div class="print-only" id="print-registry"></div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const TODAY = new Date();
+
+/* ============================================================
+   เชื่อมต่อฐานข้อมูลกลาง (Google Sheets ผ่าน Google Apps Script Web App)
+   ใช้แทน localStorage สำหรับ 3 ตาราง: staff, leave_requests, public_holidays
+   หมายเหตุ: ต้องส่ง Content-Type เป็น text/plain;charset=utf-8 ตอน POST
+   (ไม่ใช่ application/json) ไม่งั้น Apps Script จะโดน CORS preflight บล็อก
+   ============================================================ */
+/* ============================================================
+   เชื่อมต่อฐานข้อมูลกลาง — Firebase Firestore ผ่าน firebase-layer.js
+   (แทน Google Apps Script เดิม: ฟังก์ชัน apiGet/apiGetMultiple/apiPost ใช้แบบเดิมทุกประการ
+    แต่ข้อมูลอยู่ใน Firestore แบบ realtime + แคชในเครื่อง ต้องล็อกอินก่อน สิทธิ์บังคับที่ฐานข้อมูล
+    และการลบทุกครั้งย้ายรายการไป "ถังขยะ" ที่ระบบหลัก กู้คืนได้)
+   options (อาร์กิวเมนต์ที่ 5 ของ apiPost) = {trash:false} ใช้กับการลบเพื่อบันทึกทับ ไม่ต้องเก็บลงถังขยะ
+   ============================================================ */
+function apiCurrentUsername(){ return (window.FBL && FBL.user && FBL.user.name) || 'ไม่ระบุผู้ใช้'; }
+async function apiGet(table){ return FBL.apiGet(table); }
+async function apiGetMultiple(tableNames){ return FBL.apiGetMultiple(tableNames); }
+async function apiPost(action, table, data, id, options){ return FBL.apiPost(action, table, data, id, options); }
+/* ============ จบส่วนเชื่อมต่อฐานข้อมูลกลาง ============ */
+
+/* ============================================================
+   ตรวจสอบสายทาง/กม. กับฐานข้อมูล "ทางหลวงควบคุม" ของระบบรองที่ 2 (งานสถิติและบริการประชาชน)
+   ฐานข้อมูลสายทางมีจุดแก้ไขเดียวที่ระบบรองที่ 2 — ระบบนี้เป็นเพียงผู้อ่าน/ใช้ตรวจสอบเท่านั้น
+   เดิมอ่านผ่าน localStorage คีย์ของระบบรองที่ 2 แต่ตั้งแต่ระบบรองที่ 2 ย้ายตาราง
+   controlled_routes ไปอยู่บนฐานข้อมูลกลางแล้ว (ไม่เขียน localStorage อีกต่อไป) จึงต้องโหลด
+   จาก apiGet('controlled_routes') ครั้งเดียวตอนเปิดหน้าแทน (ดู loadControlledRoutesCacheFromApi
+   ท้ายไฟล์) เก็บ cache ไว้ใช้แบบ synchronous เหมือนเดิมเพื่อไม่ต้องแก้ทุกจุดที่เรียกใช้
+   ============================================================ */
+let __controlledRoutesCache = [];
+function subsys2RouteFromApi(row){
+  return { id:row.id, routeNo:row.highway, controlNo:row.controlNo||'', section:row.sectionName,
+    ranges: Array.isArray(row.rangesJson) && row.rangesJson.length ? row.rangesJson : [[Number(row.kmStart)||0, Number(row.kmEnd)||0]],
+    distActual:Number(row.distActual)||0, dist2Lane:Number(row.dist2Lane)||0,
+    asphalt:Number(row.asphalt)||0, concrete:Number(row.concrete)||0, workQty:Number(row.workQty)||0 };
+}
+async function loadControlledRoutesCacheFromApi(){
+  try{
+    __controlledRoutesCache = (await apiGet('controlled_routes')).map(subsys2RouteFromApi);
+    populateRouteSelects();
+  }catch(err){
+    console.error('โหลดข้อมูลสายทางควบคุมจากฐานข้อมูลกลางล้มเหลว', err);
+  }
+}
+function getControlledRoutes(){
+  return __controlledRoutesCache;
+}
+function kmFmt(v){
+  v = Math.round(v*1000)/1000;
+  const whole = Math.floor(v+1e-9);
+  const frac = Math.round((v-whole)*1000);
+  return whole+'+'+String(frac).padStart(3,'0');
+}
+function routeRangeLabel(route){
+  return route.ranges.map(([s,e])=>`กม.${kmFmt(s)} - กม.${kmFmt(e)}`).join(' , ');
+}
+function findRoute(routeNo){
+  routeNo = String(routeNo||'').trim();
+  if(!routeNo) return null;
+  return getControlledRoutes().find(r=>r.routeNo===routeNo) || null;
+}
+function kmInRoute(route, km){
+  if(!route || km==null || isNaN(km)) return null;
+  return route.ranges.some(([s,e])=> km >= s-0.0011 && km <= e+0.0011);
+}
+function extractAllKm(text){
+  const re = /(\d+)\s*\+\s*(\d{1,3})/g;
+  let m, arr=[];
+  while((m = re.exec(String(text||'')))){
+    arr.push(parseInt(m[1],10) + parseInt(m[2].padEnd(3,'0').slice(0,3),10)/1000);
+  }
+  return arr;
+}
+/* จัดรูปแบบข้อความ "หมายเลขสายทาง" ให้แสดงผลพร้อม "ทล." นำหน้าเสมอเมื่อเป็นหมายเลขสายทาง (ไม่ยุ่งกับข้อความอื่นๆ ที่พิมพ์เอง) */
+function formatRouteDisplay(route){
+  const text = String(route||'').trim();
+  if(!text) return '';
+  if(/^ทล\./.test(text)) return text;
+  if(/^\d/.test(text)) return 'ทล.'+text;
+  return text;
+}
+// ต่อท้ายชื่อสายทาง (เช่น " — สาย บ้านค่าย-เขาไผ่") โดยอ้างอิงจากฐานข้อมูล "ทางหลวงควบคุม" ของระบบที่ 2
+// (__controlledRoutesCache) — คืนค่าว่างถ้าไม่พบสายทางที่ตรงกัน (เช่น พิมพ์เลขทางหลวงผิด หรือยังไม่มีในฐานข้อมูล)
+function complaintRouteNameSuffix(route){
+  const digits = String(route||'').trim().replace(/^ทล\.?\s*/,'').trim();
+  if(!digits) return '';
+  const r = findRoute(digits);
+  return (r && r.section) ? ' — สาย '+r.section : '';
+}
+/* จัดรูปแบบข้อความ "กม." ให้แสดงผลพร้อม "กม." นำหน้าเมื่อขึ้นต้นด้วยเลข กม. (เช่น 13+020) หรือใส่ "บริเวณ" นำหน้าเมื่อเป็นคำอธิบายสถานที่ล้วน */
+function formatKmDisplay(km){
+  const text = String(km||'').trim();
+  if(!text) return '';
+  if(/^กม\./.test(text)) return text;
+  if(/^\d+\s*\+\s*\d{1,3}/.test(text)) return 'กม.'+text;
+  return 'บริเวณ'+text;
+}
+function routeOptionsHtml(selected){
+  const routes = getControlledRoutes();
+  let opts = '<option value="">— เลือกสายทางที่ควบคุม —</option>';
+  opts += routes.map(r=>`<option value="${r.routeNo}" ${selected===r.routeNo?'selected':''}>ทล.${r.routeNo}</option>`).join('');
+  opts += `<option value="__other__" ${selected==='__other__'?'selected':''}>อื่นๆ / นอกฐานข้อมูลควบคุม</option>`;
+  return opts;
+}
+/* เติมตัวเลือกในทุก select ที่เก็บสายทาง (เรียกตอนโหลดหน้า/เปิดฟอร์ม และเมื่อฐานข้อมูลสายทางที่ระบบรองที่ 2 มีการแก้ไข) */
+function populateRouteSelects(){
+  ['nd-route','ed-route'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = routeOptionsHtml(el.value);
+  });
+  populateComplaintRouteFilter();
+}
+/* เติมตัวเลือกสายทางใน dropdown กรองของ "ติดตามคำร้องทุกข์" จากสายทางที่มีคำร้องทุกข์บันทึกไว้จริงเท่านั้น
+   (ไม่ใช่รายชื่อสายทางทั้งหมดในฐานข้อมูลสายทางที่ควบคุม — สายที่ยังไม่มีคำร้องทุกข์จะไม่ถูกแสดงในตัวกรองนี้) */
+function populateComplaintRouteFilter(){
+  const el = document.getElementById('complaint-route-filter');
+  if(!el) return;
+  const prev = el.value || 'all';
+  const routes = getControlledRoutes();
+  const usedRoutes = [...new Set(complaints.map(c=>c.route).filter(Boolean))];
+  let opts = '<option value="all">ทุกสายทาง</option>';
+  opts += usedRoutes.map(rt=>{
+    const match = routes.find(r=>'ทล.'+r.routeNo===rt);
+    return `<option value="${rt}">${formatRouteDisplay(rt)}${match?' — '+match.section:''}</option>`;
+  }).join('');
+  el.innerHTML = opts;
+  el.value = [...el.options].some(o=>o.value===prev) ? prev : 'all';
+}
+/* แสดง/ซ่อนช่องกรอกชื่อถนนอื่น เมื่อเลือก "อื่นๆ / นอกฐานข้อมูลควบคุม" */
+function onRouteSelectChange(selId){
+  const sel = document.getElementById(selId);
+  const other = document.getElementById(selId+'-other');
+  if(!sel || !other) return;
+  other.classList.toggle('hidden', sel.value !== '__other__');
+}
+function validateRouteKm(routeSelId, kmInputId, msgId){
+  const routeSel = document.getElementById(routeSelId);
+  const kmInput = document.getElementById(kmInputId);
+  const msg = document.getElementById(msgId);
+  if(!routeSel || !kmInput || !msg) return;
+  const routeNo = routeSel.value;
+  if(!routeNo){ msg.innerHTML = ''; return; }
+  if(routeNo==='__other__'){
+    msg.innerHTML = '<span style="color:var(--ink-400);font-size:12px;">⚠ สายทางนี้ไม่อยู่ในฐานข้อมูลสายทางที่หมวดควบคุม โปรดตรวจสอบความถูกต้องด้วยตนเองก่อนบันทึก</span>';
+    return;
+  }
+  const route = findRoute(routeNo);
+  if(!route){
+    msg.innerHTML = `<span class="hazard" style="font-size:12px;">⚠ ไม่พบหมายเลขสายทาง "${routeNo}" ในฐานข้อมูลสายทางที่หมวดควบคุม</span>`;
+    return;
+  }
+  const kms = extractAllKm(kmInput.value);
+  if(!kms.length){
+    msg.innerHTML = `<span style="color:var(--ink-400);font-size:12px;">ช่วงที่หมวดควบคุมของสายทางนี้: ${routeRangeLabel(route)}</span>`;
+    return;
+  }
+  const bad = kms.filter(k=>!kmInRoute(route,k));
+  if(bad.length){
+    msg.innerHTML = `<span class="hazard" style="font-size:12px;">⚠ กม.${bad.map(kmFmt).join(', ')} อยู่นอกช่วงที่หมวดควบคุมของ ทล.${route.routeNo} (${routeRangeLabel(route)}) กรุณาตรวจสอบเลข กม.</span>`;
+  } else {
+    msg.innerHTML = `<span style="color:var(--success);font-size:12px;">✓ กม. อยู่ในช่วงควบคุมของ ทล.${route.routeNo} (${route.section})</span>`;
+  }
+}
+function routeKmHasError(routeSelId, kmInputId){
+  const routeSel = document.getElementById(routeSelId);
+  const kmInput = document.getElementById(kmInputId);
+  if(!routeSel || !kmInput) return false;
+  const routeNo = routeSel.value;
+  if(!routeNo || routeNo==='__other__') return false;
+  const route = findRoute(routeNo);
+  if(!route) return true;
+  const kms = extractAllKm(kmInput.value);
+  return kms.some(k=>!kmInRoute(route,k));
+}
+function confirmRouteSave(routeSelId, kmInputId){
+  if(routeKmHasError(routeSelId, kmInputId)){
+    return confirm('ระบบตรวจพบว่าเลข กม. ที่ระบุอาจไม่ถูกต้อง (อยู่นอกฐานข้อมูลสายทางที่หมวดควบคุม)\n\nต้องการบันทึกข้อมูลนี้ต่อหรือไม่?');
+  }
+  return true;
+}
+/* อ่านค่าสายทางที่จะบันทึกจริงจากคู่ select+other: คืนค่า "ทล.<เลขสาย>" เมื่อเลือกจากฐานข้อมูล,
+   ข้อความที่พิมพ์เองเมื่อเลือก "อื่นๆ", หรือค่าว่างเมื่อยังไม่เลือก */
+function routeSelectValue(routeSelId){
+  const sel = document.getElementById(routeSelId);
+  if(!sel) return '';
+  if(sel.value === '__other__'){
+    const other = document.getElementById(routeSelId+'-other');
+    return other ? other.value.trim() : '';
+  }
+  return sel.value ? 'ทล.'+sel.value : '';
+}
+/* ตั้งค่า select+other ให้ตรงกับข้อความสายทางที่เคยบันทึกไว้ (รองรับข้อมูลเก่าที่เป็นข้อความอิสระด้วย) */
+function setRouteSelectFromStored(routeSelId, storedText){
+  populateRouteSelects();
+  const sel = document.getElementById(routeSelId);
+  const other = document.getElementById(routeSelId+'-other');
+  if(!sel) return;
+  const text = String(storedText||'').trim();
+  const match = getControlledRoutes().find(r => text === 'ทล.'+r.routeNo);
+  if(match){
+    sel.value = match.routeNo;
+    if(other){ other.value=''; other.classList.add('hidden'); }
+  } else if(text){
+    sel.value = '__other__';
+    if(other){ other.value = text; other.classList.remove('hidden'); }
+  } else {
+    sel.value = '';
+    if(other){ other.value=''; other.classList.add('hidden'); }
+  }
+}
+
+/* ข้อมูลพนักงานจริง 33 คน ย้ายไปอยู่ที่ Google Sheets แท็บ "staff" แล้ว (นำเข้าผ่าน seedStaffOnce() ใน Code.gs)
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน loadStaffFromApi() ด้านล่าง */
+let staff = [];
+async function loadStaffFromApi(){
+  try{
+    staff = await apiGet('staff');
+  }catch(err){
+    console.error('โหลดข้อมูลพนักงานจากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลพนักงานจากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+
+/* คำร้องทุกข์ — บันทึกเป็นรายการอิสระในฐานข้อมูลกลางแท็บ "complaints" ไม่ผูกกับ
+   ทะเบียนหนังสือรับอีกต่อไป (ก่อนหน้านี้ต้องคัดจาก docs[].complaint เท่านั้น ซึ่งไม่มี
+   ทางเพิ่มได้จริงในหน้าเว็บเลย) หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ */
+let complaints = [];
+async function loadComplaintsFromApi(){
+  try{
+    complaints = await apiGet('complaints');
+  }catch(err){
+    console.error('โหลดข้อมูลคำร้องทุกข์จากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลคำร้องทุกข์จากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+
+/* leaveHistory ไม่ใช่ตารางแยกอีกต่อไป — คำนวณสดจาก leaveRequests ทุกครั้งที่ต้องใช้
+   (ดูรายละเอียด REGISTRY_LEAVE_TYPES ด้านล่าง) แทนการเก็บเป็นอาร์เรย์แยก
+   ตัดการกรอง status==='approved' ออก (2569-09-18) — งานเอกสารลาจริงต้องผ่านการลงนามด้วยปากกา
+   บนใบลาอยู่แล้ว ถือว่าคำขอลาที่ยื่นเข้าระบบ = ลาจริงทั้งหมด ยกเว้นที่ถูกยกเลิกไปแล้ว (cancelled) */
+function computeLeaveHistory(){
+  return leaveRequests
+    .filter(r=>r.status!=='cancelled' && REGISTRY_LEAVE_TYPES.includes(r.type))
+    .map(r=>({fy:fiscalYearOf(r.from), name:r.name, type:r.type, from:r.from, to:r.to}));
+}
+
+let docs = [];
+
+/* ข้อมูลคำขอลาจริงย้ายไปอยู่ที่ Google Sheets แท็บ "leave_requests" แล้ว
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน loadLeaveRequestsFromApi() ด้านล่าง */
+let leaveRequests = [];
+async function loadLeaveRequestsFromApi(){
+  try{
+    leaveRequests = await apiGet('leave_requests');
+  }catch(err){
+    console.error('โหลดข้อมูลคำขอลาจากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลการลาจากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+
+/* วันหยุดนักขัตฤกษ์ที่ใช้คำนวณจำนวนวันลาแบบต่อเนื่องหลายวัน (ไม่นับเป็นวันลา เช่นเดียวกับวันเสาร์-อาทิตย์)
+   ข้อมูลจริง 18 รายการย้ายไปอยู่ที่ Google Sheets แท็บ "public_holidays" แล้ว (นำเข้าผ่าน
+   seedPublicHolidaysOnce() ใน Code.gs — ดูไฟล์ seedLeaveAndHolidaysOnce.gs.txt ในโฟลเดอร์เดียวกัน)
+   หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดู/เพิ่ม/ลบได้ที่ปุ่ม "🗓 วันหยุดนักขัตฤกษ์" ในหน้าการลา
+   (แก้ไขได้เฉพาะผู้มีสิทธิ์แก้ไข) — ตารางนี้ใช้ "date" เป็นกุญแจแทน id (ไม่มีคอลัมน์ id) */
+let publicHolidays = [];
+async function loadPublicHolidaysFromApi(){
+  try{
+    publicHolidays = await apiGet('public_holidays');
+  }catch(err){
+    console.error('โหลดข้อมูลวันหยุดนักขัตฤกษ์จากฐานข้อมูลกลางล้มเหลว', err);
+    alert('โหลดข้อมูลวันหยุดนักขัตฤกษ์จากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
+  }
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function initials(n){ const clean=n.replace(/นางสาว|นาย|นาง/g,'').trim().split(/\s+/); return (clean[0]||'').slice(0,1)+(clean[1]||'').slice(0,1); }
+function activeStaff(){ return staff.filter(s=>s.status==='ok'); }
+function tempActive(){ return staff.filter(s=>s.ptype==='ลูกจ้างชั่วคราว' && s.status==='ok'); }
+// สิทธิการลาของลูกจ้างชั่วคราว (คนงาน) ต่อคนต่อปีงบประมาณ — รีเซ็ทใหม่ทุกปี ไม่ทบไปปีถัดไป
+const LEAVE_QUOTA_WORKER = {'ป่วย':15, 'พักผ่อน':10};
+// ประเภทการลาที่นับเข้าทะเบียนคุมลา (จ.3-03) / สถิติการลา — ไม่รวม "ไปราชการ" (ไม่ใช่การลา)
+// รวม "ขาดงาน" ไว้ด้วย (แม้ไม่มีสิทธิ์ ไม่ใช่การลาที่ได้รับอนุมัติ) เพื่อให้มีร่องรอยในทะเบียนสำหรับตรวจสอบย้อนหลังได้
+// — แสดงผล/นับรวมในแถว "ป่วย" ของทะเบียน (ดู __registryLeaveType() ใน registryOnscreenHTML/registryPrintHTML)
+// ไม่กระทบสิทธิ์โควตาป่วย เพราะจุดตรวจโควตา (LEAVE_QUOTA_WORKER) เช็คจาก type==='ป่วย' ตรงๆ เท่านั้น ไม่ผ่านค่านี้
+const REGISTRY_LEAVE_TYPES = ['ป่วย','กิจ','พักผ่อน','คลอดบุตร','ขาดงาน'];
+// สำหรับแสดงผลในทะเบียนคุมลา (จ.3-03): "ขาดงาน" ให้นับรวม/แสดงในแถว-คอลัมน์ "ป่วย"
+function __registryLeaveType(type){ return type==='ขาดงาน' ? 'ป่วย' : type; }
+function __isTempWorker(name){
+  const s = staff.find(x=>x.name===name);
+  return !!(s && s.ptype==='ลูกจ้างชั่วคราว');
+}
+// ข้อกำหนดการลางานเพิ่มเติม: ตำแหน่ง "คนงาน" ที่เริ่มงานใหม่ ภายใน 6 เดือนแรกนับจากวันที่เริ่มงาน
+// ยังไม่มีสิทธิ์ใช้การลา (ป่วย/กิจ/พักผ่อน/คลอดบุตร) — พ้นกำหนด 6 เดือนแล้วจึงเริ่มใช้สิทธิ์ได้ตามปกติ
+// ไม่กระทบ "ไปราชการ" (ไม่ใช่สิทธิ์การลา) และ "ขาดงาน" (ทางเลือกกรณีไม่มีสิทธิ์อยู่แล้ว)
+// พนักงาน "คนงาน" ที่ไม่มีการบันทึกวันที่เริ่มงาน (staff เดิมในระบบ) ถือว่าพ้นช่วงทดลองงานแล้ว ไม่ถูกจำกัดสิทธิ์
+function __leaveEligibleDate(s){
+  if(!s || s.role!=='คนงาน' || !s.startDate) return null;
+  const d = new Date(s.startDate+'T00:00:00');
+  d.setMonth(d.getMonth()+6);
+  return d.toISOString().slice(0,10);
+}
+function __leaveRestrictionInfo(name, asOfISO){
+  const s = staff.find(x=>x.name===name);
+  const eligibleDate = __leaveEligibleDate(s);
+  if(!eligibleDate) return null;
+  const asOf = asOfISO || TODAY.toISOString().slice(0,10);
+  if(asOf < eligibleDate) return {eligibleDate};
+  return null;
+}
+function __workerLeaveUsed(name, type, fy){
+  return computeLeaveHistory().filter(r=>r.name===name && r.fy===fy && r.type===type).reduce((a,r)=>a+daysBetween(r.from,r.to),0);
+}
+// ระบบเตือนใกล้เกษียณอายุ (60 ปีบริบูรณ์) — วันที่เกษียณอายุราชการจริงคือวันสิ้นปีงบประมาณ (30 กันยายน)
+// ของปีงบประมาณที่บุคคลนั้นมีอายุครบ 60 ปีบริบูรณ์ ตามระเบียบราชการ
+function __retirementDate(s){
+  if(!s || !s.birth) return null;
+  const b = new Date(s.birth+'T00:00:00');
+  const d60 = new Date(b.getFullYear()+60, b.getMonth(), b.getDate());
+  const d60ISO = d60.getFullYear()+'-'+String(d60.getMonth()+1).padStart(2,'0')+'-'+String(d60.getDate()).padStart(2,'0');
+  const fy = fiscalYearOf(d60ISO);
+  return (fy-543)+'-09-30';
+}
+function __retirementInfo(s){
+  const rd = __retirementDate(s);
+  if(!rd) return null;
+  const todayISO = TODAY.toISOString().slice(0,10);
+  if(todayISO >= rd) return {status:'overdue', date:rd};
+  const diffDays = Math.round((new Date(rd+'T00:00:00') - new Date(todayISO+'T00:00:00'))/86400000);
+  if(diffDays <= 365) return {status:'near', date:rd};
+  return null;
+}
+function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso+'T00:00:00'); const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']; return d.getDate()+' '+months[d.getMonth()]+' '+(d.getFullYear()+543-2500).toString().padStart(2,'0'); }
+const THAI_MONTH_ABBR = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const THAI_MONTH_FULL = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+// วันที่แบบเต็ม ไม่ย่อ เช่น "27 มีนาคม 2535" — ใช้เฉพาะจุดที่ต้องการความเป็นทางการ (เช่น วันเกิดในโมดัลบุคลากร)
+// ไม่ใช้แทน fmtDate() ทั่วทั้งไฟล์ เพราะจุดอื่นๆ (วันที่ลา, วันหยุด ฯลฯ) ใช้รูปแบบย่ออยู่แล้วและไม่ได้ขอให้เปลี่ยน
+function fmtDateFull(iso){
+  if(!iso) return '—';
+  const d = new Date(iso+'T00:00:00');
+  return d.getDate()+' '+THAI_MONTH_FULL[d.getMonth()]+' '+(d.getFullYear()+543);
+}
+// วันที่วันนี้แยกเป็น {day, monthFull, yearBE} — ใช้กรอกบรรทัด "วันที่เขียน" ในแบบฟอร์มพิมพ์ ที่เดิมปล่อยว่างไว้
+function todayFullParts(){
+  return { day: TODAY.getDate(), monthFull: THAI_MONTH_FULL[TODAY.getMonth()], yearBE: TODAY.getFullYear()+543 };
+}
+function docMonthKey(d){
+  // คืนค่า 'YYYY-MM' (ปี ค.ศ.) สำหรับใช้กรองรายเดือน — ใช้ dateISO ถ้ามี ไม่งั้นแกะจากข้อความวันที่ไทยที่บันทึกไว้ (รองรับข้อมูลเก่า)
+  if(d.dateISO) return d.dateISO.slice(0,7);
+  if(!d.date) return null;
+  const m = d.date.match(/^(\d{1,2})\s+([ก-ฮ.]+)\s+(\d{2})$/);
+  if(!m) return null;
+  const mi = THAI_MONTH_ABBR.indexOf(m[2]);
+  if(mi<0) return null;
+  const gYear = 2500 + parseInt(m[3],10) - 543;
+  return gYear + '-' + String(mi+1).padStart(2,'0');
+}
+function docSortKeyISO(d){
+  // ใช้วันที่ที่สะท้อนความ "ล่าสุด" ของหนังสือจริง สำหรับหนังสือรับใช้วันที่รับของหมวด (หรือแขวง ถ้าไม่มี) เพราะเป็นวันที่หนังสือเข้าสู่หมวดจริง ไม่ใช่วันที่ปรากฏบนหนังสือซึ่งอาจเก่ากว่าวันที่รับจริงหลายวัน — หนังสือส่งไม่มีวันรับ จึงใช้วันที่หนังสือ ไม่ว่ากรณีใดจะไม่ใช้ลำดับการกรอกข้อมูลเข้าระบบ
+  const iso = (d.type==='in') ? (d.sectionDateISO || d.provinceDateISO || d.dateISO) : d.dateISO;
+  if(iso) return iso;
+  if(!d.date) return '0000-00-00';
+  const m = d.date.match(/^(\d{1,2})\s+([ก-ฮ.]+)\s+(\d{2})$/);
+  if(!m) return '0000-00-00';
+  const mi = THAI_MONTH_ABBR.indexOf(m[2]);
+  if(mi<0) return '0000-00-00';
+  const gYear = 2500 + parseInt(m[3],10) - 543;
+  return gYear + '-' + String(mi+1).padStart(2,'0') + '-' + String(parseInt(m[1],10)).padStart(2,'0');
+}
+/* ตัวเลขสำหรับไล่ลำดับรองเมื่อวันที่ตรงกัน — ใช้เลขรับหมวด (หรือแขวง ถ้าไม่มี) เพราะเป็นเลขที่ออกเรียงตามลำดับการรับจริง แม่นยำกว่าวันที่อย่างเดียวเมื่อรับหลายฉบับในวันเดียวกัน ดึงเฉพาะตัวเลขจากข้อความ (กันกรณีมีตัวอักษรปน) คืน NaN ถ้าแยกตัวเลขไม่ได้ */
+function docSortSecondaryNum(d){
+  const raw = (d.sectionNo || d.provinceNo || '').match(/\d+/);
+  return raw ? parseInt(raw[0], 10) : NaN;
+}
+function monthKeyLabel(key){
+  const [y,m] = key.split('-').map(Number);
+  return THAI_MONTH_FULL[m-1] + ' ' + (y+543);
+}
+let __docMonthFilterInitialized = false;
+function renderDocMonthOptions(){
+  const sel = document.getElementById('doc-month-filter');
+  if(!sel) return;
+  const prev = sel.value || 'all';
+  const keys = [...new Set(docs.map(docMonthKey).filter(Boolean))].sort().reverse();
+  sel.innerHTML = '<option value="all">ทุกเดือน</option>' + keys.map(k=>`<option value="${k}">${monthKeyLabel(k)}</option>`).join('');
+  if(!__docMonthFilterInitialized){
+    __docMonthFilterInitialized = true;
+    sel.value = keys.length ? keys[0] : 'all';
+  } else {
+    sel.value = keys.includes(prev) ? prev : 'all';
+  }
+}
+function ageFromBirth(iso){ if(!iso) return null; const b=new Date(iso+'T00:00:00'); let age=TODAY.getFullYear()-b.getFullYear(); const m=TODAY.getMonth()-b.getMonth(); if(m<0||(m===0&&TODAY.getDate()<b.getDate())) age--; return age; }
+function isPublicHolidayISO(iso){ return publicHolidays.some(h=>h.date===iso); }
+function __isoOfDate(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+/* นับ "จำนวนวันทำการ" ตั้งแต่ a ถึง b (รวมปลายทั้งสองด้าน) สำหรับการลางานแบบต่อเนื่องหลายวัน
+   ไม่นับวันเสาร์-อาทิตย์ และวันที่อยู่ในรายการ publicHolidays — จัดการรายการวันหยุดได้ที่ปุ่ม "🗓 วันหยุดนักขัตฤกษ์" ในหน้าการลา
+   ใช้คำนวณจำนวนวันลาทุกจุดในระบบ (รวมรายการที่เคยบันทึกไว้แล้ว เพราะ from/to ของแต่ละรายการยังอยู่ครบ มีแต่ตัวฟังก์ชันนี้ที่เปลี่ยน) */
+function daysBetween(a,b){
+  if(!a||!b) return 0;
+  const start = new Date(a+'T00:00:00'), end = new Date(b+'T00:00:00');
+  if(isNaN(start.getTime())||isNaN(end.getTime())||end<start) return 0;
+  let count = 0;
+  const cur = new Date(start);
+  while(cur<=end){
+    const dow = cur.getDay();
+    if(dow!==0 && dow!==6 && !isPublicHolidayISO(__isoOfDate(cur))) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
+function fmtMoney(n){ return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function thaiBahtText(num){
+  const numArr=['ศูนย์','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
+  const posArr=['','สิบ','ร้อย','พัน','หมื่น','แสน','ล้าน'];
+  num = Math.round(num*100)/100;
+  const intPart = Math.floor(num); const dec = Math.round((num-intPart)*100);
+  function conv(nStr){
+    nStr=String(nStr); let out=''; const len=nStr.length;
+    for(let i=0;i<len;i++){
+      const d=parseInt(nStr[i]); const pos=len-i-1;
+      if(d===0) continue;
+      if(pos===0 && d===1 && len>1){ out+='เอ็ด'; }
+      else if(pos===1 && d===2){ out+='ยี่'+posArr[1]; }
+      else if(pos===1 && d===1){ out+=posArr[1]; }
+      else { out+=numArr[d]+posArr[pos]; }
+    }
+    return out;
+  }
+  let text = intPart>0 ? conv(intPart)+'บาท' : 'ศูนย์บาท';
+  text += dec>0 ? conv(dec)+'สตางค์' : 'ถ้วน';
+  return text;
+}
+function fiscalYearOf(iso){ const d=new Date(iso+'T00:00:00'); const by=d.getFullYear()+543; return d.getMonth()+1>=10 ? by+1 : by; }
+
+/* ============================================================
+   LOGIN / PERMISSIONS
+   ตัวอย่างต้นแบบ: อนุญาตให้ "หัวหน้าหมวด" เป็นผู้เดียวที่แก้ไขข้อมูลได้
+   (นี่เป็นการจำลองสิทธิ์ฝั่งหน้าเว็บเท่านั้น ยังไม่ใช่ระบบยืนยันตัวตนที่ปลอดภัยจริง
+   เพราะไม่มีฐานข้อมูล/เซิร์ฟเวอร์ฝั่งหลังบ้านรองรับ)
+   ============================================================ */
+const ADMIN_NAMES = ["นายอิศรินทร์  อรุณสวัสดิ์", "นางสาวนันท์นภัสธ์  รัตนเสถียร", "นางเพียงใจ  เงินแท้", "นางอุบลจันทน์  สุขคุ้ม"]; // หัวหน้าหมวด, ผู้ช่วยหัวหน้าหมวด และผู้ที่ได้รับมอบหมายให้แก้ไขข้อมูลได้เพิ่มเติมอีก 2 ท่าน
+let pinCodes = { "นายอิศรินทร์  อรุณสวัสดิ์": "1234", "นางสาวนันท์นภัสธ์  รัตนเสถียร": "5678" }; // รหัสตั้งต้นสำหรับต้นแบบ (จำลองฝั่งหน้าเว็บเท่านั้น)
+let accessLog = []; // {time, name, result}
+let currentUser = null;
+let adminVerified = false;
+function logAccess(name, result){
+  accessLog.unshift({time:new Date().toLocaleString('th-TH-u-ca-buddhist',{dateStyle:'short',timeStyle:'short'}), name, result});
+  if(accessLog.length>50) accessLog.pop();
+}
+/* รายชื่อผู้ใช้ระบบ (ID) ที่อนุญาตให้เข้าสู่ระบบได้เท่านั้น */
+const SYSTEM_USERS = ["นายอิศรินทร์  อรุณสวัสดิ์", "นางสาวนันท์นภัสธ์  รัตนเสถียร", "นางสาววันทนา  มีมานะ", "นางอุบลจันทน์  สุขคุ้ม", "นางเพียงใจ  เงินแท้", "นางสาวพนารี แวววงษ์"];
+/* บทบาท 3 ระดับ (ตั้งค่าที่ระบบหลักเท่านั้น): 'owner'/'staff' แก้ไขได้ที่นี่, 'section' เข้าดูได้แต่แก้ไขไม่ได้ */
+/* สิทธิ์แก้ไขของหน้านี้มาจากบัญชีที่ล็อกอิน (ตั้งค่าที่ระบบหลัก → ผู้ใช้งานและสิทธิ์) — บังคับจริงที่ firestore.rules */
+function isAdmin(){ return !!(window.FBL && FBL.canEdit && FBL.canEdit('s1')); }
+function populateLogin(){
+  const badge = document.getElementById('login-badge');
+  if(!badge) return;
+  const logoutBtn = document.getElementById('logout-btn');
+  const s = __getSharedSession();
+  if(s && s.name){
+    badge.innerHTML = s.name + (s.position ? '<span class="um-position">ตำแหน่ง '+s.position+'</span>' : '') + ((window.FBL && FBL.permBadgeHtml) ? FBL.permBadgeHtml() : '');
+    badge.className = 'pill ' + (isAdmin() ? 'pill-ok' : 'pill-warn');
+    if(logoutBtn) logoutBtn.style.display = 'flex';
+  } else {
+    badge.textContent = 'ดูอย่างเดียว — เข้าสู่ระบบที่ระบบหลักเพื่อแก้ไข';
+    badge.className = 'pill pill-neutral';
+    if(logoutBtn) logoutBtn.style.display = 'none';
+  }
+  __applyRoleSidebar();
+}
+/* บทบาท "เจ้าหน้าที่" (staff) มองไม่เห็นระบบหลัก (งานบริหารหมวด) เลย — ซ่อนทั้งลิงก์และหัวข้อกลุ่ม
+   "ระบบหลัก"/"ระบบรอง" ในแถบด้านข้าง เหลือแค่รายการ 4 ระบบรองเปล่าๆ ไม่มีหัวข้อกลุ่ม */
+/* ซ่อนลิงก์ระบบที่บัญชีนี้ไม่มีสิทธิ์เข้า (จัดการโดย firebase-layer.js) */
+function __applyRoleSidebar(){ if(window.FBL && FBL.applyNav) FBL.applyNav(); }
+function doLogin(){ populateLogin(); }
+/* ออกจากระบบได้จากทุกระบบย่อย ไม่ต้องย้อนกลับไปที่ระบบหลักเสมอไป — ล้าง session ที่ใช้ร่วมกันแล้วรีเฟรชสิทธิ์/หน้าจอทันที */
+/* ออกจากระบบ (Firebase) — ใช้ได้จากทุกหน้า หลังออกจะกลับไปหน้าเข้าสู่ระบบ */
+function doLogout(){ if(window.FBL) FBL.logout(); }
+function __toggleUserMenu(e){
+  if(e) e.stopPropagation();
+  document.getElementById('user-menu-panel').classList.toggle('hidden');
+}
+document.addEventListener('click', function(e){
+  const panel = document.getElementById('user-menu-panel');
+  const wrap = document.querySelector('.user-menu-wrap');
+  if(panel && !panel.classList.contains('hidden') && wrap && !wrap.contains(e.target)){
+    panel.classList.add('hidden');
+  }
+});
+window.addEventListener('storage', function(e){
+  if(e.key==='saraban_shared_session'){ populateLogin(); renderAll(); __renderAvatar(); }
+  if(e.key===__PROFILE_KEY){ __renderAvatar(); }
+});
+/* ============ Avatar ผู้ใช้ (รูปโปรไฟล์) ============ */
+const __PROFILE_KEY = 'saraban_user_profiles_v1';
+function __getProfiles(){
+  try{ return JSON.parse(localStorage.getItem(__PROFILE_KEY)||'{}'); }catch(e){ return {}; }
+}
+function __saveProfilePhoto(name, dataUrl){
+  const profiles = __getProfiles();
+  profiles[name] = { photo: dataUrl };
+  localStorage.setItem(__PROFILE_KEY, JSON.stringify(profiles));
+}
+function __getSharedSession(){ return (window.FBL && FBL.legacySession) ? FBL.legacySession() : null; }
+const __GUEST_AVATAR_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>';
+function __initials(name){
+  if(!name) return 'จท';
+  const cleaned = name.replace(/^นาย|^นางสาว|^นาง/,'').trim();
+  return cleaned.slice(0,2) || 'จท';
+}
+function __renderAvatar(){
+  const el = document.getElementById('user-avatar');
+  if(!el) return;
+  const s = __getSharedSession();
+  if(s && s.role==='admin'){
+    const profiles = __getProfiles();
+    const photo = (profiles[s.name] && profiles[s.name].photo) || s.photo || null;
+    if(photo){
+      el.style.backgroundImage = `url('${photo}')`;
+      el.style.backgroundSize='cover'; el.style.backgroundPosition='center';
+      el.textContent='';
+    } else {
+      el.style.backgroundImage='none';
+      el.textContent = __initials(s.name);
+    }
+    el.style.cursor='pointer';
+    el.title = s.name + ' — คลิกเพื่อดูข้อมูล/ออกจากระบบ';
+  } else {
+    el.style.backgroundImage='none';
+    el.innerHTML = __GUEST_AVATAR_SVG;
+    el.style.cursor='pointer';
+    el.title='ผู้เยี่ยมชม (ดูอย่างเดียว)';
+  }
+}
+__renderAvatar();
+
+/* ============================================================
+   CLOCK
+   ============================================================ */
+
+/* ============================================================
+   SECTION SWITCHING
+   ============================================================ */
+document.querySelectorAll('.sec-tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.sec-tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.sec).classList.add('active');
+  });
+});
+
+/* ============================================================
+   COMPLAINTS TRACKING (รายการอิสระ บันทึก/แก้ไขได้เองผ่านโมดัลลอย)
+   ============================================================ */
+function complaintStatusPill(st){
+  const map = {'รอดำเนินการ':'pill-warn','กำลังดำเนินการ':'pill-neutral','รอหน่วยงานภายนอกดำเนินการ':'pill-warn','ดำเนินการแล้วเสร็จ':'pill-ok'};
+  return `<span class="pill ${map[st]||'pill-neutral'}">${st||'ยังไม่ระบุ'}</span>`;
+}
+function complaintDaysElapsed(dateISO){
+  if(!dateISO) return null;
+  return Math.floor((TODAY - new Date(dateISO+'T00:00:00'))/86400000);
+}
+function renderComplaints(){
+  populateComplaintRouteFilter();
+  const routeFilter = document.getElementById('complaint-route-filter')?.value || 'all';
+  let list = complaints;
+  if(routeFilter!=='all'){
+    list = list.filter(c=>c.route===routeFilter);
+  }
+  document.getElementById('complaint-body').innerHTML = list.map((c,idx)=>{
+    const i = complaints.indexOf(c);
+    const days = complaintDaysElapsed(c.date);
+    const daysDisp = days===null ? '—' : (c.status==='ดำเนินการแล้วเสร็จ' ? `${days} วัน` : (days>=7 ? `<span class="hazard-soft">${days} วัน</span>` : `${days} วัน`));
+    return `<tr style="cursor:pointer;" onclick="openComplaintDetail(${i})" title="กดเพื่อดูรายละเอียด">
+      <td>${idx+1}</td>
+      <td>${c.date?fmtDate(c.date):'—'}</td>
+      <td>${c.receiveNo||'—'}</td>
+      <td>${formatRouteDisplay(c.route)||'—'}</td>
+      <td>${formatKmDisplay(c.km)||'—'}</td>
+      <td style="max-width:220px">${c.subject||''}</td>
+      <td>${c.remark||'—'}</td>
+      <td>${complaintStatusPill(c.status)}</td>
+      <td>${daysDisp}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--ink-400);padding:20px;">ยังไม่มีคำร้องทุกข์ที่บันทึกไว้</td></tr>`;
+  const total = list.length, done = list.filter(c=>c.status==='ดำเนินการแล้วเสร็จ').length;
+  document.getElementById('complaint-foot').innerHTML = `ทั้งหมด ${total} เรื่อง · ดำเนินการแล้วเสร็จ ${done} เรื่อง · อยู่ระหว่างติดตาม ${total-done} เรื่อง`;
+}
+
+/* ---------- เพิ่ม / ดู / แก้ไขคำร้องทุกข์ (โมดัลลอยเดียวกัน สลับโหมด) ---------- */
+let complaintModalIndex = null; // index ใน complaints ที่กำลังดู/แก้ไข (null = โหมดเพิ่มใหม่)
+let complaintModalMode = 'closed'; // 'add' | 'view' | 'edit'
+function emptyComplaintForm(){ return {date:'', receiveNo:'', route:'', km:'', subject:'', remark:'', status:'รอดำเนินการ'}; }
+function openAddComplaint(){
+  if(!isAdmin()){ alert('ต้องเข้าสู่ระบบด้วยสิทธิ์แก้ไข (หัวหน้าหมวด/ผู้ช่วยหัวหน้าหมวด) จึงจะเพิ่มข้อมูลได้'); return; }
+  complaintModalIndex = null;
+  complaintModalMode = 'add';
+  renderComplaintModal(emptyComplaintForm());
+  document.getElementById('complaint-modal').classList.remove('hidden');
+}
+function openComplaintDetail(i){
+  complaintModalIndex = i;
+  complaintModalMode = 'view';
+  renderComplaintModal(complaints[i]);
+  document.getElementById('complaint-modal').classList.remove('hidden');
+}
+function closeComplaintModal(){
+  complaintModalIndex = null;
+  complaintModalMode = 'closed';
+  document.getElementById('complaint-modal').classList.add('hidden');
+}
+function startComplaintEdit(){
+  if(!isAdmin()) return;
+  complaintModalMode = 'edit';
+  renderComplaintModal(complaints[complaintModalIndex]);
+}
+function cancelComplaintEdit(){
+  if(complaintModalMode==='edit' && complaintModalIndex!==null){
+    complaintModalMode = 'view';
+    renderComplaintModal(complaints[complaintModalIndex]);
+  } else {
+    closeComplaintModal();
+  }
+}
+const COMPLAINT_STATUS_OPTIONS = ['รอดำเนินการ','กำลังดำเนินการ','รอหน่วยงานภายนอกดำเนินการ','ดำเนินการแล้วเสร็จ'];
+/* ไทม์ไลน์ความคืบหน้าของคำร้องทุกข์ เก็บเป็น JSON array ในฟิลด์ updatesJson ของ backend
+   ({date, by, note, statusAfter}) แยกจาก remark เดิม (ข้อความตอนบันทึกคำร้องครั้งแรกเท่านั้น) */
+function complaintUpdatesOf(c){
+  try{ const arr = JSON.parse(c.updatesJson||'[]'); return Array.isArray(arr) ? arr : []; }
+  catch(e){ return []; }
+}
+// ไทม์ไลน์แบบเรียงเวลา (รับเรื่อง → แต่ละความคืบหน้า → ปัจจุบัน ถ้ายังไม่ปิดเรื่อง) พร้อมจำนวนวันที่ใช้ในแต่ละขั้น
+// (ระยะห่างจากโหนดก่อนหน้าถึงโหนดนี้) แทนแบบเดิมที่แสดงแค่ log การอัปเดตเรียงใหม่ไปเก่า ไม่มีจุดเริ่มต้น/สรุปวัน
+function complaintTimelineHtml(c){
+  const updates = complaintUpdatesOf(c);
+  const nodes = [{
+    date: c.date,
+    label: 'รับเรื่อง' + (c.receiveNo ? (' (เลขรับแขวง ' + c.receiveNo + ')') : ''),
+    note: c.subject || '',
+    statusAfter: null,
+    dotColor: 'var(--navy-900)'
+  }];
+  updates.forEach(u=>nodes.push({
+    date: u.date,
+    label: u.by ? ('บันทึกโดย ' + u.by) : 'บันทึกความคืบหน้า',
+    note: u.note || '',
+    statusAfter: u.statusAfter || null,
+    dotColor: 'var(--line)'
+  }));
+  const isOpen = c.status !== 'ดำเนินการแล้วเสร็จ';
+  if(nodes.length) nodes[nodes.length-1].dotColor = isOpen ? 'var(--line)' : 'var(--orange-600)';
+  const rows = nodes.map((n,i)=>{
+    const nextDate = nodes[i+1] ? nodes[i+1].date : (isOpen ? TODAY.toISOString().slice(0,10) : null);
+    let daysLabel = '';
+    if(n.date && nextDate){
+      const d = Math.floor((new Date(nextDate+'T00:00:00') - new Date(n.date+'T00:00:00'))/86400000);
+      if(d>=0) daysLabel = `ใช้เวลาในขั้นนี้ ${d} วัน`;
+    }
+    return `<div style="position:relative;padding:0 0 16px 22px;">
+      <div style="position:absolute;left:0;top:2px;width:12px;height:12px;border-radius:50%;background:${n.dotColor};border:2px solid #fff;box-shadow:0 0 0 1px var(--line);"></div>
+      <div style="font-size:11.5px;color:var(--ink-400);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+        <span>${n.date?fmtDate(n.date):'—'} · ${n.label}</span>
+        ${n.statusAfter?complaintStatusPill(n.statusAfter):''}
+      </div>
+      <div style="font-size:13.5px;color:var(--ink-900);margin-top:2px;">${n.note||''}</div>
+      ${daysLabel?`<div style="font-size:11px;color:var(--ink-400);margin-top:2px;">${daysLabel}</div>`:''}
+    </div>`;
+  }).join('');
+  const nowRow = isOpen ? `<div style="position:relative;padding-left:22px;">
+    <div style="position:absolute;left:0;top:2px;width:12px;height:12px;border-radius:50%;background:var(--paper-100);border:2px dashed var(--ink-400);"></div>
+    <div style="font-size:11.5px;color:var(--ink-400);">ปัจจุบัน — ${fmtDate(TODAY.toISOString().slice(0,10))}</div>
+  </div>` : '';
+  return `<div style="position:relative;">
+    <div style="position:absolute;left:5px;top:8px;bottom:${isOpen?'20px':'8px'};width:2px;background:var(--line);"></div>
+    ${rows}${nowRow}
+  </div>`;
+}
+async function addComplaintUpdate(){
+  if(!isAdmin() || complaintModalIndex===null) return;
+  const noteEl = document.getElementById('cp-update-note');
+  const statusEl = document.getElementById('cp-update-status');
+  const note = noteEl.value.trim();
+  if(!note){ alert('กรุณากรอกข้อความความคืบหน้า'); return; }
+  const c = complaints[complaintModalIndex];
+  const newStatus = statusEl.value;
+  const updates = complaintUpdatesOf(c);
+  updates.push({ date: new Date().toISOString().slice(0,10), by: apiCurrentUsername(), note, statusAfter: newStatus });
+  const btn = document.getElementById('cp-update-btn');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+  try{
+    const saved = await apiPost('update', 'complaints', {...c, status: newStatus, updatesJson: JSON.stringify(updates)});
+    Object.assign(c, saved);
+  }catch(err){
+    alert('บันทึกความคืบหน้าไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    btn.disabled = false; btn.textContent = 'บันทึกความคืบหน้า';
+    return;
+  }
+  renderComplaintModal(c);
+  renderComplaints();
+}
+function renderComplaintModal(data){
+  const isView = complaintModalMode==='view';
+  document.getElementById('cp-icon').textContent = complaintModalMode==='add' ? '📝' : (complaintModalMode==='edit' ? '✏️' : '📋');
+  document.getElementById('cp-title').textContent = complaintModalMode==='add' ? 'เพิ่มคำร้องทุกข์ใหม่' : (complaintModalMode==='edit' ? 'แก้ไขคำร้องทุกข์' : 'รายละเอียดคำร้องทุกข์');
+  const body = document.getElementById('cp-body');
+  const foot = document.getElementById('cp-foot');
+  if(isView){
+    body.innerHTML = `
+      <div class="detail-grid" style="grid-template-columns:repeat(2,1fr);">
+        <div><div class="d-label">วันที่</div><div class="d-val">${data.date?fmtDate(data.date):'—'}</div></div>
+        <div><div class="d-label">เลขรับแขวง</div><div class="d-val">${data.receiveNo||'—'}</div></div>
+        <div><div class="d-label">สายทาง</div><div class="d-val">${formatRouteDisplay(data.route)?formatRouteDisplay(data.route)+complaintRouteNameSuffix(data.route):'—'}</div></div>
+        <div><div class="d-label">กม.</div><div class="d-val">${formatKmDisplay(data.km)||'—'}</div></div>
+        <div style="grid-column:1/-1;"><div class="d-label">เรื่อง</div><div class="d-val">${data.subject||'—'}</div></div>
+        <div style="grid-column:1/-1;"><div class="d-label">หมายเหตุ</div><div class="d-val">${data.remark||'—'}</div></div>
+        <div><div class="d-label">สถานะความคืบหน้า</div><div>${complaintStatusPill(data.status)}</div></div>
+      </div>
+      <div style="margin-top:16px;">
+        <div class="d-label" style="margin-bottom:4px;">ไทม์ไลน์ความคืบหน้า</div>
+        ${complaintTimelineHtml(data)}
+      </div>
+      ${isAdmin()?`
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);">
+        <div class="f-row" style="margin-bottom:8px;"><label>บันทึกความคืบหน้าใหม่</label><input class="edit-input" id="cp-update-note" placeholder="เช่น ประสานหน่วยงานที่เกี่ยวข้องแล้ว, ดำเนินการซ่อมแซมเรียบร้อย"></div>
+        <div class="two-col" style="align-items:end;">
+          <div class="f-row" style="margin-bottom:0;"><label>สถานะหลังบันทึกนี้</label><select class="edit-input" id="cp-update-status">
+            ${COMPLAINT_STATUS_OPTIONS.map(s=>`<option value="${s}" ${data.status===s?'selected':''}>${s}</option>`).join('')}
+          </select></div>
+          <button class="btn btn-primary" id="cp-update-btn" onclick="addComplaintUpdate()">บันทึกความคืบหน้า</button>
+        </div>
+      </div>`:''}
+    `;
+    foot.style.justifyContent = isAdmin() ? 'space-between' : 'flex-end';
+    foot.innerHTML = isAdmin()
+      ? `<button class="btn btn-danger" onclick="deleteComplaint()">ลบรายการ</button>
+         <div style="display:flex;gap:8px;">
+           <button class="btn btn-ghost" onclick="closeComplaintModal()">ปิด</button>
+           <button class="btn btn-primary" onclick="startComplaintEdit()">แก้ไขรายการ</button>
+         </div>`
+      : `<button class="btn btn-ghost" onclick="closeComplaintModal()">ปิด</button>`;
+  } else {
+    body.innerHTML = `
+      <div class="two-col">
+        <div class="f-row"><label>วันที่รับเรื่อง</label><input type="date" class="edit-input" id="cp-date" value="${data.date||''}"></div>
+        <div class="f-row"><label>เลขรับแขวง</label><input class="edit-input" id="cp-receiveno" value="${data.receiveNo||''}" placeholder="เช่น ทล.ระยอง 123/2569"></div>
+      </div>
+      <div class="two-col">
+        <div class="f-row"><label>สายทาง</label><input class="edit-input" id="cp-route" value="${data.route||''}" placeholder="เช่น ทล.3191"></div>
+        <div class="f-row"><label>กม.</label><input class="edit-input" id="cp-km" value="${data.km||''}" placeholder="เช่น 14+200"></div>
+      </div>
+      <div class="f-row"><label>เรื่อง</label><input class="edit-input" id="cp-subject" value="${data.subject||''}" placeholder="เช่น ถนนชำรุด เป็นหลุมบ่อ"></div>
+      <div class="f-row"><label>หมายเหตุ</label><input class="edit-input" id="cp-remark" value="${data.remark||''}" placeholder="ไม่บังคับ"></div>
+      ${complaintModalMode==='edit'?`
+      <div class="f-row"><label>สถานะความคืบหน้า</label><select class="edit-input" id="cp-status">
+        ${COMPLAINT_STATUS_OPTIONS.map(s=>`<option value="${s}" ${data.status===s?'selected':''}>${s}</option>`).join('')}
+      </select></div>`:''}
+    `;
+    foot.style.justifyContent = 'flex-end';
+    foot.innerHTML = `<button class="btn btn-ghost" id="cp-cancel-btn" onclick="cancelComplaintEdit()">ยกเลิก</button><button class="btn btn-primary" id="cp-save-btn" onclick="saveComplaint()">บันทึก</button>`;
+  }
+}
+async function saveComplaint(){
+  if(!isAdmin()) return;
+  const saveBtn = document.getElementById('cp-save-btn');
+  const cancelBtn = document.getElementById('cp-cancel-btn');
+  const form = {
+    date: document.getElementById('cp-date').value,
+    receiveNo: document.getElementById('cp-receiveno').value.trim(),
+    route: document.getElementById('cp-route').value.trim(),
+    km: document.getElementById('cp-km').value.trim(),
+    subject: document.getElementById('cp-subject').value.trim(),
+    remark: document.getElementById('cp-remark').value.trim(),
+    // ตอนเพิ่มคำร้องใหม่ไม่มีช่องเลือกสถานะ (บังคับเป็น "รอดำเนินการ" เสมอโดยอัตโนมัติ) — มีเฉพาะตอนแก้ไขรายการที่มีอยู่แล้ว
+    status: document.getElementById('cp-status')?.value || 'รอดำเนินการ'
+  };
+  if(!form.subject){ alert('กรุณากรอกเรื่องคำร้องทุกข์'); return; }
+  // ป้องกันการกดซ้ำระหว่างรอผลจากเซิร์ฟเวอร์ (สาเหตุของแถวซ้ำที่เคยเกิดขึ้น) — ปิดปุ่มและแสดงสถานะกำลังบันทึกให้เห็นชัดเจน
+  saveBtn.disabled = true; cancelBtn.disabled = true;
+  saveBtn.textContent = 'กำลังบันทึก...';
+  try{
+    if(complaintModalMode==='edit' && complaintModalIndex!==null){
+      const existing = complaints[complaintModalIndex];
+      const saved = await apiPost('update', 'complaints', {...existing, ...form});
+      Object.assign(existing, saved);
+      complaintModalMode = 'view';
+      renderComplaintModal(existing);
+    } else {
+      const saved = await apiPost('add', 'complaints', form);
+      complaints.push(saved);
+      closeComplaintModal();
+    }
+  }catch(err){
+    alert('บันทึกคำร้องทุกข์ไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบรายการในตารางก่อนกดบันทึกซ้ำ เผื่อข้อมูลถูกบันทึกไปแล้วจริงแต่การตอบกลับล่าช้า');
+    saveBtn.disabled = false; cancelBtn.disabled = false;
+    saveBtn.textContent = 'บันทึก';
+    return;
+  }
+  renderComplaints();
+}
+function deleteComplaint(){
+  if(!isAdmin() || complaintModalIndex===null) return;
+  const c = complaints[complaintModalIndex];
+  if(!c) return;
+  showConfirm({
+    title:'ลบคำร้องทุกข์',
+    message:`ยืนยันลบคำร้องทุกข์เรื่อง <b>"${c.subject||''}"</b> (เลขรับแขวง ${c.receiveNo||'—'})?`,
+    warn:'การลบไม่สามารถย้อนกลับได้',
+    onConfirm: async ()=>{
+      try{
+        await apiPost('delete', 'complaints', null, c.id);
+      }catch(err){
+        alert('ลบคำร้องทุกข์ในฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+        return;
+      }
+      complaints.splice(complaintModalIndex,1);
+      closeComplaintModal();
+      renderComplaints();
+    }
+  });
+}
+
+/* ============================================================
+   STAFF (editable)
+   ============================================================ */
+const PTYPE_BADGE = {
+  'ข้าราชการ': {bg:'var(--navy-800)', svg:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6c2.6 1.5 4.8 2.1 7 2.3v6c0 4.3-2.8 7.6-7 9.5-4.2-1.9-7-5.2-7-9.5v-6c2.2-.2 4.4-.8 7-2.3Z"/><path d="m9 12.1 2 2 4-4.3"/></svg>'},
+  'ลูกจ้างประจำ': {bg:'var(--success)', svg:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7.8" width="18" height="11.4" rx="2.2"/><path d="M8.3 7.8V6.2a1.9 1.9 0 0 1 1.9-1.9h3.6a1.9 1.9 0 0 1 1.9 1.9v1.6"/><path d="M3 13.2h18"/><path d="M10.6 13.2h2.8v2h-2.8z"/></svg>'},
+  'พนักงานราชการ': {bg:'var(--orange-600)', svg:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="4.8" width="17.6" height="14.4" rx="2.4"/><circle cx="8.9" cy="10" r="1.9"/><path d="M5.8 16.3c.5-1.7 1.7-2.6 3.1-2.6s2.6.9 3.1 2.6"/><path d="M14.2 8.8h4.3M14.2 11.6h4.3"/></svg>'},
+  'ลูกจ้างชั่วคราว': {bg:'var(--ink-400)', svg:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2.8h10M7 21.2h10"/><path d="M7.6 2.8v2.4c0 2 1.7 3.3 3 4.2.6.4 1.1.7 1.4 1 .3-.3.8-.6 1.4-1 1.3-.9 3-2.2 3-4.2V2.8"/><path d="M7.6 21.2v-2.4c0-2 1.7-3.3 3-4.2.6-.4 1.1-.7 1.4-1 .3.3.8.6 1.4 1 1.3.9 3 2.2 3 4.2v2.4"/></svg>'}
+};
+function ptypeBadge(ptype){
+  const b = PTYPE_BADGE[ptype] || PTYPE_BADGE['ลูกจ้างชั่วคราว'];
+  return `<div class="p-avatar" style="background:${b.bg};" title="${ptype}">${b.svg}</div>`;
+}
+
+const STAFF_TAB_LABELS = {all:'ทั้งหมด', 'ข้าราชการ':'ข้าราชการ', 'ลูกจ้างประจำ':'ลูกจ้างประจำ', 'พนักงานราชการ':'พนักงานราชการ', 'ลูกจ้างชั่วคราว':'ลูกจ้างชั่วคราว'};
+function renderStaffTabCounts(){
+  document.querySelectorAll('#staff-tabs [data-stafftab]').forEach(t=>{
+    const key = t.dataset.stafftab;
+    const label = STAFF_TAB_LABELS[key] || key;
+    const count = key==='all' ? activeStaff().length
+      : key==='ลูกจ้างชั่วคราว' ? staff.filter(s=>s.ptype===key && s.status==='ok').length
+      : staff.filter(s=>s.ptype===key).length;
+    t.textContent = `${label} (${count})`;
+  });
+}
+const PTYPE_ORDER = ['ข้าราชการ','ลูกจ้างประจำ','พนักงานราชการ','ลูกจ้างชั่วคราว'];
+function staffSortTier(s){
+  if(s.status==='resigned') return PTYPE_ORDER.length; // ลาออก อยู่ล่างสุดเสมอ ไม่ว่าประเภทเดิมคืออะไร
+  const idx = PTYPE_ORDER.indexOf(s.ptype);
+  return idx===-1 ? PTYPE_ORDER.length-1 : idx;
+}
+function renderStaff(){
+  renderStaffTabCounts();
+  const filter = document.querySelector('[data-stafftab].active')?.dataset.stafftab || 'all';
+  const q = (document.getElementById('staff-search').value||'').toLowerCase();
+  const body = document.getElementById('staff-body');
+  let indices = [];
+  staff.forEach((s,i)=>{
+    if(filter!=='all' && s.ptype!==filter) return;
+    if(q && !(s.name.toLowerCase().includes(q) || (s.nickname||'').toLowerCase().includes(q))) return;
+    indices.push(i);
+  });
+  // เรียงตามลำดับ ข้าราชการ > ลูกจ้างประจำ > พนักงานราชการ > ลูกจ้างชั่วคราว > พนักงานที่ลาออก (ล่างสุดเสมอ ไม่ว่าประเภทใด)
+  // sort เสถียร คงลำดับเดิมภายในกลุ่มเดียวกัน — ใช้ค่าเดียวกันนี้กับทุกแท็บ แท็บที่กรองประเภทเดียวอยู่แล้วจะได้แค่ผลลัพธ์ resigned-ล่างสุดเหมือนเดิม
+  indices.sort((a,b)=> staffSortTier(staff[a]) - staffSortTier(staff[b]));
+  let html='';
+  indices.forEach(i=>{
+    const s = staff[i];
+    html += `<tr style="cursor:pointer;" ondblclick="openStaffDetail(${i})" title="ดับเบิ้ลคลิกเพื่อดูรายละเอียด">
+      <td><div class="person">${ptypeBadge(s.ptype)}<div><div class="p-name">${s.name}</div>${s.nickname?`<div class="p-sub">(${s.nickname})</div>`:''}</div></div></td>
+      <td>${s.role||'<span style="color:var(--ink-400);font-size:12.5px">ยังไม่ระบุ</span>'}${s.duty?` <span class="pill pill-warn" style="font-size:10.5px;">ปฏิบัติหน้าที่${s.duty}</span>`:''}${(()=>{const el=__leaveEligibleDate(s); if(!el || TODAY.toISOString().slice(0,10)>=el) return ''; return ` <span class="pill pill-danger" style="font-size:10.5px;" title="ยังไม่มีสิทธิ์ลาถึง ${fmtDate(el)}">🔒 ทดลองงาน</span>`;})()}${(()=>{const ri=__retirementInfo(s); if(!ri || s.status!=='ok') return ''; return ri.status==='overdue' ? ` <span class="pill pill-danger" style="font-size:10.5px;" title="ครบกำหนดเกษียณอายุเมื่อ ${fmtDate(ri.date)}">⏳ ถึงกำหนดเกษียณ</span>` : ` <span class="pill pill-warn" style="font-size:10.5px;" title="ครบกำหนดเกษียณอายุ ${fmtDate(ri.date)}">⏳ ใกล้เกษียณอายุ</span>`;})()}</td>
+      <td><span class="pill pill-neutral">${s.ptype}</span></td>
+      <td>${s.status==='resigned'?'<span class="pill pill-danger">● ลาออก</span>':'<span class="pill pill-ok">● ปฏิบัติงาน</span>'}</td>
+    </tr>`;
+  });
+  body.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--ink-400);padding:20px;">ไม่พบรายการ</td></tr>';
+  document.getElementById('staff-foot').textContent = `ปฏิบัติงาน ${activeStaff().length} · ลาออก ${staff.length-activeStaff().length} (คงข้อมูลไว้ตรวจสอบ) · ทั้งหมด ${staff.length} คน` + (isAdmin()?' · โหมดแก้ไข: เปิด':' · โหมดแก้ไข: ปิด (ดูอย่างเดียว)');
+}
+
+/* ---------- Staff detail / edit modal ---------- */
+let staffDetailIndex = null;
+let staffDetailEditing = false;
+function openStaffDetail(i){
+  staffDetailIndex = i;
+  staffDetailEditing = false;
+  renderStaffDetailModal();
+  document.getElementById('staff-detail-modal').classList.remove('hidden');
+}
+function closeStaffDetail(){
+  staffDetailIndex = null;
+  staffDetailEditing = false;
+  document.getElementById('staff-detail-modal').classList.add('hidden');
+}
+function toggleStaffDetailEdit(v){
+  if(v && !isAdmin()) return;
+  staffDetailEditing = v;
+  renderStaffDetailModal();
+}
+function renderStaffDetailModal(){
+  const i = staffDetailIndex;
+  if(i===null || !staff[i]) return;
+  const s = staff[i];
+  const body = document.getElementById('sd-body');
+  const foot = document.getElementById('sd-foot');
+  document.getElementById('sd-title').innerHTML = staffDetailEditing ? `✏️ แก้ไขข้อมูล — ${s.name}` : `👤 ${s.name}`;
+  if(staffDetailEditing){
+    body.innerHTML = `
+      <div class="two-col">
+        <div class="f-row"><label>ชื่อ-สกุล</label><input class="edit-input" id="sd-name" value="${s.name}"></div>
+        <div class="f-row"><label>ชื่อเล่น</label><input class="edit-input" id="sd-nickname" value="${s.nickname||''}"></div>
+      </div>
+      <div class="two-col">
+        <div class="f-row"><label>ตำแหน่งทางราชการ</label><input class="edit-input" id="sd-role" value="${s.role||''}"></div>
+        <div class="f-row"><label>ประเภทบุคลากร</label><select class="edit-input" id="sd-ptype">
+          ${['ข้าราชการ','ลูกจ้างประจำ','พนักงานราชการ','ลูกจ้างชั่วคราว'].map(p=>`<option ${p===s.ptype?'selected':''}>${p}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="f-row"><label>หน้าที่พิเศษ (ถ้ามี เช่น ปฏิบัติหน้าที่ยาม)</label><input class="edit-input" id="sd-duty" value="${s.duty||''}" placeholder="ไม่มี"></div>
+      <div class="two-col">
+        <div class="f-row"><label>สถานะ</label><select class="edit-input" id="sd-status">
+          <option value="ok" ${s.status==='ok'?'selected':''}>ปฏิบัติงาน</option>
+          <option value="resigned" ${s.status==='resigned'?'selected':''}>ลาออก</option>
+        </select></div>
+        <div class="f-row"><label>วันเกิด</label><input type="date" class="edit-input" id="sd-birth" value="${s.birth||''}"></div>
+      </div>
+      <div class="two-col">
+        <div class="f-row"><label>วันที่เริ่มงาน</label><input type="date" class="edit-input" id="sd-startdate" value="${s.startDate||''}"></div>
+        <div class="f-row" style="align-self:end;font-size:12px;color:var(--ink-400);padding-bottom:8px;">* ใช้คำนวณสิทธิ์การลาของตำแหน่ง "คนงาน" (ไม่มีสิทธิ์ลาภายใน 6 เดือนแรก)</div>
+      </div>
+      <div class="two-col">
+        <div class="f-row"><label>อัตราค่าจ้าง/วัน (บาท)</label><input type="number" class="edit-input" id="sd-rate" value="${s.rate??''}"></div>
+        <div class="f-row"><label>ไซส์เสื้อ</label><input class="edit-input" id="sd-shirt" value="${s.shirt||''}"></div>
+      </div>
+      <div class="two-col">
+        <div class="f-row"><label>ข้อมูลการรักษาพยาบาล</label><input class="edit-input" id="sd-med" value="${s.med||''}"></div>
+        <div class="f-row"><label>กรุ๊ปเลือด</label><input class="edit-input" id="sd-blood" value="${s.bloodType||''}" placeholder="เช่น O, A, B, AB"></div>
+      </div>
+      <div class="two-col">
+        <div class="f-row"><label>เบอร์โทรศัพท์</label><input class="edit-input" id="sd-phone" value="${s.phone||''}"></div>
+        <div class="f-row"><label>วุฒิการศึกษา</label><input class="edit-input" id="sd-education" value="${s.education||''}"></div>
+      </div>
+      <div class="f-row"><label>ที่อยู่ปัจจุบัน</label><input class="edit-input" id="sd-address" value="${s.address||''}"></div>
+      <div class="two-col">
+        <div class="f-row"><label>ผู้ติดต่อฉุกเฉิน</label><input class="edit-input" id="sd-emergency-contact" value="${s.emergencyContact||''}" placeholder="ชื่อ-สกุล / ความสัมพันธ์"></div>
+        <div class="f-row"><label>เบอร์โทรผู้ติดต่อฉุกเฉิน</label><input class="edit-input" id="sd-emergency-phone" value="${s.emergencyPhone||''}"></div>
+      </div>
+    `;
+    foot.style.justifyContent = 'flex-end';
+    foot.innerHTML = `
+      <button class="btn btn-ghost" id="sd-cancel-btn" onclick="toggleStaffDetailEdit(false)">ยกเลิก</button>
+      <button class="btn btn-primary" id="sd-save-btn" onclick="saveStaffDetail()">บันทึกการแก้ไข</button>
+    `;
+  } else {
+    const age = ageFromBirth(s.birth);
+    body.innerHTML = `
+      <div class="detail-grid" style="grid-template-columns:repeat(2,1fr);">
+        <div><div class="d-label">ชื่อ-สกุล</div><div class="d-val">${s.name}</div></div>
+        <div><div class="d-label">ชื่อเล่น</div><div class="d-val">${s.nickname||'—'}</div></div>
+        <div><div class="d-label">ตำแหน่งทางราชการ</div><div class="d-val">${s.role||'—'}${s.duty?` <span class="pill pill-warn">ปฏิบัติหน้าที่${s.duty}</span>`:''}${(()=>{const ri=__retirementInfo(s); if(!ri || s.status!=='ok') return ''; return ri.status==='overdue' ? ` <span class="pill pill-danger" title="ครบกำหนดเกษียณอายุเมื่อ ${fmtDate(ri.date)}">⏳ ถึงกำหนดเกษียณ (${fmtDate(ri.date)})</span>` : ` <span class="pill pill-warn" title="ครบกำหนดเกษียณอายุ ${fmtDate(ri.date)}">⏳ ใกล้เกษียณอายุ (${fmtDate(ri.date)})</span>`;})()}</div></div>
+        <div><div class="d-label">ประเภทบุคลากร</div><div class="d-val">${s.ptype}</div></div>
+        <div><div class="d-label">สถานะ</div><div class="d-val">${s.status==='resigned'?'<span class="pill pill-danger">● ลาออก</span>':'<span class="pill pill-ok">● ปฏิบัติงาน</span>'}</div></div>
+        <div><div class="d-label">วันเกิด / อายุ</div><div class="d-val">${s.birth?fmtDateFull(s.birth)+' ('+age+' ปี)':'—'}</div></div>
+        <div><div class="d-label">วันที่เริ่มงาน</div><div class="d-val">${s.startDate?fmtDate(s.startDate):'—'}${(()=>{const el=__leaveEligibleDate(s); if(!el) return ''; const restricted = TODAY.toISOString().slice(0,10) < el; return restricted ? ` <span class="pill pill-warn">ยังไม่มีสิทธิ์ลา (ถึง ${fmtDate(el)})</span>` : ` <span class="pill pill-ok">มีสิทธิ์ลาแล้ว</span>`;})()}</div></div>
+        <div><div class="d-label">อัตราค่าจ้าง/วัน</div><div class="d-val">${s.rate?fmtMoney(s.rate)+' บาท':'—'}</div></div>
+        <div><div class="d-label">ไซส์เสื้อ</div><div class="d-val">${s.shirt||'—'}</div></div>
+        <div><div class="d-label">ข้อมูลการรักษาพยาบาล</div><div class="d-val">${s.med||'—'}</div></div>
+        <div><div class="d-label">กรุ๊ปเลือด</div><div class="d-val">${s.bloodType||'—'}</div></div>
+        <div><div class="d-label">เบอร์โทรศัพท์</div><div class="d-val">${s.phone||'—'}</div></div>
+        <div><div class="d-label">วุฒิการศึกษา</div><div class="d-val">${s.education||'—'}</div></div>
+        <div style="grid-column:1/-1;"><div class="d-label">ที่อยู่ปัจจุบัน</div><div class="d-val">${s.address||'—'}</div></div>
+        <div><div class="d-label">ผู้ติดต่อฉุกเฉิน</div><div class="d-val">${s.emergencyContact||'—'}</div></div>
+        <div><div class="d-label">เบอร์โทรผู้ติดต่อฉุกเฉิน</div><div class="d-val">${s.emergencyPhone||'—'}</div></div>
+      </div>
+    `;
+    foot.style.justifyContent = isAdmin() ? 'space-between' : 'flex-end';
+    foot.innerHTML = isAdmin()
+      ? `<button class="btn btn-danger" onclick="deleteStaffDetail()">ลบรายการ</button>
+         <div style="display:flex;gap:8px;">
+           <button class="btn btn-ghost" onclick="closeStaffDetail()">ปิด</button>
+           <button class="btn btn-primary" onclick="toggleStaffDetailEdit(true)">แก้ไขรายการ</button>
+         </div>`
+      : `<button class="btn btn-ghost" onclick="closeStaffDetail()">ปิด</button>`;
+  }
+}
+function deleteStaffDetail(){
+  if(!isAdmin() || staffDetailIndex===null) return;
+  const s = staff[staffDetailIndex];
+  if(!s) return;
+  showConfirm({
+    title:'ลบข้อมูลเจ้าหน้าที่',
+    message:`ยืนยันลบข้อมูลของ <b>"${s.name}"</b> ออกจากฐานข้อมูลบุคลากร?`,
+    warn:'การลบไม่สามารถย้อนกลับได้ ประวัติการลาและรายการอื่นที่เคยอ้างอิงชื่อนี้จะยังคงอยู่ แต่จะไม่เชื่อมกับข้อมูลบุคลากรนี้อีก',
+    onConfirm: async ()=>{
+      try{
+        await apiPost('delete', 'staff', null, s.id);
+      }catch(err){
+        alert('ลบข้อมูลเจ้าหน้าที่ในฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+        return;
+      }
+      staff.splice(staffDetailIndex,1);
+      closeStaffDetail();
+      renderAll();
+    }
+  });
+}
+async function saveStaffDetail(){
+  if(!isAdmin() || staffDetailIndex===null) return;
+  const s = staff[staffDetailIndex];
+  const before = Object.assign({}, s);
+  const newName = document.getElementById('sd-name').value.trim();
+  s.name = newName || s.name;
+  s.nickname = document.getElementById('sd-nickname').value.trim() || null;
+  s.role = document.getElementById('sd-role').value.trim();
+  s.duty = document.getElementById('sd-duty').value.trim() || null;
+  s.ptype = document.getElementById('sd-ptype').value;
+  s.status = document.getElementById('sd-status').value;
+  s.birth = document.getElementById('sd-birth').value || null;
+  s.startDate = document.getElementById('sd-startdate').value || null;
+  const rateVal = document.getElementById('sd-rate').value;
+  s.rate = rateVal ? Number(rateVal) : null;
+  s.shirt = document.getElementById('sd-shirt').value.trim() || null;
+  s.med = document.getElementById('sd-med').value.trim() || null;
+  s.bloodType = document.getElementById('sd-blood').value.trim() || null;
+  s.phone = document.getElementById('sd-phone').value.trim() || null;
+  s.education = document.getElementById('sd-education').value.trim() || null;
+  s.address = document.getElementById('sd-address').value.trim() || null;
+  s.emergencyContact = document.getElementById('sd-emergency-contact').value.trim() || null;
+  s.emergencyPhone = document.getElementById('sd-emergency-phone').value.trim() || null;
+  // ป้องกันการกดซ้ำระหว่างรอผลจากเซิร์ฟเวอร์ (ปุ่มถูกสร้างใหม่ทุกครั้งที่ renderStaffDetailModal ทำงาน จึงกลับมาใช้ได้เองทั้งกรณีสำเร็จและผิดพลาด)
+  const saveBtn = document.getElementById('sd-save-btn'), cancelBtn = document.getElementById('sd-cancel-btn');
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    const saved = await apiPost('update', 'staff', s);
+    Object.assign(s, saved);
+  }catch(err){
+    Object.assign(s, before);
+    alert('บันทึกข้อมูลพนักงานไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    renderStaffDetailModal();
+    return;
+  }
+  staffDetailEditing = false;
+  renderAll();
+  renderStaffDetailModal();
+}
+
+/* ---------- Add staff modal ---------- */
+function openAddStaff(){
+  if(!isAdmin()){ alert('ต้องเข้าสู่ระบบด้วยสิทธิ์แก้ไข (หัวหน้าหมวด/ผู้ช่วยหัวหน้าหมวด) จึงจะเพิ่มข้อมูลได้'); return; }
+  ['as-name','as-nickname','as-role','as-duty','as-rate','as-shirt','as-med','as-birth','as-startdate','as-blood','as-phone','as-education','as-address','as-emergency-contact','as-emergency-phone'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('as-ptype').value = 'ลูกจ้างชั่วคราว';
+  document.getElementById('as-status').value = 'ok';
+  const saveBtn = document.getElementById('as-save-btn');
+  saveBtn.disabled = false; saveBtn.textContent = 'บันทึกเจ้าหน้าที่';
+  document.getElementById('as-cancel-btn').disabled = false;
+  document.getElementById('add-staff-modal').classList.remove('hidden');
+}
+function closeAddStaff(){ document.getElementById('add-staff-modal').classList.add('hidden'); }
+async function submitAddStaff(){
+  if(!isAdmin()) return;
+  const name = document.getElementById('as-name').value.trim();
+  if(!name){ alert('กรุณากรอกชื่อ-สกุล'); return; }
+  const rateVal = document.getElementById('as-rate').value;
+  const newStaff = {
+    name,
+    nickname: document.getElementById('as-nickname').value.trim() || null,
+    birth: document.getElementById('as-birth').value || null,
+    role: document.getElementById('as-role').value.trim(),
+    duty: document.getElementById('as-duty').value.trim() || null,
+    ptype: document.getElementById('as-ptype').value,
+    rate: rateVal ? Number(rateVal) : null,
+    shirt: document.getElementById('as-shirt').value.trim() || null,
+    med: document.getElementById('as-med').value.trim() || null,
+    bloodType: document.getElementById('as-blood').value.trim() || null,
+    phone: document.getElementById('as-phone').value.trim() || null,
+    education: document.getElementById('as-education').value.trim() || null,
+    address: document.getElementById('as-address').value.trim() || null,
+    emergencyContact: document.getElementById('as-emergency-contact').value.trim() || null,
+    emergencyPhone: document.getElementById('as-emergency-phone').value.trim() || null,
+    status: document.getElementById('as-status').value,
+    startDate: document.getElementById('as-startdate').value || null
+  };
+  const saveBtn = document.getElementById('as-save-btn'), cancelBtn = document.getElementById('as-cancel-btn');
+  saveBtn.disabled = true; cancelBtn.disabled = true;
+  saveBtn.textContent = 'กำลังบันทึก...';
+  try{
+    const saved = await apiPost('add', 'staff', newStaff);
+    staff.push(saved);
+  }catch(err){
+    alert('เพิ่มข้อมูลพนักงานไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบรายการในตารางก่อนกดบันทึกซ้ำ เผื่อข้อมูลถูกบันทึกไปแล้วจริงแต่การตอบกลับล่าช้า');
+    saveBtn.disabled = false; cancelBtn.disabled = false;
+    saveBtn.textContent = 'บันทึกเจ้าหน้าที่';
+    return;
+  }
+  closeAddStaff();
+  renderAll();
+}
+document.querySelectorAll('[data-stafftab]').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('[data-stafftab]').forEach(x=>x.classList.remove('active')); t.classList.add('active'); renderStaff();
+}));
+document.getElementById('staff-search').addEventListener('input', ()=>renderStaff());
+
+/* ============================================================
+   LEAVE REQUEST
+   ============================================================ */
+function populateLeaveSelects(){
+  onLeaveNameChange();
+}
+function __filterNameSuggest(){
+  const input = document.getElementById('lr-name');
+  const box = document.getElementById('lr-name-suggest');
+  const q = input.value.trim();
+  if(!q){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  const names = [...new Set(activeStaff().map(s=>s.name))].filter(n=>n.toLowerCase().includes(q.toLowerCase()));
+  if(!names.length){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  box.innerHTML = names.slice(0,8).map(n=>`<div class="ac-item" title="${n}" onmousedown="__pickName('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('');
+  box.classList.remove('hidden');
+}
+function __pickName(name){
+  document.getElementById('lr-name').value = name;
+  const box = document.getElementById('lr-name-suggest');
+  box.innerHTML=''; box.classList.add('hidden');
+  onLeaveNameChange();
+}
+document.addEventListener('click', function(e){
+  const box = document.getElementById('lr-name-suggest');
+  const input = document.getElementById('lr-name');
+  if(box && input && e.target!==input && !box.contains(e.target)){
+    box.classList.add('hidden');
+  }
+});
+function __filterCoverSuggest(){
+  const input = document.getElementById('lr-cover');
+  const box = document.getElementById('lr-cover-suggest');
+  const q = input.value.trim();
+  if(!q){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  const names = [...new Set(activeStaff().map(s=>s.name))].filter(n=>n.toLowerCase().includes(q.toLowerCase()));
+  if(!names.length){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  box.innerHTML = names.slice(0,8).map(n=>`<div class="ac-item" title="${n}" onmousedown="__pickCover('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('');
+  box.classList.remove('hidden');
+}
+function __pickCover(name){
+  document.getElementById('lr-cover').value = name;
+  const box = document.getElementById('lr-cover-suggest');
+  box.innerHTML=''; box.classList.add('hidden');
+}
+document.addEventListener('click', function(e){
+  const box = document.getElementById('lr-cover-suggest');
+  const input = document.getElementById('lr-cover');
+  if(box && input && e.target!==input && !box.contains(e.target)){
+    box.classList.add('hidden');
+  }
+});
+function onLeaveNameChange(){
+  const name = document.getElementById('lr-name').value;
+  const s = staff.find(x=>x.name===name);
+  const fy = fiscalYearOf(TODAY.toISOString().slice(0,10));
+  const restr = __leaveRestrictionInfo(name, TODAY.toISOString().slice(0,10));
+  const metaEl = document.getElementById('lr-meta');
+  metaEl.textContent = `ตำแหน่ง: ${s ? (s.role||'-') : '-'} · ปีงบประมาณ ${fy}`;
+  if(restr) metaEl.innerHTML += ` · <span class="pill pill-danger" style="font-size:10.5px;">🔒 ยังไม่มีสิทธิ์ลาถึง ${fmtDate(restr.eligibleDate)}</span>`;
+  updateLrStats();
+  checkLrWarning();
+}
+function calcLrDays(){
+  const f = document.getElementById('lr-from').value, t = document.getElementById('lr-to').value;
+  document.getElementById('lr-days').value = (f&&t) ? Math.max(daysBetween(f,t),0) : '';
+  checkLrWarning();
+}
+function updateLrStats(){
+  const name = document.getElementById('lr-name').value;
+  const fy = fiscalYearOf(TODAY.toISOString().slice(0,10));
+  const sick = __workerLeaveUsed(name,'ป่วย',fy);
+  const vac = __workerLeaveUsed(name,'พักผ่อน',fy);
+  let html = `
+    <div class="lr-stat-row">
+      <span class="lr-stat-label">ปีงบ ${fy} · ใช้ไปแล้ว</span>
+      <span class="lr-stat-chip">ป่วย <b>${sick}</b> วัน</span>
+      <span class="lr-stat-chip">พักผ่อน <b>${vac}</b> วัน</span>
+    </div>`;
+  if(__isTempWorker(name)){
+    const sickLeft = Math.max(LEAVE_QUOTA_WORKER['ป่วย']-sick,0);
+    const vacLeft = Math.max(LEAVE_QUOTA_WORKER['พักผ่อน']-vac,0);
+    const cls = n => n===0 ? 'pill-danger' : n<=3 ? 'pill-warn' : 'pill-ok';
+    html += `
+    <div class="lr-stat-divider"></div>
+    <div class="lr-stat-row">
+      <span class="lr-stat-label">สิทธิคงเหลือ</span>
+      <span class="pill ${cls(sickLeft)}">ป่วย ${sickLeft} วัน</span>
+      <span class="pill ${cls(vacLeft)}">พักผ่อน ${vacLeft} วัน</span>
+    </div>`;
+  }
+  document.getElementById('lr-stats').innerHTML = html;
+}
+function checkLrWarning(){
+  const name = document.getElementById('lr-name').value;
+  const type = document.getElementById('lr-type').value;
+  const from = document.getElementById('lr-from').value;
+  const daysVal = parseInt(document.getElementById('lr-days').value,10) || 0;
+  const box = document.getElementById('lr-warning');
+  if(type==='ขาดงาน'){
+    box.innerHTML = '<span class="pill pill-neutral">บันทึกเป็นวันขาดงาน (ไม่ได้รับค่าจ้าง)</span>';
+    return;
+  }
+  if(type!=='ไปราชการ'){
+    const restr = __leaveRestrictionInfo(name, from || TODAY.toISOString().slice(0,10));
+    if(restr){
+      box.innerHTML = `<div class="alert-notice"><span class="ic">⚠️</span><span>พนักงานอยู่ระหว่าง 6 เดือนแรกของการเริ่มงาน ยังไม่มีสิทธิ์ลา (จะเริ่มใช้สิทธิ์ได้ตั้งแต่ ${fmtDate(restr.eligibleDate)}) — หากจำเป็นต้องหยุดงาน กรุณาเลือกประเภทเป็น "ขาดงาน" แทน</span></div>`;
+      return;
+    }
+  }
+  if((type==='ป่วย'||type==='พักผ่อน') && __isTempWorker(name)){
+    const fy = fiscalYearOf(from || TODAY.toISOString().slice(0,10));
+    const used = __workerLeaveUsed(name,type,fy);
+    const quota = LEAVE_QUOTA_WORKER[type];
+    if(used + daysVal > quota){
+      box.innerHTML = `<div class="alert-notice"><span class="ic">⚠️</span><span>สิทธิลา${type}เกินกำหนด (ใช้ไปแล้ว ${used}/${quota} วัน) กรุณาเลือกประเภทเป็น "ขาดงาน" แทน (ไม่ได้รับค่าจ้าง)</span></div>`;
+      return;
+    }
+  }
+  if(!from){ box.innerHTML=''; return; }
+  const advance = Math.round((new Date(from+'T00:00:00')-TODAY)/86400000);
+  if(['พักผ่อน','กิจ','ไปราชการ'].includes(type) && advance<3){
+    box.innerHTML = '<div class="alert-notice"><span class="ic">⚠️</span><span>แจ้งล่วงหน้าไม่ครบ 3 วันตามระเบียบ</span></div>';
+  } else if(type==='ป่วย'){
+    box.innerHTML = '<span class="pill pill-neutral">ลาป่วยยื่นภายใน 3 วันหลังกลับปฏิบัติงานได้</span>';
+  } else {
+    box.innerHTML = '<span class="pill pill-ok">✓ ครบตามระเบียบการยื่นล่วงหน้า</span>';
+  }
+}
+
+function openLeaveModal(){
+  __resetLeaveForm();
+  document.getElementById('leave-request-modal').classList.remove('hidden');
+}
+function closeLeaveModal(){
+  document.getElementById('leave-request-modal').classList.add('hidden');
+}
+
+/* ============ วันหยุดนักขัตฤกษ์ (ตั้งค่าใช้คำนวณจำนวนวันลา) ============ */
+function openHolidayModal(){
+  renderHolidayModalBody();
+  document.getElementById('holiday-modal').classList.remove('hidden');
+}
+function closeHolidayModal(){
+  document.getElementById('holiday-modal').classList.add('hidden');
+}
+
+/* โมดัลยืนยันการทำรายการ (ใช้แทน window.confirm ของเบราว์เซอร์ ให้เข้าธีมแอป)
+   showConfirm({title, message, warn, danger, okText, cancelText, icon, onConfirm}) */
+let __confirmModalCb = null;
+function showConfirm(opts){
+  opts = opts || {};
+  document.getElementById('confirm-modal-icon').textContent = opts.icon || (opts.danger===false ? '❓' : '⚠️');
+  document.getElementById('confirm-modal-title').textContent = opts.title || 'ยืนยันการทำรายการ';
+  const msgEl = document.getElementById('confirm-modal-msg');
+  msgEl.innerHTML = (opts.message || '').replace(/\n/g,'<br>');
+  const warnEl = msgEl.querySelector('.confirm-warn');
+  if(warnEl) warnEl.remove();
+  if(opts.warn){
+    const w = document.createElement('div');
+    w.className = 'confirm-warn';
+    w.textContent = '⚠️ ' + opts.warn;
+    msgEl.appendChild(w);
+  }
+  const okBtn = document.getElementById('confirm-modal-ok');
+  okBtn.textContent = opts.okText || 'ตกลง';
+  okBtn.className = 'btn ' + (opts.danger===false ? 'btn-primary' : 'btn-danger');
+  document.getElementById('confirm-modal-cancel').textContent = opts.cancelText || 'ยกเลิก';
+  __confirmModalCb = typeof opts.onConfirm==='function' ? opts.onConfirm : null;
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+function closeConfirmModal(){
+  document.getElementById('confirm-modal').classList.add('hidden');
+  __confirmModalCb = null;
+}
+function __confirmModalOk(){
+  const cb = __confirmModalCb;
+  closeConfirmModal();
+  if(cb) cb();
+}
+function renderHolidayModalBody(){
+  const body = document.getElementById('holiday-modal-body');
+  if(!body) return;
+  const sorted = publicHolidays.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const rows = sorted.map(h=>{
+    const idx = publicHolidays.indexOf(h);
+    return `<tr>
+      <td style="white-space:nowrap;">${fmtDate(h.date)}</td>
+      <td>${h.name||'—'}</td>
+      <td>${isAdmin() ? `<button class="btn btn-ghost btn-sm" onclick="removeHoliday(${idx})">🗑</button>` : ''}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="3" style="text-align:center;color:var(--ink-400);padding:16px;">ยังไม่มีข้อมูลวันหยุดในระบบ</td></tr>`;
+  body.innerHTML = `
+    ${isAdmin() ? `
+    <div class="two-col">
+      <div class="f-row"><label>วันที่</label><input type="date" id="hd-date"></div>
+      <div class="f-row"><label>ชื่อวันหยุด</label><input id="hd-name" placeholder="เช่น วันปิยมหาราช"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
+      <button id="hd-add-btn" class="btn btn-primary btn-sm" onclick="addHoliday()">+ เพิ่มวันหยุด</button>
+      <button id="hd-seed-btn" class="btn btn-ghost btn-sm" onclick="seedFixedHolidaysForFY(fiscalYearOf(TODAY.toISOString().slice(0,10)))">📅 เพิ่มวันหยุดราชการมาตรฐานของปีงบประมาณนี้</button>
+    </div>
+    <div class="foot-note" style="margin:0 0 10px;">ปุ่มด้านบนเพิ่มเฉพาะวันหยุดราชการที่วันที่ตายตัวทุกปี — วันหยุดทางศาสนาที่เลื่อนตามปฏิทินจันทรคติ (มาฆบูชา วิสาขบูชา อาสาฬหบูชา วันเข้าพรรษา) และวันหยุดตามมติ ครม. เพิ่มเติม ต้องเพิ่มเองด้วยฟอร์มด้านบน</div>` : ''}
+    <div class="table-wrap table-wrap-scroll" style="max-height:44vh;"><table style="table-layout:fixed;">
+      <colgroup><col style="width:30%"><col style="width:55%"><col style="width:15%"></colgroup>
+      <thead><tr><th>วันที่</th><th>ชื่อวันหยุด</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+// วันหยุดราชการที่วันที่ตายตัวทุกปี (ปฏิทินสุริยคติ) — ไม่รวมวันหยุดทางศาสนาที่เลื่อนตามปฏิทินจันทรคติ
+// (มาฆบูชา/วิสาขบูชา/อาสาฬหบูชา/เข้าพรรษา) เพราะคำนวณให้แม่นยำจากตรงนี้ไม่ได้ ต้องให้เจ้าหน้าที่เพิ่มเองตามประกาศแต่ละปี
+const __FIXED_HOLIDAYS_BY_MONTH_DAY = [
+  {md:'01-01', name:'วันขึ้นปีใหม่'},
+  {md:'04-06', name:'วันจักรี'},
+  {md:'04-13', name:'วันสงกรานต์'},
+  {md:'04-14', name:'วันสงกรานต์'},
+  {md:'04-15', name:'วันสงกรานต์'},
+  {md:'05-04', name:'วันฉัตรมงคล'},
+  {md:'06-03', name:'วันเฉลิมพระชนมพรรษาสมเด็จพระนางเจ้าฯ พระบรมราชินี'},
+  {md:'07-28', name:'วันเฉลิมพระชนมพรรษาพระบาทสมเด็จพระเจ้าอยู่หัว'},
+  {md:'08-12', name:'วันแม่แห่งชาติ'},
+  {md:'10-13', name:'วันคล้ายวันสวรรคตพระบาทสมเด็จพระบรมชนกาธิเบศร มหาภูมิพลอดุลยเดชมหาราช บรมนาถบพิตร'},
+  {md:'10-23', name:'วันปิยมหาราช'},
+  {md:'12-05', name:'วันพ่อแห่งชาติ'},
+  {md:'12-10', name:'วันรัฐธรรมนูญ'},
+  {md:'12-31', name:'วันสิ้นปี'}
+];
+async function seedFixedHolidaysForFY(fy){
+  if(!isAdmin()) return;
+  const ceStart = fy - 543 - 1; // ปีปฏิทินของเดือน ต.ค.-ธ.ค. ในปีงบประมาณนี้
+  const ceEnd = fy - 543;       // ปีปฏิทินของเดือน ม.ค.-ก.ย. ในปีงบประมาณนี้
+  const candidates = __FIXED_HOLIDAYS_BY_MONTH_DAY.map(h=>{
+    const month = parseInt(h.md.slice(0,2),10);
+    const ce = month>=10 ? ceStart : ceEnd;
+    return { date: ce+'-'+h.md, name: h.name };
+  });
+  const toAdd = candidates.filter(c=>!publicHolidays.some(h=>h.date===c.date));
+  if(!toAdd.length){ alert('มีวันหยุดราชการมาตรฐานของปีงบประมาณ '+fy+' อยู่ในระบบครบแล้ว'); return; }
+  if(!confirm(`เพิ่มวันหยุดราชการมาตรฐาน ${toAdd.length} วัน สำหรับปีงบประมาณ ${fy}?\nไม่รวมวันหยุดทางศาสนาที่เลื่อนตามปฏิทินจันทรคติ (มาฆบูชา/วิสาขบูชา/อาสาฬหบูชา/เข้าพรรษา) — ต้องเพิ่มเอง`)) return;
+  const seedBtn = document.getElementById('hd-seed-btn');
+  if(seedBtn){ seedBtn.disabled = true; seedBtn.textContent = 'กำลังเพิ่ม...'; }
+  for(const c of toAdd){
+    try{
+      const saved = await apiPost('add', 'public_holidays', c);
+      publicHolidays.push(saved);
+    }catch(err){
+      alert('เพิ่มวันหยุด "'+c.name+'" ไม่สำเร็จ: '+err.message);
+    }
+  }
+  renderHolidayModalBody();
+  renderAll();
+}
+async function addHoliday(){
+  if(!isAdmin()) return;
+  const dateEl = document.getElementById('hd-date'), nameEl = document.getElementById('hd-name');
+  const date = dateEl.value, name = nameEl.value.trim();
+  if(!date){ alert('กรุณาระบุวันที่'); return; }
+  if(publicHolidays.some(h=>h.date===date)){ alert('มีวันที่นี้ในรายการวันหยุดอยู่แล้ว'); return; }
+  const addBtn = document.getElementById('hd-add-btn');
+  const originalLabel = addBtn ? addBtn.textContent : '';
+  if(addBtn){ addBtn.disabled = true; addBtn.textContent = 'กำลังบันทึก...'; }
+  try{
+    const saved = await apiPost('add', 'public_holidays', {date, name});
+    publicHolidays.push(saved);
+  }catch(err){
+    alert('บันทึกวันหยุดนักขัตฤกษ์ไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+    if(addBtn){ addBtn.disabled = false; addBtn.textContent = originalLabel; }
+    return;
+  }
+  renderHolidayModalBody();
+  renderAll();
+}
+function removeHoliday(idx){
+  if(!isAdmin()) return;
+  const h = publicHolidays[idx];
+  if(!h) return;
+  showConfirm({
+    title:'ลบวันหยุดนักขัตฤกษ์',
+    message:`ยืนยันลบ "${fmtDate(h.date)} ${h.name||''}" ออกจากรายการวันหยุด?`,
+    onConfirm: async ()=>{
+      try{
+        await apiPost('delete', 'public_holidays', null, h.date);
+      }catch(err){
+        alert('ลบวันหยุดนักขัตฤกษ์ในฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+        return;
+      }
+      publicHolidays.splice(idx,1);
+      renderHolidayModalBody();
+      renderAll();
+    }
+  });
+}
+async function submitLeaveRequest(){
+  const name = document.getElementById('lr-name').value;
+  const type = document.getElementById('lr-type').value;
+  const from = document.getElementById('lr-from').value, to = document.getElementById('lr-to').value;
+  if(!from||!to){ alert('กรุณาระบุวันที่ลา'); return; }
+  if(!['ไปราชการ','ขาดงาน'].includes(type)){
+    const restr = __leaveRestrictionInfo(name, from);
+    if(restr){
+      alert(`ไม่สามารถบันทึกได้ — ${name} อยู่ระหว่าง 6 เดือนแรกของการเริ่มงาน ยังไม่มีสิทธิ์ใช้การลา (เริ่มมีสิทธิ์ได้ตั้งแต่ ${fmtDate(restr.eligibleDate)})\nหากจำเป็นต้องหยุดงาน กรุณาเลือกประเภทการลาเป็น "ขาดงาน" แทน`);
+      return;
+    }
+  }
+  if((type==='ป่วย'||type==='พักผ่อน') && __isTempWorker(name)){
+    const fy = fiscalYearOf(from);
+    const used = __workerLeaveUsed(name,type,fy);
+    const quota = LEAVE_QUOTA_WORKER[type];
+    const requestedDays = Math.max(daysBetween(from,to),0);
+    if(used + requestedDays > quota){
+      alert(`สิทธิลา${type}ของ ${name} เหลือไม่พอ (ใช้ไปแล้ว ${used}/${quota} วัน ปีงบประมาณ ${fy})\nกรุณาเลือกประเภทการลาเป็น "ขาดงาน (ไม่จ่ายค่าจ้าง)" แทน`);
+      return;
+    }
+  }
+  const contact = document.getElementById('lr-contact').value;
+  const advanceDays = Math.round((new Date(from+'T00:00:00')-TODAY)/86400000);
+  const newLeave = {
+    name, type, from, to,
+    days: daysBetween(from,to),
+    cover: document.getElementById('lr-cover').value,
+    contact,
+    reason: document.getElementById('lr-reason').value,
+    status: 'pending',
+    recordedDate: TODAY.toISOString().slice(0,10),
+    advanceDays
+  };
+  const saveBtn = document.getElementById('lr-save-btn');
+  const cancelBtn = document.getElementById('lr-cancel-btn');
+  const originalLabel = saveBtn ? saveBtn.textContent : '';
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    const saved = await apiPost('add', 'leave_requests', newLeave);
+    leaveRequests.unshift(saved);
+  }catch(err){
+    alert('บันทึกคำขอลาไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบในรายการคำขอลาก่อนว่าบันทึกไปแล้วหรือยัง ก่อนลองบันทึกซ้ำ');
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+    if(cancelBtn) cancelBtn.disabled = false;
+    return;
+  }
+  if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+  if(cancelBtn) cancelBtn.disabled = false;
+  __saveSharedLeaveRequests();
+  renderAll();
+  __resetLeaveForm();
+  closeLeaveModal();
+}
+function __resetLeaveForm(){
+  document.getElementById('lr-name').value = '';
+  document.getElementById('lr-name-suggest').innerHTML = '';
+  document.getElementById('lr-name-suggest').classList.add('hidden');
+  document.getElementById('lr-type').value = 'ป่วย';
+  document.getElementById('lr-from').value = '';
+  document.getElementById('lr-to').value = '';
+  document.getElementById('lr-days').value = '';
+  document.getElementById('lr-reason').value = '';
+  document.getElementById('lr-cover').value = '';
+  document.getElementById('lr-cover-suggest').innerHTML = '';
+  document.getElementById('lr-cover-suggest').classList.add('hidden');
+  document.getElementById('lr-contact').value = '';
+  document.getElementById('lr-warning').innerHTML = '';
+  onLeaveNameChange();
+}
+function __canCancelLeave(r){
+  // แสดงปุ่ม "ใบขอยกเลิกวันลา" ได้เฉพาะช่วงก่อนวันลาหยุดจะมาถึง (from date ยังไม่ถึงวันนี้)
+  // ตัดการกรอง status==='approved' ออก (2569-09-18) — ทุกคำขอลาที่ยื่นเข้าระบบถือเป็นลาจริงแล้ว
+  if(r.status==='cancelled' || !r.from) return false;
+  const todayISO = TODAY.toISOString().slice(0,10);
+  return r.from > todayISO;
+}
+function __leaveRowHTML(r,i){
+  return `
+    <tr>
+      <td class="p-name">${r.name}</td><td>${r.type}</td><td>${fmtDate(r.from)} – ${fmtDate(r.to)}</td>
+      <td>${r.status==='cancelled' ? '<span class="pill pill-neutral">ยกเลิกแล้ว</span>' : '<span class="pill pill-ok">บันทึกแล้ว</span>'}</td>
+      <td class="lr-actions-cell">
+        <button class="btn btn-ghost btn-sm" onclick="printLeaveForm(${i})">🖶 พิมพ์ใบลา</button>
+        ${__canCancelLeave(r) ? `<button class="btn btn-ghost btn-sm" onclick="printCancelForm(${i})">🖶 ใบขอยกเลิกวันลา</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="openEditLeave(${i})" title="แก้ไขคำขอลานี้">✏️ แก้ไข</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteLeaveRequest(${i})" title="ลบคำขอลานี้">🗑 ลบ</button>
+      </td>
+    </tr>`;
+}
+function __populateLrApprovedFyFilter(){
+  const sel = document.getElementById('lr-approved-fy');
+  if(!sel) return;
+  const cfy = fiscalYearOf(TODAY.toISOString().slice(0,10));
+  const fys = new Set([cfy]);
+  leaveRequests.forEach(r=>{ if(r.status!=='cancelled' && r.from){ const fy = fiscalYearOf(r.from); if(fy) fys.add(fy); } });
+  const sorted = Array.from(fys).sort((a,b)=>b-a);
+  const hadSelection = sel.value;
+  const isFirstPopulate = !sel.dataset.populated;
+  sel.innerHTML = sorted.map(fy=>`<option value="${fy}">ปีงบประมาณ ${fy}</option>`).join('');
+  if(!isFirstPopulate && hadSelection && sorted.includes(Number(hadSelection))) sel.value = hadSelection;
+  else sel.value = String(cfy);
+  sel.dataset.populated = '1';
+}
+/* รวมสองตาราง "รอการอนุมัติ"/"อนุมัติแล้ว" เดิมเป็นตารางเดียว (2569-09-18) — ตัดสถานะอนุมัติดิจิทัล
+   ออกทั้งระบบ ทุกคำขอลาที่ยื่นเข้าระบบถือเป็นข้อมูลลาจริงเสมอ (ยกเว้นที่ถูกยกเลิก) */
+function renderLeaveRequestList(){
+  __populateLrApprovedFyFilter();
+  const fyFilter = document.getElementById('lr-approved-fy').value;
+  const searchEl = document.getElementById('lr-approved-search');
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  const rows = leaveRequests.map((r,i)=>({r,i}))
+    .filter(({r})=>(!q || r.name.toLowerCase().includes(q)) && String(fiscalYearOf(r.from))===fyFilter)
+    .sort((a,b)=> (b.r.from||'').localeCompare(a.r.from||'') || (b.r.to||'').localeCompare(a.r.to||''));
+  document.getElementById('lr-list-body').innerHTML = rows.map(({r,i})=>__leaveRowHTML(r,i)).join('')
+    || `<tr><td colspan="5" style="text-align:center;color:var(--ink-400);padding:16px;">${q ? 'ไม่พบรายการที่ตรงกับคำค้นหา' : 'ยังไม่มีการบันทึกข้อมูลการลาในปีงบประมาณนี้'}</td></tr>`;
+  __renderLrLastUpdated();
+}
+// แสดงสถานะว่ามีการบันทึก/อัปเดตข้อมูลการลาล่าสุดเมื่อวันที่เท่าไร (ดูจาก recordedDate ของทุกคำขอลา)
+function __renderLrLastUpdated(){
+  const el = document.getElementById('lr-last-updated');
+  if(!el) return;
+  const dates = leaveRequests.map(r=>r.recordedDate).filter(Boolean);
+  if(!dates.length){
+    el.textContent = 'ยังไม่มีการบันทึกข้อมูลการลา';
+    return;
+  }
+  const latest = dates.reduce((a,b)=> a>b ? a : b);
+  el.textContent = `📌 อัปเดตล่าสุด ${fmtDate(latest)}`;
+}
+/* ทุกคำขอลาที่ยื่นเข้าระบบถือเป็นข้อมูลลาจริงแล้ว (2569-09-18 — ตัดสถานะอนุมัติดิจิทัลออกทั้งระบบ)
+   จึงใช้ขั้นตอนลบแบบเข้มงวด (ต้องเป็นแอดมิน + คำเตือนเรื่องผลต่อทะเบียนคุมลา) กับทุกรายการเสมอ
+   ไม่มีการแยกกรณี "ยังไม่อนุมัติ" อีกต่อไป */
+function deleteLeaveRequest(i){
+  const r = leaveRequests[i];
+  if(!r) return;
+  if(!isAdmin()) return;
+  const doDelete = async ()=>{
+    try{
+      await apiPost('delete', 'leave_requests', null, r.id);
+    }catch(err){
+      alert('ลบคำขอลาในฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+      return;
+    }
+    leaveRequests.splice(i,1);
+    __saveSharedLeaveRequests();
+    renderAll();
+  };
+  showConfirm({
+    title:'ลบรายการลา',
+    message:`ยืนยันลบรายการลาของ <b>"${r.name}"</b><br><b>${r.type} ${fmtDate(r.from)} – ${fmtDate(r.to)}</b><br>ทิ้งทั้งหมด?`,
+    warn:'ใช้สำหรับกรณีกรอกผิดพลาดหรือรายการซ้ำเท่านั้น หากพนักงานต้องการยกเลิกวันลาตามปกติ กรุณาใช้ปุ่ม "ใบขอยกเลิกวันลา" แทน\nการลบไม่สามารถย้อนกลับได้ และจะลบสถิติการลาที่เกี่ยวข้องออกจากทะเบียนคุมลา (จ.3-03) ด้วย',
+    onConfirm:doDelete
+  });
+}
+
+let __editLeaveIndex = null;
+function openEditLeave(i){
+  if(!isAdmin()) return;
+  const r = leaveRequests[i];
+  if(!r || r.status==='cancelled') return;
+  __editLeaveIndex = i;
+  document.getElementById('el-name-tag').textContent = r.name;
+  document.getElementById('el-type').value = r.type;
+  document.getElementById('el-from').value = r.from;
+  document.getElementById('el-to').value = r.to;
+  document.getElementById('el-reason').value = r.reason || '';
+  document.getElementById('el-cover').value = r.cover || '';
+  document.getElementById('el-contact').value = r.contact || '';
+  document.getElementById('edit-leave-modal').classList.remove('hidden');
+}
+function closeEditLeave(){
+  document.getElementById('edit-leave-modal').classList.add('hidden');
+  __editLeaveIndex = null;
+}
+async function saveEditLeave(){
+  if(!isAdmin() || __editLeaveIndex===null) return;
+  const r = leaveRequests[__editLeaveIndex];
+  if(!r) return;
+  const newType = document.getElementById('el-type').value;
+  const newFrom = document.getElementById('el-from').value;
+  const newTo = document.getElementById('el-to').value;
+  if(!newFrom || !newTo){ alert('กรุณาระบุวันที่ลา'); return; }
+  if(!['ไปราชการ','ขาดงาน'].includes(newType)){
+    const restr = __leaveRestrictionInfo(r.name, newFrom);
+    if(restr){
+      alert(`ไม่สามารถบันทึกได้ — ${r.name} อยู่ระหว่าง 6 เดือนแรกของการเริ่มงาน ยังไม่มีสิทธิ์ใช้การลา (เริ่มมีสิทธิ์ได้ตั้งแต่ ${fmtDate(restr.eligibleDate)})\nหากจำเป็นต้องหยุดงาน กรุณาเลือกประเภทการลาเป็น "ขาดงาน" แทน`);
+      return;
+    }
+  }
+  if((newType==='ป่วย'||newType==='พักผ่อน') && __isTempWorker(r.name)){
+    const fy = fiscalYearOf(newFrom);
+    // นับสิทธิที่ใช้ไปแล้วของคำขออื่น ๆ (ไม่รวมรายการที่กำลังแก้ไขนี้)
+    const usedElsewhere = computeLeaveHistory().filter(h=>h.name===r.name && h.fy===fy && h.type===newType && !(h.name===r.name && h.type===r.type && h.from===r.from && h.to===r.to)).reduce((a,h)=>a+daysBetween(h.from,h.to),0);
+    const requestedDays = Math.max(daysBetween(newFrom,newTo),0);
+    const quota = LEAVE_QUOTA_WORKER[newType];
+    if(usedElsewhere + requestedDays > quota){
+      alert(`สิทธิลา${newType}ของ ${r.name} เหลือไม่พอ (ใช้ไปแล้ว ${usedElsewhere}/${quota} วัน ปีงบประมาณ ${fy})\nกรุณาเลือกประเภทการลาเป็น "ขาดงาน (ไม่จ่ายค่าจ้าง)" แทน`);
+      return;
+    }
+  }
+  const before = Object.assign({}, r);
+  r.type = newType;
+  r.from = newFrom;
+  r.to = newTo;
+  r.days = daysBetween(newFrom, newTo);
+  r.reason = document.getElementById('el-reason').value;
+  r.cover = document.getElementById('el-cover').value;
+  r.contact = document.getElementById('el-contact').value;
+  const saveBtn = document.getElementById('el-save-btn');
+  const cancelBtn = document.getElementById('el-cancel-btn');
+  const originalLabel = saveBtn ? saveBtn.textContent : '';
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = 'กำลังบันทึก...'; }
+  if(cancelBtn) cancelBtn.disabled = true;
+  try{
+    const saved = await apiPost('update', 'leave_requests', r);
+    Object.assign(r, saved);
+  }catch(err){
+    Object.assign(r, before);
+    alert('บันทึกคำขอลาไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบในรายการคำขอลาก่อนว่าบันทึกไปแล้วหรือยัง ก่อนลองบันทึกซ้ำ');
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+    if(cancelBtn) cancelBtn.disabled = false;
+    return;
+  }
+  if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = originalLabel; }
+  if(cancelBtn) cancelBtn.disabled = false;
+  __saveSharedLeaveRequests();
+  renderAll();
+  closeEditLeave();
+}
+
+function printForm(id){
+  document.querySelectorAll('.print-only').forEach(el=>el.classList.remove('show-print'));
+  document.getElementById(id).classList.add('show-print');
+  window.print();
+}
+window.addEventListener('afterprint', ()=>{ document.querySelectorAll('.print-only').forEach(el=>el.classList.remove('show-print')); });
+
+function leaveStatsRows(name, fy, uptoDate){
+  const recs = computeLeaveHistory().filter(r=>r.name===name && r.fy===fy && r.from<uptoDate);
+  const sick = recs.filter(r=>r.type==='ป่วย').reduce((a,r)=>a+daysBetween(r.from,r.to),0);
+  const vac = recs.filter(r=>r.type==='พักผ่อน').reduce((a,r)=>a+daysBetween(r.from,r.to),0);
+  return {sick, vac};
+}
+
+function printLeaveForm(i){
+  const r = leaveRequests[i];
+  if(!r){ alert('ไม่พบข้อมูลการลานี้ กรุณาบันทึกข้อมูลการลาก่อนจึงจะพิมพ์ใบลาได้'); return; }
+  const name = r.name;
+  const s = staff.find(x=>x.name===name) || {};
+  const type = r.type;
+  const from = r.from, to = r.to;
+  const days = daysBetween(from,to);
+  const reason = r.reason;
+  const cover = r.cover;
+  const contact = r.contact||'';
+  const fy = fiscalYearOf(from);
+  const stats = leaveStatsRows(name, fy, from);
+
+  if(type==='ไปราชการ'){
+    alert('การไปราชการใช้หนังสือขออนุมัติเดินทางไปราชการแยกต่างหาก ไม่ได้อยู่ในแบบฟอร์ม จ.3-05 / จ.3-06 ที่แนบมา ระบบจึงยังไม่มีแบบฟอร์มพิมพ์สำหรับกรณีนี้');
+    return;
+  }
+  if(type==='พักผ่อน'){ buildForm306(name,s,from,to,days,cover,contact,stats,fy); printForm('print-leave-form'); return; }
+  // ป่วย / กิจ / คลอดบุตร -> จ.3-05
+  buildForm305(name,s,type,from,to,days,reason,cover,contact,stats,fy);
+  printForm('print-leave-form');
+}
+
+function checkbox(label, checked){ return `${checked?'☑':'☐'} ${label}`; }
+
+function buildForm306(name, s, from, to, days, cover, contact, stats, fy){
+  const carried = 0; // วันลาพักผ่อนสะสมยกมา — ยังไม่มีข้อมูลสะสมในระบบ กรอกเพิ่มเติมได้ตอนพิมพ์
+  const rightYear = carried + 10;
+  const td = todayFullParts();
+  document.getElementById('print-leave-form').innerHTML = `
+  <div class="official-form">
+    <div class="form-header">
+      <div class="form-org-block">กรมทางหลวง<br>จ.๓-๐๖</div>
+      <div class="form-title">แบบใบลาพักผ่อน</div>
+    </div>
+    <div class="writeline">(เขียนที่) หมวดทางหลวงเชิงเนิน<br>วันที่ ${td.day} เดือน ${td.monthFull} พ.ศ. ${td.yearBE}</div>
+    <p>เรื่อง &nbsp;ขอลาพักผ่อน</p>
+    <p>เรียน &nbsp;ผอ.ขท.ระยอง</p>
+    <p>ข้าพเจ้า <span class="dotted">${name}</span> ตำแหน่ง <span class="dotted">${s.role||'&nbsp;'}</span></p>
+    <p>สังกัด <span class="dotted">แขวงทางหลวงระยอง หมวดทางหลวงเชิงเนิน</span></p>
+    <p>มีวันลาพักผ่อนสะสม <span class="dotted">${carried}</span> วันทำการ มีสิทธิลาพักผ่อนประจำปีนี้อีก ๑๐ วันทำการ รวมเป็น <span class="dotted">${rightYear}</span> วันทำการ</p>
+    <p>ขอลาพักผ่อนตั้งแต่วันที่ <span class="dotted">${fmtDate(from)}</span> ถึงวันที่ <span class="dotted">${fmtDate(to)}</span> มีกำหนด <span class="dotted">${days}</span> วันทำการ</p>
+    <p>ในระหว่างลาขออนุมัติและสั่งการให้&nbsp; นาย&nbsp; นาง&nbsp; นางสาว <span class="dotted">${cover||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></p>
+    <p>ตำแหน่ง <span class="dotted">${cover?(staff.find(x=>x.name===cover)?.role||''):''}</span> เป็นผู้ &nbsp;${checkbox('รักษาราชการแทน', !!cover)} &nbsp;☐ รักษาการในตำแหน่ง</p>
+    <p>ติดต่อข้าพเจ้าได้ที่ <span class="dotted">${contact||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></p>
+    <div class="sig-block">ขอแสดงความนับถือ<br><br><br>(ลงชื่อ) .......................................................<br>( ${name} )</div>
+    <div class="two-box">
+      <div>
+        <b>สถิติการลาในปีงบประมาณ</b>
+        <table class="of-table">
+          <tr><th>ลามาแล้ว<br>(วันทำการ)</th><th>ลาครั้งนี้<br>(วันทำการ)</th><th>รวมเป็น<br>(วันทำการ)</th></tr>
+          <tr><td>${stats.vac}</td><td>${days}</td><td>${stats.vac+parseInt(days||0)}</td></tr>
+        </table>
+        <br>
+        (ลงชื่อ)....................................................ผู้ตรวจสอบ<br>
+        (ตำแหน่ง)..............................................<br>
+        วันที่ ........./........./.........
+      </div>
+      <div>
+        <b>ความเห็นผู้บังคับบัญชา</b><br><br><br>
+        ......................................................................<br>
+        (ลงชื่อ)......................................................<br>
+        ( นายอิศรินทร์&nbsp;อรุณสวัสดิ์ )&nbsp;&nbsp;ตำแหน่ง หัวหน้าหมวดทางหลวงเชิงเนิน<br>
+        วันที่ ........./........./.........
+      </div>
+    </div>
+    <div class="cmd-box">
+      คำสั่ง &nbsp;☐ อนุญาต &nbsp;☐ ไม่อนุญาต<br><br>
+      (ลงชื่อ)....................................................<br>
+      ( &nbsp; )&nbsp;&nbsp;ตำแหน่ง..............................................<br>
+      วันที่ ........./........./.........
+    </div>
+  </div>`;
+}
+
+function buildForm305(name, s, type, from, to, days, reason, cover, contact, stats, fy){
+  const typeLabel = type==='คลอดบุตร'?'คลอดบุตร':type==='กิจ'?'กิจส่วนตัว':'ป่วย';
+  const td = todayFullParts();
+  document.getElementById('print-leave-form').innerHTML = `
+  <div class="official-form">
+    <div class="form-header">
+      <div class="form-org-block">กรมทางหลวง<br>จ.3-05</div>
+      <div class="form-title">แบบใบลาป่วย ลาคลอดบุตร ลากิจส่วนตัว</div>
+    </div>
+    <div class="writeline">(เขียนที่) หมวดทางหลวงเชิงเนิน<br>วันที่ ${td.day} เดือน ${td.monthFull} พ.ศ. ${td.yearBE}</div>
+    <p>เรื่อง &nbsp;ขอลา${typeLabel}</p>
+    <p>เรียน &nbsp;ผอ.ขท.ระยอง</p>
+    <p>ข้าพเจ้า <span class="dotted">${name}</span> ตำแหน่ง <span class="dotted">${s.role||'&nbsp;'}</span></p>
+    <p>สังกัด <span class="dotted">แขวงทางหลวงระยอง หมวดทางหลวงเชิงเนิน</span></p>
+    <p>ขอลา &nbsp;${checkbox('ป่วย',type==='ป่วย')}</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${checkbox('กิจส่วนตัว',type==='กิจ')} &nbsp;เนื่องจาก <span class="dotted">${reason||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${checkbox('คลอดบุตร',type==='คลอดบุตร')}</p>
+    <p>ตั้งแต่วันที่ <span class="dotted">${fmtDate(from)}</span> ถึงวันที่ <span class="dotted">${fmtDate(to)}</span> มีกำหนด <span class="dotted">${days}</span> วัน</p>
+    <p>ข้าพเจ้าได้ลา ${checkbox('ป่วย',false)} ${checkbox('กิจส่วนตัว',false)} ${checkbox('คลอดบุตร',false)} ครั้งสุดท้ายตั้งแต่วันที่ <span class="dotted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> ถึงวันที่ <span class="dotted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> มีกำหนด <span class="dotted">&nbsp;&nbsp;&nbsp;</span> วัน ในระหว่างลาขออนุมัติและสั่งการให้</p>
+    <p>&nbsp;นาย&nbsp; นาง&nbsp; นางสาว <span class="dotted">${cover||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></p>
+    <p>ตำแหน่ง <span class="dotted">${cover?(staff.find(x=>x.name===cover)?.role||''):''}</span> เป็นผู้ &nbsp;${checkbox('รักษาราชการแทน', !!cover)}</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;☐ รักษาการในตำแหน่ง</p>
+    <p>และติดต่อข้าพเจ้าได้ที่ <span class="dotted">${contact||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></p>
+    <div class="sig-block">ขอแสดงความนับถือ<br><br><br>(ลงชื่อ) .......................................................<br>( ${name} )</div>
+    <div class="two-box">
+      <div>
+        <b>สถิติการลาในปีงบประมาณนี้</b>
+        <table class="of-table">
+          <tr><th>ประเภทลา</th><th>ลามาแล้ว<br>(วันทำการ)</th><th>ลาครั้งนี้<br>(วันทำการ)</th><th>รวมเป็น<br>(วันทำการ)</th></tr>
+          <tr><td>ป่วย</td><td>${stats.sick}</td><td>${type==='ป่วย'?days:'-'}</td><td>${type==='ป่วย'?stats.sick+parseInt(days||0):stats.sick}</td></tr>
+          <tr><td>กิจส่วนตัว</td><td>-</td><td>${type==='กิจ'?days:'-'}</td><td>${type==='กิจ'?days:'-'}</td></tr>
+          <tr><td>คลอดบุตร</td><td>-</td><td>${type==='คลอดบุตร'?days:'-'}</td><td>${type==='คลอดบุตร'?days:'-'}</td></tr>
+        </table>
+        <br>
+        (ลงชื่อ)....................................................ผู้ตรวจสอบ<br>
+        (ตำแหน่ง)..............................................<br>
+        วันที่ ........./........./.........
+      </div>
+      <div>
+        <b>ความเห็นผู้บังคับบัญชา</b><br><br><br>
+        ......................................................................<br>
+        (ลงชื่อ)......................................................<br>
+        ( นายอิศรินทร์&nbsp;อรุณสวัสดิ์ )&nbsp;&nbsp;ตำแหน่ง ชม.ขท.เชิงเนิน<br>
+        วันที่ ........./........./.........
+      </div>
+    </div>
+    <div class="cmd-box">
+      คำสั่ง &nbsp;☐ อนุญาต &nbsp;☐ ไม่อนุญาต<br><br>
+      (ลงชื่อ)....................................................<br>
+      ( &nbsp; )&nbsp;&nbsp;ตำแหน่ง..............................................<br>
+      วันที่ ........./........./.........
+    </div>
+  </div>`;
+}
+
+function printCancelForm(i){
+  const r = leaveRequests[i];
+  const s = staff.find(x=>x.name===r.name) || {};
+  const reason = prompt('เหตุผลที่ขอยกเลิกวันลา:',''); if(reason===null) return;
+  const days = daysBetween(r.from,r.to);
+  document.getElementById('print-cancel-form').innerHTML = `
+  <div class="official-form">
+    <div class="form-title">แบบใบขอยกเลิกวันลา</div>
+    <div class="writeline">(เขียนที่) หมวดทางหลวงเชิงเนิน<br>วันที่ .......... เดือน .............................. พ.ศ. ...................</div>
+    <p>เรื่อง &nbsp;ขอยกเลิกวันลา${r.type}</p>
+    <p>เรียน &nbsp;หัวหน้าหมวดทางหลวงเชิงเนิน</p>
+    <p>ตามที่ข้าพเจ้า <span class="dotted">${r.name}</span> ตำแหน่ง <span class="dotted">${s.role||'&nbsp;'}</span></p>
+    <p>สังกัด <span class="dotted">หมวดทางหลวงเชิงเนิน แขวงทางหลวงระยอง กรมทางหลวง</span></p>
+    <p>ได้รับอนุญาตให้ลา${r.type} ตั้งแต่วันที่ <span class="dotted">${fmtDate(r.from)}</span> ถึงวันที่ <span class="dotted">${fmtDate(r.to)}</span> รวม <span class="dotted">${days}</span> วัน นั้น</p>
+    <p>เนื่องจาก <span class="dotted">${reason||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</span></p>
+    <p>จึงขอยกเลิกวันลา${r.type} จำนวน <span class="dotted">${days}</span> (วัน)</p>
+    <p>ตั้งแต่วันที่ <span class="dotted">${fmtDate(r.from)}</span> ถึงวันที่ <span class="dotted">${fmtDate(r.to)}</span></p>
+    <div class="sig-block">ขอแสดงความนับถือ<br><br><br>(ลงชื่อ) .......................................................<br>( ${r.name} )</div>
+    <p style="margin-top:20px;"><b>ความเห็นผู้บังคับบัญชา</b></p>
+    <p>..............................................................................................................................................</p>
+    <p>..............................................................................................................................................</p>
+    <p>(ลงชื่อ)......................................................<br>(ตำแหน่ง)......................................................<br>วันที่.....................................</p>
+    <p style="margin-top:10px;"><b>คำสั่ง</b> &nbsp;☐ อนุญาต &nbsp;☐ ไม่อนุญาต</p>
+    <p>..............................................................................................................................................</p>
+    <p>(ลงชื่อ)......................................................<br>(ตำแหน่ง)......................................................<br>วันที่.....................................</p>
+  </div>`;
+  printForm('print-cancel-form');
+  r.status='cancelled';
+  apiPost('update', 'leave_requests', r).catch(err=>{
+    alert('บันทึกสถานะยกเลิกวันลาไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
+  });
+  __saveSharedLeaveRequests();
+  renderAll();
+}
+
+/* ============================================================
+   LEAVE REGISTRY จ.3-03
+   ============================================================ */
+function populateRegistryFy(){
+  const nameInput = document.getElementById('reg-name');
+  if(!nameInput.value || !staff.some(s=>s.name===nameInput.value)){
+    nameInput.value = staff[0] ? staff[0].name : '';
+  }
+  const fys = [...new Set(computeLeaveHistory().map(r=>r.fy))].sort((a,b)=>b-a);
+  document.getElementById('reg-fy').innerHTML = fys.map(y=>`<option value="${y}">ปีงบประมาณ ${y}</option>`).join('');
+}
+function __filterRegNameSuggest(){
+  const input = document.getElementById('reg-name');
+  const box = document.getElementById('reg-name-suggest');
+  const q = input.value.trim();
+  if(!q){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  const items = staff.filter(s=>s.name.toLowerCase().includes(q.toLowerCase()));
+  if(!items.length){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  box.innerHTML = items.slice(0,8).map(s=>`<div class="ac-item" title="${s.name}${s.status==='resigned'?' (ลาออก)':''}" onmousedown="__pickRegName('${s.name.replace(/'/g,"\\'")}')">${s.name}${s.status==='resigned'?' (ลาออก)':''}</div>`).join('');
+  box.classList.remove('hidden');
+}
+function __pickRegName(name){
+  document.getElementById('reg-name').value = name;
+  const box = document.getElementById('reg-name-suggest');
+  box.innerHTML=''; box.classList.add('hidden');
+  renderRegistry();
+}
+document.addEventListener('click', function(e){
+  const box = document.getElementById('reg-name-suggest');
+  const input = document.getElementById('reg-name');
+  if(box && input && e.target!==input && !box.contains(e.target)){
+    box.classList.add('hidden');
+  }
+});
+
+/* ------------ ค้นหาข้อมูลการลาตามช่วงวันที่ ------------ */
+function openLeaveRangeModal(){
+  document.getElementById('leave-range-modal').classList.remove('hidden');
+}
+function closeLeaveRangeModal(){
+  document.getElementById('leave-range-modal').classList.add('hidden');
+}
+function clearLeaveRange(){
+  document.getElementById('lrng-from').value = '';
+  document.getElementById('lrng-to').value = '';
+  document.getElementById('lrng-name').value = '';
+  document.getElementById('leave-range-results').innerHTML = '';
+}
+function __filterRangeNameSuggest(){
+  const input = document.getElementById('lrng-name');
+  const box = document.getElementById('lrng-name-suggest');
+  const q = input.value.trim();
+  if(!q){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  const names = [...new Set(staff.map(s=>s.name))].filter(n=>n.toLowerCase().includes(q.toLowerCase()));
+  if(!names.length){ box.innerHTML=''; box.classList.add('hidden'); return; }
+  box.innerHTML = names.slice(0,8).map(n=>`<div class="ac-item" title="${n}" onmousedown="__pickRangeName('${n.replace(/'/g,"\\'")}')">${n}</div>`).join('');
+  box.classList.remove('hidden');
+}
+function __pickRangeName(name){
+  document.getElementById('lrng-name').value = name;
+  const box = document.getElementById('lrng-name-suggest');
+  box.innerHTML=''; box.classList.add('hidden');
+}
+document.addEventListener('click', function(e){
+  const box = document.getElementById('lrng-name-suggest');
+  const input = document.getElementById('lrng-name');
+  if(box && input && e.target!==input && !box.contains(e.target)){
+    box.classList.add('hidden');
+  }
+});
+function searchLeaveRange(){
+  const from = document.getElementById('lrng-from').value;
+  const to = document.getElementById('lrng-to').value;
+  const name = document.getElementById('lrng-name').value.trim();
+  const results = document.getElementById('leave-range-results');
+  if(!from || !to){
+    results.innerHTML = `<div style="color:#c0392b;padding:8px 0;">กรุณาระบุวันที่เริ่มต้นและวันที่สิ้นสุด</div>`;
+    return;
+  }
+  if(from > to){
+    results.innerHTML = `<div style="color:#c0392b;padding:8px 0;">"ตั้งแต่วันที่" ต้องไม่มากกว่า "ถึงวันที่"</div>`;
+    return;
+  }
+  let recs = computeLeaveHistory().filter(r => r.from <= to && r.to >= from);
+  if(name) recs = recs.filter(r => r.name.toLowerCase().includes(name.toLowerCase()));
+  recs = recs.slice().sort((a,b)=> a.from===b.from ? a.name.localeCompare(b.name) : a.from.localeCompare(b.from));
+  if(!recs.length){
+    results.innerHTML = `<div style="color:#888;padding:8px 0;">ไม่พบข้อมูลการลาในช่วงวันที่ที่ระบุ</div>`;
+    return;
+  }
+  const rows = recs.map(r => `<tr>
+      <td>${r.name}</td>
+      <td>${r.type}</td>
+      <td>${fmtDate(r.from)}</td>
+      <td>${fmtDate(r.to)}</td>
+      <td>${daysBetween(r.from,r.to)}</td>
+    </tr>`).join('');
+  results.innerHTML = `
+    <div class="foot-note" style="margin-bottom:8px;">พบทั้งหมด ${recs.length} รายการ</div>
+    <div class="table-wrap table-wrap-scroll" style="max-height:44vh;"><table>
+      <thead><tr><th>ชื่อ</th><th>ประเภทการลา</th><th>ตั้งแต่วันที่</th><th>ถึงวันที่</th><th>จำนวนวัน</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+function registryRecords(name, fy){
+  return computeLeaveHistory().filter(r=>r.name===name && r.fy===fy).slice().sort((a,b)=>a.from.localeCompare(b.from));
+}
+function registryOnscreenHTML(name, fy){
+  const s = staff.find(x=>x.name===name) || {};
+  const recs = registryRecords(name, fy);
+  const cell = (r,t)=> __registryLeaveType(r.type)===t ? daysBetween(r.from,r.to) : '-';
+  const cellPill = (v)=> v==='-' ? `<span style="color:var(--ink-400);">–</span>` : `<span class="pill pill-ok" style="min-width:24px;justify-content:center;">${v}</span>`;
+  const statFor = (t) => {
+    const list = recs.filter(r=>__registryLeaveType(r.type)===t);
+    return { count: list.length, days: list.reduce((a,r)=>a+daysBetween(r.from,r.to),0) };
+  };
+  const sickStat = statFor('ป่วย'), personalStat = statFor('กิจ'), vacStat = statFor('พักผ่อน');
+  const totalCount = sickStat.count + personalStat.count + vacStat.count;
+  const totalDays = sickStat.days + personalStat.days + vacStat.days;
+  let rows = recs.map((r,idx)=>{
+    const d = daysBetween(r.from,r.to);
+    return `<tr>
+      <td><span class="pill pill-neutral" style="min-width:22px;justify-content:center;">${idx+1}</span></td>
+      <td>${cellPill(cell(r,'ป่วย'))}</td>
+      <td>${cellPill(cell(r,'กิจ'))}</td>
+      <td>${cellPill(cell(r,'พักผ่อน'))}</td>
+      <td>${cellPill(cell(r,'คลอดบุตร'))}</td>
+      <td><b>${d}</b></td>
+      <td>${fmtDate(r.from)}</td>
+      <td>${fmtDate(r.to)}</td>
+    </tr>`;
+  }).join('');
+  if(!rows) rows = `<tr><td colspan="8" style="text-align:center;color:var(--ink-400);padding:26px 14px;">ไม่มีข้อมูลการลาในปีงบประมาณนี้</td></tr>`;
+  return `
+    <div class="reg-summary">
+      <div class="person">
+        ${name ? ptypeBadge(s.ptype||'ลูกจ้างชั่วคราว') : ''}
+        <div>
+          <div class="p-name" style="font-size:15px;">${name || 'ยังไม่ได้เลือกพนักงาน'}</div>
+          <div class="p-sub">${s.ptype || (name ? 'ไม่พบข้อมูลประเภทบุคลากร' : 'พิมพ์ชื่อด้านบนเพื่อค้นหา')}${s.status==='resigned' ? ' · ลาออกแล้ว' : ''}</div>
+        </div>
+      </div>
+    </div>
+    ${name ? `
+    <div class="lr-stat-panel" style="margin:14px 20px 0;">
+      <div class="lr-stat-row">
+        <span class="lr-stat-label">สรุปการลา ปีงบ ${fy}</span>
+        <span class="lr-stat-chip">ป่วย <b>${sickStat.count}</b> ครั้ง · <b>${sickStat.days}</b> วันทำการ</span>
+        <span class="lr-stat-chip">กิจ <b>${personalStat.count}</b> ครั้ง · <b>${personalStat.days}</b> วันทำการ</span>
+        <span class="lr-stat-chip">พักผ่อน <b>${vacStat.count}</b> ครั้ง · <b>${vacStat.days}</b> วันทำการ</span>
+      </div>
+      <div class="lr-stat-divider"></div>
+      <div class="lr-stat-row">
+        <span class="lr-stat-label">รวมทั้งหมด</span>
+        <span class="lr-stat-chip" style="border-color:var(--orange-500);">รวม <b>${totalCount}</b> ครั้ง · <b>${totalDays}</b> วันทำการ</span>
+      </div>
+    </div>` : ''}
+    <div class="table-wrap table-wrap-scroll" style="max-height:60vh;">
+      <table class="reg-table">
+        <thead>
+          <tr>
+            <th>ครั้งที่ลา</th>
+            <th>ป่วย</th><th>กิจ</th><th>พักผ่อน</th><th>คลอดบุตร</th>
+            <th>ขาดราชการ (วัน)</th>
+            <th>จากวันที่</th><th>ถึงวันที่</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+function registryPrintHTML(name, fy){
+  const s = staff.find(x=>x.name===name) || {};
+  const recs = registryRecords(name, fy);
+  const cell = (r,t)=> __registryLeaveType(r.type)===t ? daysBetween(r.from,r.to) : '-';
+  const ptypeCk = (label)=> `${s.ptype===label?'☑':'☐'} ${label}`;
+  let rows = recs.map((r,idx)=>{
+    const d = daysBetween(r.from,r.to);
+    return `<tr>
+      <td>${idx+1}</td>
+      <td>${cell(r,'ป่วย')}</td><td>${cell(r,'กิจ')}</td><td>${cell(r,'พักผ่อน')}</td><td>${cell(r,'คลอดบุตร')}</td>
+      <td>${d}</td><td>${fmtDate(r.from)}</td><td>${fmtDate(r.to)}</td>
+    </tr>`;
+  }).join('');
+  if(!rows) rows = `<tr><td colspan="8" style="color:#888;">ไม่มีข้อมูลการลาในปีงบประมาณนี้</td></tr>`;
+  return `
+    <p>ชื่อ. <b>${name}</b> &nbsp;&nbsp; ${ptypeCk('ข้าราชการ')} &nbsp;&nbsp; ${ptypeCk('พนักงานราชการ')}<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${ptypeCk('ลูกจ้างประจำ')} &nbsp;&nbsp; ${ptypeCk('ลูกจ้างชั่วคราว')}</p>
+    <p>ปีงบประมาณ <b>${fy}</b></p>
+    <table class="of-table" style="font-size:11.5px;">
+      <tr>
+        <th rowspan="2">ครั้งที่<br>ลา</th>
+        <th colspan="4">จำนวนการลาตามประเภทการลา</th>
+        <th rowspan="2">จำนวนวันที่<br>ขาดราชการ</th>
+        <th colspan="2">วันที่ลา/ขาดราชการ</th>
+      </tr>
+      <tr>
+        <th>ป่วย</th><th>กิจ</th><th>พักผ่อน</th><th>คลอด<br>บุตร</th>
+        <th>จาก</th><th>ถึง</th>
+      </tr>
+      ${rows}
+    </table>`;
+}
+function renderRegistry(){
+  const name = document.getElementById('reg-name').value;
+  const fy = parseInt(document.getElementById('reg-fy').value);
+  document.getElementById('registry-onscreen').innerHTML = registryOnscreenHTML(name, fy);
+}
+function printRegistry(){
+  const name = document.getElementById('reg-name').value;
+  const fy = parseInt(document.getElementById('reg-fy').value);
+  document.getElementById('print-registry').innerHTML = `
+    <div class="official-form">
+      <div style="display:flex;justify-content:space-between;"><span>เริ่มปฏิบัติงานตั้งแต่ .............................................................................</span><span>กรมทางหลวง</span></div>
+      <div class="form-code">จ.3-03</div>
+      <div class="form-title" style="margin-top:6px;">ทะเบียนการลาและการขาดราชการ</div>
+      ${registryPrintHTML(name, fy)}
+      <p style="margin-top:14px;font-size:12px;">หมายเหตุ เริ่มใช้ ก.ค. 2520 ปรับปรุงครั้งที่ 2 เมื่อ พ.ศ.2535 มีจำนวน 1 แผ่น 2 หน้า</p>
+    </div>`;
+  printForm('print-registry');
+}
+
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function renderAll(){
+  populateLogin();
+  renderComplaints(); renderStaff();
+  renderLeaveRequestList(); populateRegistryFy(); renderRegistry();
+}
+populateLogin();
+populateRouteSelects();
+populateLeaveSelects();
+populateRegistryFy();
+/* ปิด Modal ด้วย Esc — มาตรฐานเดียวกันทุกระบบ ปิดได้เฉพาะปุ่ม ✕ กับ Esc เท่านั้น
+   (เดิมจับเฉพาะ doc-modal ตัวเดียว ทำให้กด Esc ตอนเปิด modal อื่น เช่น เพิ่ม/แก้เจ้าหน้าที่ ไม่ปิดให้) */
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Escape') return;
+  document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(function(overlay){
+    overlay.classList.add('hidden');
+  });
+});
+
+/* ============================================================
+   บันทึกข้อมูลอัตโนมัติ (localStorage) — สำหรับช่วงทดลองใช้งาน
+   หมายเหตุ: ข้อมูลนี้อยู่เฉพาะเบราว์เซอร์/เครื่องนี้เท่านั้น
+   ============================================================ */
+const __STORAGE_KEY = 'saraban_subsystem1_v2';
+// เผยแพร่รายชื่อพนักงาน (เฉพาะฟิลด์ที่จำเป็น) ให้ระบบย่อยอื่น (เช่น ระบบที่ 4 บัญชีแรงงานรายวัน) อ่านไปใช้ต่อได้
+const __SHARED_STAFF_KEY = 'saraban_shared_staff_v1';
+function __saveSharedStaff(){
+  try{
+    const payload = staff.map(s=>({name:s.name, role:s.role||null, duty:s.duty||null, ptype:s.ptype, rate:s.rate??null, status:s.status}));
+    localStorage.setItem(__SHARED_STAFF_KEY, JSON.stringify(payload));
+  }catch(e){ console.error('ซิงก์ข้อมูลพนักงานไปยังระบบอื่นล้มเหลว', e); }
+}
+
+function __collectState(){
+  return { staff, docs, leaveRequests, accessLog, publicHolidays };
+}
+function __applyState(saved){
+  if(saved.staff){ staff.length=0; staff.push(...saved.staff); }
+  if(saved.docs){ docs.length=0; docs.push(...saved.docs); }
+  if(saved.leaveRequests){ leaveRequests.length=0; leaveRequests.push(...saved.leaveRequests); }
+  if(saved.accessLog){ accessLog.length=0; accessLog.push(...saved.accessLog); }
+  if(saved.publicHolidays){ publicHolidays.length=0; publicHolidays.push(...saved.publicHolidays); }
+}
+function __loadPersistedState(){
+  try{
+    const raw = localStorage.getItem(__STORAGE_KEY);
+    if(raw) __applyState(JSON.parse(raw));
+  }catch(e){ console.error('โหลดข้อมูลที่บันทึกไว้ล้มเหลว', e); }
+}
+let __lastSavedJSON = '';
+function __saveState(){
+  try{
+    const json = JSON.stringify(__collectState());
+    if(json !== __lastSavedJSON){
+      localStorage.setItem(__STORAGE_KEY, json);
+      __lastSavedJSON = json;
+      __saveSharedStaff();
+    }
+  }catch(e){ console.error('บันทึกข้อมูลล้มเหลว', e); }
+}
+setInterval(__saveState, 3000);
+window.addEventListener('beforeunload', __saveState);
+window.addEventListener('storage', function(e){
+  if(e.key === __STORAGE_KEY && e.newValue){
+    try{
+      __applyState(JSON.parse(e.newValue));
+      __lastSavedJSON = e.newValue;
+      renderAll();
+    }catch(err){ console.error('ซิงก์ข้อมูลจากระบบหลักล้มเหลว', err); }
+  }
+});
+
+
+
+
+__loadPersistedState();
+// แก้ไขข้อมูลเก่าที่อาจค้างอยู่ในเบราว์เซอร์ผู้ใช้จากก่อนแก้ตำแหน่งนายสุรศักดิ์เป็น "คนงาน" + หน้าที่พิเศษ "ยาม"
+// (ข้อมูลที่บันทึกไว้ใน localStorage จากการใช้งานเดิมจะทับ array ที่ hardcode ไว้ด้านบน ต้องแก้ตรงนี้ด้วยเพื่อให้ผู้ใช้เดิมได้รับการแก้ไข)
+(function __migrateSurasakRole(){
+  const s = staff.find(x=>x.name==='นายสุรศักดิ์  สุขคุ้ม');
+  if(s && s.role==='ยาม'){
+    s.role = 'คนงาน';
+    s.duty = 'ยาม';
+    __saveState();
+  }
+})();
+/* ============ จบส่วนบันทึกข้อมูล ============ */
+
+/* ============================================================
+   เชื่อมข้อมูลคำขอลากับระบบหลัก (งานบริหารหมวด → หัวข้อ "การอนุมัติเอกสาร")
+   ผ่าน localStorage ที่ใช้ร่วมกัน ('saraban_shared_leave_requests_v1')
+   เมื่อแอดมินกด อนุมัติ/ตีกลับ ที่ระบบหลัก สถานะจะสะท้อนกลับมาที่หน้านี้อัตโนมัติ
+   หมายเหตุ: ใช้ได้เมื่อเปิดทั้งสองระบบจากโดเมน/เซิร์ฟเวอร์เดียวกัน — ถ้าเปิดไฟล์ผ่าน
+   file:// แยกกัน เบราว์เซอร์จะแยก localStorage ของแต่ละไฟล์ จะไม่ซิงก์กันอัตโนมัติ
+   ============================================================ */
+const __SHARED_LEAVE_KEY = 'saraban_shared_leave_requests_v1';
+function __loadSharedLeaveRequests(){
+  try{ return JSON.parse(localStorage.getItem(__SHARED_LEAVE_KEY)||'[]'); }catch(e){ return []; }
+}
+function __saveSharedLeaveRequests(){
+  try{ localStorage.setItem(__SHARED_LEAVE_KEY, JSON.stringify(leaveRequests)); }catch(e){ console.error('ซิงก์ข้อมูลคำขอลาไปยังระบบหลักล้มเหลว', e); }
+}
+/* ประวัติการลาย้อนหลัง ปีงบประมาณ 2569 (ชุดที่ 1+2 รวม 241 รายการ) ที่เคยฝังเป็นอาร์เรย์อยู่ตรงนี้
+   ย้ายไปนำเข้าที่ Google Sheets แท็บ "leave_requests" แล้วผ่าน seedLeaveRequestsOnce() ใน Code.gs
+   (ไฟล์ seedLeaveRequestsOnce.gs.txt ในโฟลเดอร์เดียวกัน) หน้านี้โหลดข้อมูลทั้งหมดจาก API แทน */
+
+/* หมายเหตุ: __saveSharedLeaveRequests() ยังคงไว้ — ระบบที่ 4 (การเงิน) ยังอ่านค่าจาก
+   saraban_shared_leave_requests_v1 โดยตรงเพื่อคำนวณบัญชีลงเวลา ง.3-12 (ดู leaveCodeForDay()
+   ใน choengnoen4-finance.html) ตัดเฉพาะกลไกดึงสถานะอนุมัติกลับเข้ามา (__syncLeaveStatusFromShared,
+   เดิมไว้รับผลจากหน้า "การอนุมัติเอกสาร" ที่ถูกตัดออกไปแล้ว) ออกเท่านั้น */
+/* ============ จบส่วนเชื่อมข้อมูลกับระบบหลัก ============ */
+
+/* ============ แสดง/ซ่อนแถบหมายเหตุท้ายตาราง (ปุ่ม ⋮) ============ */
+function __toggleNote(id, btn){
+  const note = document.getElementById(id);
+  if(!note) return;
+  const show = note.style.display === 'none';
+  note.style.display = show ? 'block' : 'none';
+  btn.setAttribute('aria-expanded', String(show));
+  btn.classList.toggle('is-open', show);
+}
+
+renderAll();
+(async function __initApiData(){
+  // โหลด 5 ตารางที่หน้านี้ต้องใช้ในคำขอเดียว (apiGetMultiple) แทนการยิงทีละตาราง
+  // 5 ครั้งเรียงลำดับกันแบบเดิม — แต่ละคำขอไปยัง Apps Script มี latency คงที่ของตัว
+  // แพลตฟอร์มเองอยู่แล้วไม่ว่าข้อมูลจะเยอะหรือน้อย ยิ่งยิงหลายครั้งยิ่งรวมเวลาโหลด
+  // หน้าเว็บนานขึ้นเรื่อยๆ (นี่คือสาเหตุหลักที่หน้าเว็บ "รู้สึกช้า" ตอนเปิดครั้งแรก)
+  try{
+    const tables = await apiGetMultiple(['staff','leave_requests','public_holidays','controlled_routes','complaints']);
+    staff = tables.staff;
+    leaveRequests = tables.leave_requests;
+    publicHolidays = tables.public_holidays;
+    __controlledRoutesCache = tables.controlled_routes.map(subsys2RouteFromApi);
+    complaints = tables.complaints;
+    populateRouteSelects();
+  }catch(err){
+    // เผื่อฝั่งเซิร์ฟเวอร์ยังไม่ได้ deploy โค้ดที่รองรับ ?tables= หรือคำขอรวมล้มเหลวด้วยเหตุอื่น
+    // — ถอยกลับไปโหลดทีละตารางแบบเดิม (ช้ากว่าแต่ยังใช้งานได้) แทนที่จะปล่อยให้หน้าเว็บพังทั้งหน้า
+    console.error('โหลดข้อมูลหลายตารางพร้อมกันไม่สำเร็จ ถอยกลับไปโหลดทีละตาราง', err);
+    await loadStaffFromApi();
+    await loadLeaveRequestsFromApi();
+    await loadPublicHolidaysFromApi();
+    await loadControlledRoutesCacheFromApi();
+    await loadComplaintsFromApi();
+  }
+  __saveSharedLeaveRequests();
+  renderAll();
+})();
+
+</script>
+</body>
+</html>
