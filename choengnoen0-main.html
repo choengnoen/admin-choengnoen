@@ -1248,7 +1248,7 @@ function renderUsers(){
       </div>` : '';
     return `<tr class="${u.active?'':'inactive'}">
       <td><div class="u-avatar" style="${photo}">${u.photo?'':esc(initials(u.name))}${pr?`<span class="dot ${pr.on?'on':''}"></span>`:''}</div></td>
-      <td><div class="u-name">${esc(u.name)}</div><div class="u-sub">@${esc(u.username)}${u.position?' · '+esc(u.position):''}</div></td>
+      <td><div class="u-name">${esc(u.name)}</div><div class="u-sub">${u.position?esc(u.position):'—'}</div></td>
       <td><span class="role-chip ${u.role}">${r.icon} ${esc(r.label)}</span>${u.role==='staff' && u.sections.length ? `<div class="u-sub" style="margin-top:4px">ส่วนงาน: ${u.sections.map(k=>k.slice(1)).join(', ')}</div>` : ''}</td>
       <td>${chips}</td>
       <td>${status}</td>
@@ -1285,11 +1285,10 @@ function openUserModal(uid){
   const roleCards = ['chief','assistant','staff'].map(r=>`<div class="role-card ${UM.role===r?'active':''}" data-role="${r}" onclick="umPickRole('${r}')"><b>${FBL.ROLES[r].icon} ${esc(FBL.ROLES[r].label)}</b>${esc(FBL.ROLES[r].desc)}</div>`).join('');
   document.getElementById('um-body').innerHTML = `
     <div class="two-col">
-      <div class="f-row"><label>ชื่อ-สกุล</label><input id="um-name" value="${esc(u?u.name:'')}"></div>
+      <div class="f-row"><label>ชื่อ-สกุล (ใช้เลือกตอนล็อกอิน)</label><input id="um-name" value="${esc(u?u.name:'')}" placeholder="เช่น นางสาววันทนา มีมานะ"></div>
       <div class="f-row"><label>ตำแหน่ง</label><input id="um-position" value="${esc(u?u.position:'')}" placeholder="เช่น นายช่างโยธา, ผช.ม.เชิงเนิน"></div>
     </div>
     <div class="two-col">
-      <div class="f-row"><label>ชื่อผู้ใช้ (ใช้ล็อกอิน · อังกฤษตัวเล็ก/ตัวเลข)</label><input id="um-username" value="${esc(u?u.username:'')}" ${u?'disabled':''} autocomplete="off" placeholder="เช่น wanthana"></div>
       <div class="f-row">${u ? `<label>สถานะบัญชี</label><select id="um-active" ${isOwnerRec?'disabled':''}><option value="1" ${u.active?'selected':''}>ใช้งาน</option><option value="0" ${u.active?'':'selected'}>ระงับการใช้งาน (ล็อกอินไม่ได้)</option></select>`
         : `<label>ตั้งรหัสผ่านเริ่มต้น (อย่างน้อย 6 ตัว)</label><input id="um-password" type="text" autocomplete="off">`}</div>
     </div>
@@ -1367,7 +1366,6 @@ async function saveUserModal(){
       await FBL.updateMember(UM.uid, payload);
       showToast('บันทึกข้อมูลผู้ใช้งานแล้ว');
     } else {
-      payload.username = document.getElementById('um-username').value;
       payload.password = document.getElementById('um-password').value;
       if(String(payload.password).length < 6){ throw new Error('รหัสผ่านเริ่มต้นต้องยาวอย่างน้อย 6 ตัวอักษร'); }
       await FBL.addMember(payload);
@@ -1395,7 +1393,7 @@ function resetPw(uid){
 }
 function removeUser(uid){
   const u = TEAM.find(x=>x.uid===uid); if(!u) return;
-  confirmBox('ลบผู้ใช้งาน', `ยืนยันลบ ${u.name} (@${u.username}) ออกจากระบบ?\n\nถ้าเพียงต้องการหยุดสิทธิ์ชั่วคราว แนะนำใช้ "แก้ไข → ระงับการใช้งาน" แทน`, 'ลบผู้ใช้งาน', async ()=>{
+  confirmBox('ลบผู้ใช้งาน', `ยืนยันลบ ${u.name} ออกจากระบบ?\n\nถ้าเพียงต้องการหยุดสิทธิ์ชั่วคราว แนะนำใช้ "แก้ไข → ระงับการใช้งาน" แทน`, 'ลบผู้ใช้งาน', async ()=>{
     await FBL.removeMember(uid); showToast('ลบผู้ใช้งานแล้ว');
   }, true);
 }

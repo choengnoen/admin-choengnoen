@@ -30,7 +30,7 @@
     appId: "1:742610487352:web:9446cbf814e05d384cfecd"
   };
 
-  // ล็อกอินด้วยชื่อผู้ใช้ (username) แต่ Firebase Auth ต้องใช้อีเมล จึงสร้างอีเมลสังเคราะห์ให้แต่ละบัญชี
+  // ล็อกอินด้วยชื่อ-นามสกุล (เหมือนระบบอุบัติเหตุ) แต่ Firebase Auth ต้องใช้อีเมล จึงสร้างอีเมลสังเคราะห์ให้แต่ละบัญชี
   // (โดเมน .invalid เป็นโดเมนที่ไม่มีอยู่จริงตามมาตรฐาน — ไม่มีการส่งอีเมลใดๆ ออกไปทั้งสิ้น)
   const EMAIL_DOMAIN = 'choengnoen-admin.invalid';
   const PROFILE_CACHE_KEY = 'cn_admin_profile_v1';     // โปรไฟล์ล่าสุด ใช้แสดงหน้าได้ทันทีไม่ต้องรอเน็ต (สิทธิ์จริงอยู่ที่ Rules)
@@ -185,8 +185,8 @@
   function clone(o) { return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   FBL.esc = esc;
-  // ชื่อผู้ใช้: ตัวพิมพ์เล็ก ไม่มีช่องว่างหัวท้าย (ใช้เป็นรหัสเอกสาร login_directory)
-  function normUsername(u) { return String(u || '').trim().toLowerCase(); }
+  // กุญแจล็อกอิน = ชื่อ-นามสกุล (ยุบช่องว่างซ้อนเหลือช่องเดียว) ใช้เป็นรหัสเอกสาร login_directory และเก็บในฟิลด์ username ของ team
+  function normUsername(u) { return String(u || '').replace(/\s+/g, ' ').trim(); }
   // รหัสเอกสาร Firestore ห้ามมี "/" และห้ามเป็น "." / ".." — แปลงเฉพาะอักขระที่มีปัญหา ค่าเดิมยังเก็บในฟิลด์ id ของแถวเสมอ
   function docKey(v) {
     let s = String(v == null ? '' : v).replace(/%/g, '%25').replace(/\//g, '%2F');
@@ -292,8 +292,8 @@
     if (loginNames) return loginNames;
     try {
       const snap = await db.collection('login_directory').get();
-      loginNames = snap.docs.map(function (d) { return { username: d.id, name: d.data().name || '' }; })
-        .sort(function (a, b) { return a.username.localeCompare(b.username); });
+      loginNames = snap.docs.map(function (d) { return { username: d.data().name || d.id, name: d.data().name || d.id }; })
+        .sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'th'); });
     } catch (e) { loginNames = []; }
     return loginNames;
   }
@@ -305,8 +305,8 @@
     gateCard(
       '<div class="fbl-head">เข้าสู่ระบบ</div>' +
       (message ? '<div class="fbl-err">' + esc(message) + '</div>' : '') +
-      '<div class="fbl-field"><label class="fbl-label" for="fbl-user">ชื่อผู้ใช้งาน</label>' +
-      '<input class="fbl-input" id="fbl-user" autocomplete="username" placeholder="— พิมพ์หรือเลือกชื่อผู้ใช้ —">' +
+      '<div class="fbl-field"><label class="fbl-label" for="fbl-user">ชื่อ-นามสกุล</label>' +
+      '<input class="fbl-input" id="fbl-user" autocomplete="username" placeholder="— พิมพ์หรือเลือกชื่อของคุณ —">' +
       '<div class="fbl-dd hidden" id="fbl-dd"></div></div>' +
       '<div class="fbl-field"><label class="fbl-label" for="fbl-pass">รหัสผ่าน</label>' +
       '<input class="fbl-input" id="fbl-pass" type="password" autocomplete="current-password" placeholder="รหัสผ่าน">' + pwToggleHtml('fbl-pass') + '</div>' +
@@ -319,11 +319,11 @@
     const btn = document.getElementById('fbl-login-btn');
     const names = await loadLoginNames();
     function renderDd() {
-      const q = u.value.trim().toLowerCase();
-      const list = names.filter(function (n) { return !q || n.username.indexOf(q) !== -1 || String(n.name).toLowerCase().indexOf(q) !== -1; });
+      const q = normUsername(u.value).replace(/\s/g, '').toLowerCase();
+      const list = names.filter(function (n) { return !q || String(n.name).replace(/\s/g, '').toLowerCase().indexOf(q) !== -1; });
       dd.innerHTML = list.length ? list.map(function (n) {
-        return '<div class="fbl-opt" data-u="' + esc(n.username) + '">' + esc(n.username) + (n.name ? '<small>' + esc(n.name) + '</small>' : '') + '</div>';
-      }).join('') : '<div class="fbl-opt" style="color:#8792a0;cursor:default">ไม่พบชื่อผู้ใช้</div>';
+        return '<div class="fbl-opt" data-u="' + esc(n.name) + '">' + esc(n.name) + '</div>';
+      }).join('') : '<div class="fbl-opt" style="color:#8792a0;cursor:default">ไม่พบชื่อนี้</div>';
     }
     u.addEventListener('focus', function () { renderDd(); dd.classList.remove('hidden'); });
     u.addEventListener('input', function () { renderDd(); dd.classList.remove('hidden'); });
@@ -339,7 +339,7 @@
     async function go() {
       const err = document.getElementById('fbl-login-err');
       err.textContent = '';
-      if (!u.value.trim() || !p.value) { err.textContent = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'; return; }
+      if (!u.value.trim() || !p.value) { err.textContent = 'กรุณาเลือกชื่อและกรอกรหัสผ่าน'; return; }
       btn.disabled = true; btn.textContent = 'กำลังตรวจสอบ...';
       try {
         await FBL.login(u.value, p.value);
@@ -362,7 +362,6 @@
       '<div class="fbl-note">ยังไม่มีเจ้าของระบบ — ผู้ที่ตั้งค่าตรงนี้คนแรกจะเป็น <b>เจ้าของระบบ</b> (สิทธิ์เต็ม + จัดการผู้ใช้งาน) และประตูนี้จะปิดถาวรทันทีหลังตั้งค่าเสร็จ</div>' +
       '<div class="fbl-field"><label class="fbl-label">ชื่อ-นามสกุล</label><input class="fbl-input" id="fbl-b-name" placeholder="เช่น นางสาวนันท์นภัสธ์ รัตนเสถียร"></div>' +
       '<div class="fbl-field"><label class="fbl-label">ตำแหน่ง</label><input class="fbl-input" id="fbl-b-pos" placeholder="เช่น ผช.ม.เชิงเนิน"></div>' +
-      '<div class="fbl-field"><label class="fbl-label">ชื่อผู้ใช้ (ภาษาอังกฤษ/ตัวเลข ใช้ตอนล็อกอิน)</label><input class="fbl-input" id="fbl-b-user" autocomplete="off"></div>' +
       '<div class="fbl-field"><label class="fbl-label">ตั้งรหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label><input class="fbl-input" id="fbl-b-pass" type="password" autocomplete="new-password">' + pwToggleHtml('fbl-b-pass') + '</div>' +
       '<div class="fbl-err" id="fbl-b-err"></div>' +
       '<button class="fbl-btn" id="fbl-b-btn">ตั้งให้ฉันเป็นเจ้าของระบบ</button>'
@@ -376,7 +375,6 @@
         await FBL.bootstrapOwner({
           name: document.getElementById('fbl-b-name').value,
           position: document.getElementById('fbl-b-pos').value,
-          username: document.getElementById('fbl-b-user').value,
           password: document.getElementById('fbl-b-pass').value
         });
         location.reload();
@@ -687,9 +685,8 @@
   // ตั้งเจ้าของระบบคนแรก — Rules อนุญาตเฉพาะตอนที่ยังไม่มีเอกสาร config/bootstrap
   FBL.bootstrapOwner = async function (o) {
     const name = String(o.name || '').trim();
-    const username = normUsername(o.username);
+    const username = normUsername(name);
     if (!name) throw new Error('กรอกชื่อ-นามสกุลก่อน');
-    if (!/^[a-z0-9._-]{3,30}$/.test(username)) throw new Error('ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษตัวเล็ก/ตัวเลข/จุด/ขีด 3-30 ตัว');
     suppressAuthEvents = true;
     try {
       const email = newEmail();
@@ -746,13 +743,12 @@
   // o = { username, password, name, position, role, sections, perm, photo }
   FBL.addMember = async function (o) {
     requireOwner();
-    const username = normUsername(o.username);
     const name = String(o.name || '').trim();
+    const username = normUsername(name);
     if (!name) throw new Error('กรอกชื่อ-นามสกุลก่อน');
-    if (!/^[a-z0-9._-]{3,30}$/.test(username)) throw new Error('ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษตัวเล็ก/ตัวเลข/จุด/ขีด 3-30 ตัว');
     if (o.role === 'owner') throw new Error('เจ้าของระบบมีได้คนเดียว');
     const exists = await db.collection('login_directory').doc(docKey(username)).get();
-    if (exists.exists) throw new Error('มีชื่อผู้ใช้ "' + username + '" อยู่แล้ว');
+    if (exists.exists) throw new Error('มีผู้ใช้ชื่อ "' + name + '" อยู่แล้ว');
     try {
       const email = newEmail();
       const uid = await createAuthUserSecondary(email, o.password);
@@ -791,8 +787,16 @@
     };
     try {
       const batch = db.batch();
+      const newKey = normUsername(patch.name);
+      if (newKey !== c.username) {
+        // เปลี่ยนชื่อ = เปลี่ยนชื่อที่ใช้ล็อกอินด้วย
+        const dup = await db.collection('login_directory').doc(docKey(newKey)).get();
+        if (dup.exists) throw new Error('มีผู้ใช้ชื่อ "' + patch.name + '" อยู่แล้ว');
+        patch.username = newKey;
+        if (c.username) batch.delete(db.collection('login_directory').doc(docKey(c.username)));
+        batch.set(db.collection('login_directory').doc(docKey(newKey)), { email: c.email, uid: uid, name: patch.name });
+      }
       batch.update(ref, patch);
-      if (patch.name !== c.name && c.username) batch.set(db.collection('login_directory').doc(docKey(c.username)), { name: patch.name }, { merge: true });
       batch.set(logRef(), logEntry('update', 'team', c.username || uid, 'แก้ไขผู้ใช้งาน ' + patch.name + (patch.active ? '' : ' (ระงับการใช้งาน)')));
       await batch.commit();
     } catch (e) { throw new Error(thErr(e)); }
