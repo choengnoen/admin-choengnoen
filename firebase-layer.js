@@ -1218,4 +1218,95 @@
     }
     return report;
   };
+
+  /* ======================================================================
+     ฐานข้อมูลกลาง (CN-Hub) — ทางหลวงควบคุม (controlled_routes) อ่านจากฐานกลางแทนตารางของระบบนี้
+     - ทุกหน้า (ระบบหลัก + ระบบ 1-4) ใช้ apiGet/apiGetMultiple/rows เหมือนเดิม ไม่ต้องแก้หน้าเว็บ
+     - แก้/เพิ่ม/ลบสายทาง → แจ้งให้ไปแก้ที่ฐานกลาง (ข้อมูลชุดเดียวทุกระบบ)
+     - โหลด master-client.js ให้เองจาก CN-Hub / อ่านฐานกลางไม่ได้ภายใน 6 วินาที → ใช้ตาราง controlled_routes เดิม
+     ====================================================================== */
+  const MASTER_CLIENT_URL = 'https://choengnoen.github.io/choengnoen-hub/master-client.js';
+  const MASTER_TABLE = 'controlled_routes';
+  let masterRouteRows = null; // null = ยังไม่ได้/ใช้ไม่ได้ → ใช้ตารางเดิม
+  let masterPromise = null;
+  function loadMasterClient() {
+    if (window.CNMaster) return Promise.resolve(true);
+    return new Promise(function (resolve) {
+      const s = document.createElement('script');
+      s.src = MASTER_CLIENT_URL;
+      s.onload = function () { resolve(!!window.CNMaster); };
+      s.onerror = function () { resolve(false); };
+      document.head.appendChild(s);
+    });
+  }
+  // แปลงสายทางฐานกลาง (กม. เป็นเมตร) → แถวรูปแบบ controlled_routes เดิม (กม. เป็นกิโลเมตร) — เฉพาะสายที่หมวดดูแลอยู่
+  function toAdminRows(routes) {
+    return routes.filter(function (r) { return r.status !== 'transferred'; }).map(function (r, i) {
+      const ranges = (r.kmRanges || []).map(function (p) { return [p[0] / 1000, p[1] / 1000]; });
+      const all = [].concat.apply([], ranges);
+      return {
+        id: i + 1, // หน้าสถิติอ้างรหัสเป็นตัวเลข
+        masterId: r.id,
+        highway: String(r.highway), controlNo: r.controlNo || '', sectionName: r.section || '',
+        kmStart: all.length ? Math.min.apply(null, all) : 0, kmEnd: all.length ? Math.max.apply(null, all) : 0,
+        rangesJson: ranges,
+        distActual: r.distanceActual || 0, dist2Lane: r.distance2Lane || 0,
+        asphalt: r.asphalt || 0, concrete: r.concrete || 0, workQty: r.workQty || 0,
+        lastUpdated: r.asOf || ''
+      };
+    });
+  }
+  function masterReady() {
+    if (masterPromise) return masterPromise;
+    masterPromise = loadMasterClient().then(function (ok) {
+      if (!ok || !window.CNMaster.ready) return false;
+      return Promise.race([
+        window.CNMaster.ready.then(function () { return true; }, function () { return false; }),
+        new Promise(function (res) { setTimeout(function () { res(false); }, 6000); })
+      ]);
+    }).then(function (ok) {
+      const list = ok ? window.CNMaster.routes() : [];
+      masterRouteRows = list.length ? toAdminRows(list) : null;
+      if (masterRouteRows) {
+        window.CNMaster.onChange(function (docId) {
+          if (docId !== 'routes') return;
+          const l = window.CNMaster.routes();
+          if (l.length) masterRouteRows = toAdminRows(l);
+        });
+      }
+      return !!masterRouteRows;
+    });
+    return masterPromise;
+  }
+  FBL.masterRoutesReady = masterReady;
+  FBL.MASTER_EDIT_URL = 'https://choengnoen.github.io/choengnoen-hub/master-data.html#routes';
+
+  const baseApiGet = FBL.apiGet, baseApiGetMultiple = FBL.apiGetMultiple, baseRows = FBL.rows, baseLoaded = FBL.loaded, baseApiPost = FBL.apiPost;
+  FBL.apiGet = async function (table) {
+    if (table === MASTER_TABLE && await masterReady()) return clone(masterRouteRows);
+    return baseApiGet(table);
+  };
+  FBL.apiGetMultiple = async function (tables) {
+    const useMaster = tables.indexOf(MASTER_TABLE) !== -1 && await masterReady();
+    const out = await baseApiGetMultiple(useMaster ? tables.filter(function (t) { return t !== MASTER_TABLE; }) : tables);
+    if (useMaster) out[MASTER_TABLE] = clone(masterRouteRows);
+    return out;
+  };
+  FBL.rows = function (table) {
+    if (table === MASTER_TABLE && masterRouteRows) return clone(masterRouteRows);
+    return baseRows(table);
+  };
+  FBL.loaded = function (table) {
+    if (table === MASTER_TABLE && masterRouteRows) return true;
+    return baseLoaded(table);
+  };
+  FBL.apiPost = async function (action, table, data, id, options) {
+    if (table === MASTER_TABLE && await masterReady()) {
+      if (confirm('ข้อมูลสายทางแก้ไขได้ที่ฐานข้อมูลกลาง ทุกระบบเห็นข้อมูลใหม่ทันที\n\nเปิดฐานข้อมูลกลางหรือไม่?')) {
+        window.open(FBL.MASTER_EDIT_URL, '_blank', 'noopener');
+      }
+      throw new Error('แก้ไขได้ที่ฐานข้อมูลกลาง (ไม่ได้บันทึกในระบบนี้)');
+    }
+    return baseApiPost(action, table, data, id, options);
+  };
 })();
