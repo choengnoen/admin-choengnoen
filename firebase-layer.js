@@ -208,16 +208,18 @@
   .fbl-sub{font-size:13px;color:#8792a0;margin:0 0 18px}
   .fbl-head{font-family:'Kanit',sans-serif;font-weight:700;font-size:16px;margin:0 0 12px;text-align:left}
   .fbl-field{margin-bottom:12px;text-align:left;position:relative}
+  /* ช่องรหัสผ่าน (ช่องสุดท้าย) ห่างปุ่ม 14px เท่าระบบงานอุบัติเหตุ — ตำแหน่งปุ่ม/ความสูงการ์ดจึงตรงกัน */
+  .fbl-field:has(#fbl-pass){margin-bottom:14px}
   .fbl-label{display:block;font-size:12.5px;font-weight:600;color:#4d5a66;margin:0 0 5px}
   .fbl-input{width:100%;box-sizing:border-box;padding:8px 36px 8px 10px;border:1px solid #dfe2dd;border-radius:8px;background:#fff;font-family:'Sarabun',sans-serif;font-size:14.5px;color:#182430;outline:none}
   .fbl-input:focus{border-color:#f07a1f;box-shadow:0 0 0 3px rgba(224,98,15,.14)}
   /* ช่องเลือกชื่อ: ตัดลูกศรของเบราว์เซอร์ออก ใช้ ▾ ขนาด 12px สีเทาแบบระบบงานอุบัติเหตุ */
-  select.fbl-input{-webkit-appearance:none;appearance:none;height:37px;line-height:1.3;padding-right:28px;cursor:pointer;
+  select.fbl-input{-webkit-appearance:none;appearance:none;height:36.85px;line-height:1.3;padding-right:28px;cursor:pointer;
     background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='16'%3E%3Ctext x='5' y='12.8' text-anchor='middle' font-size='12' font-family='sans-serif' fill='%238792a0'%3E%E2%96%BE%3C/text%3E%3C/svg%3E") no-repeat right 10px center}
   select.fbl-input:hover{border-color:#c9cec7}
-  .fbl-eye{position:absolute;right:4px;bottom:5px;background:none;border:none;cursor:pointer;padding:4px 8px;color:#4d5a66;font-size:14px}
+  .fbl-eye{position:absolute;right:4px;bottom:6.5px;background:none;border:none;cursor:pointer;padding:4px 8px;color:#4d5a66;font-size:15px;line-height:1}
   /* ปุ่มหลัก: ค่าทุกตัวตรงกับ .btn.btn-primary.auth-btn ของระบบงานอุบัติเหตุ */
-  .fbl-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px 17px;border:1px solid transparent;border-radius:10px;background:linear-gradient(135deg,#f07a1f,#e0620f);color:#fff;font-family:'Kanit',sans-serif;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 4px 12px -2px rgba(224,98,15,.4);transition:filter .15s ease,transform .1s ease,box-shadow .15s ease}
+  .fbl-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px 17px;border:1px solid transparent;border-radius:10px;background:linear-gradient(135deg,#f07a1f,#e0620f);color:#fff;font-family:'Kanit',sans-serif;font-weight:600;font-size:14px;line-height:21px;cursor:pointer;box-shadow:0 4px 12px -2px rgba(224,98,15,.4);transition:filter .15s ease,transform .1s ease,box-shadow .15s ease}
   .fbl-btn:hover{filter:brightness(1.06)}
   .fbl-btn:active{transform:translateY(1px)}
   .fbl-btn:disabled{opacity:.5;cursor:not-allowed}
