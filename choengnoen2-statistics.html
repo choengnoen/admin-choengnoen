@@ -1842,6 +1842,13 @@ function onJcLevelChange(){
 }
 function openJcForm(code){
   if(!requireAdmin()) return;
+  /* รหัสงานอ่านจากฐานข้อมูลกลาง (CN-Hub แท็บรหัสงาน) — เพิ่ม/แก้/ลบ ที่ฐานกลางที่เดียว ทุกระบบเห็นตรงกัน */
+  if(window.FBL && FBL.masterJobsActive && FBL.masterJobsActive()){
+    if(confirm('รหัสงาน หน่วยนับ ผลผลิต และลักษณะงาน แก้ไขได้ที่ฐานข้อมูลกลาง (แท็บรหัสงาน) ทุกระบบเห็นข้อมูลใหม่ทันที\n\nเปิดฐานข้อมูลกลางหรือไม่?')){
+      window.open(FBL.MASTER_JOB_EDIT_URL, '_blank', 'noopener');
+    }
+    return;
+  }
   __jcEditingCode = code || null;
   const rec = code ? jobCodeReference.find(r=>r.code===code) : null;
   document.getElementById('jc-form-overlay').classList.remove('hidden');

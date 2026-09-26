@@ -1246,7 +1246,7 @@
   };
 
   /* ======================================================================
-     ฐานข้อมูลกลาง (CN-Hub) — ทางหลวงควบคุม (controlled_routes) อ่านจากฐานกลางแทนตารางของระบบนี้
+     ฐานข้อมูลกลาง (CN-Hub) — ทางหลวงควบคุม (controlled_routes) และรหัสงาน (job_code_reference) อ่านจากฐานกลางแทนตารางของระบบนี้
      - ทุกหน้า (ระบบหลัก + ระบบ 1-4) ใช้ apiGet/apiGetMultiple/rows เหมือนเดิม ไม่ต้องแก้หน้าเว็บ
      - แก้/เพิ่ม/ลบสายทาง → แจ้งให้ไปแก้ที่ฐานกลาง (ข้อมูลชุดเดียวทุกระบบ)
      - โหลด master-client.js ให้เองจาก CN-Hub / อ่านฐานกลางไม่ได้ภายใน 6 วินาที → ใช้ตาราง controlled_routes เดิม
@@ -1295,11 +1295,16 @@
     }).then(function (ok) {
       const list = ok ? window.CNMaster.routes() : [];
       masterRouteRows = list.length ? toAdminRows(list) : null;
-      if (masterRouteRows) {
+      masterWorkCodes = ok && window.CNMaster.workCodes ? pickWorkCodes(window.CNMaster.workCodes()) : null;
+      if (ok) {
         window.CNMaster.onChange(function (docId) {
-          if (docId !== 'routes') return;
-          const l = window.CNMaster.routes();
-          if (l.length) masterRouteRows = toAdminRows(l);
+          if (docId === 'routes') {
+            const l = window.CNMaster.routes();
+            if (l.length) masterRouteRows = toAdminRows(l);
+          } else if (docId === 'workcodes' && window.CNMaster.workCodes) {
+            const w = pickWorkCodes(window.CNMaster.workCodes());
+            if (w) masterWorkCodes = w;
+          }
         });
       }
       return !!masterRouteRows;
@@ -1308,32 +1313,84 @@
   }
   FBL.masterRoutesReady = masterReady;
   FBL.MASTER_EDIT_URL = 'https://choengnoen.github.io/choengnoen-hub/master-data.html#routes';
+
+  /* ---------- รหัสงาน (job_code_reference) อ่านจากฐานกลาง แท็บ "รหัสงาน" ----------
+     - ใช้เฉพาะงานบำรุงปกติ (รหัส 21xxx) ที่ระบบนี้ใช้จ่ายงาน/แผน-ผล — รหัสที่อยู่ใต้ 21000 โดยตรง = รหัสงานหลัก (level main)
+     - หน่วยนับหลายหน่วย → ข้อความคั่นจุลภาค (รูปแบบเดิมของตารางนี้ ฟอร์มจ่ายงานแยกเป็น dropdown ให้อยู่แล้ว)
+     - "ผลผลิต" และ "ลักษณะงาน" ถ้าฐานกลางยังไม่มี ใช้ของเดิมในตาราง job_code_reference ของระบบนี้
+     - ฐานกลางยังไม่มีรหัสงาน / อ่านไม่ได้ → ใช้ตาราง job_code_reference เดิม */
+  const JOB_TABLE = 'job_code_reference';
+  const JOB_PREFIX = '21';
+  const JOB_ROOT = '21000';
+  let masterWorkCodes = null; // null = ยังไม่ได้/ใช้ไม่ได้ → ใช้ตารางเดิม
+  FBL.MASTER_JOB_EDIT_URL = 'https://choengnoen.github.io/choengnoen-hub/master-data.html#workcodes';
+  function pickWorkCodes(all) {
+    const list = (all || []).filter(function (w) { return String(w.code).indexOf(JOB_PREFIX) === 0 && String(w.code) !== JOB_ROOT; });
+    return list.length ? list : null;
+  }
+  function toAdminJobRows(list, localRows) {
+    const byCode = {}, local = {};
+    list.forEach(function (w) { byCode[w.code] = w; });
+    (localRows || []).forEach(function (r) { local[String(r.jobCode)] = r; });
+    // รหัสที่มีเฉพาะในตารางเดิมของระบบนี้ (ฐานกลางไม่มี) คงไว้ท้ายรายการ ไม่ให้ใบสั่งงาน/แผน-ผลเก่าที่อ้างรหัสนั้นหาชื่อไม่เจอ
+    const extra = (localRows || []).filter(function (r) { return r.jobCode && String(r.jobCode) !== JOB_ROOT && !byCode[String(r.jobCode)]; }).map(clone);
+    return list.slice().sort(function (a, b) { return String(a.code).localeCompare(String(b.code)); }).map(function (w) {
+      const main = !w.parent || w.parent === JOB_ROOT || !byCode[w.parent];
+      const old = local[w.code] || {};
+      return {
+        jobCode: w.code, jobName: w.name,
+        unit: (w.units || []).join(', ') || null,
+        category: old.category || '',
+        level: main ? 'main' : 'sub',
+        parent: main ? null : w.parent,
+        parentName: main ? null : byCode[w.parent].name,
+        output: w.output || old.output || '-',
+        description: w.description || old.description || '',
+        lastUpdated: window.CNMaster.updatedAt ? window.CNMaster.updatedAt('workcodes') : ''
+      };
+    }).concat(extra);
+  }
+  async function masterJobsReady() { await masterReady(); return !!masterWorkCodes; }
+  FBL.masterJobsReady = masterJobsReady;
+  FBL.masterJobsActive = function () { return !!masterWorkCodes; };
+  async function masterJobRows() { return toAdminJobRows(masterWorkCodes, await baseApiGet(JOB_TABLE).catch(function () { return []; })); }
   // โหลดทันทีทุกหน้า (รวมหน้าล็อกอิน) เพื่อให้ตรากรมทางหลวงใช้ไฟล์กลางจาก CN-Hub — โหลดไม่ได้ก็ใช้ logo.jpg ของระบบนี้ต่อ
   loadMasterClient();
 
   const baseApiGet = FBL.apiGet, baseApiGetMultiple = FBL.apiGetMultiple, baseRows = FBL.rows, baseLoaded = FBL.loaded, baseApiPost = FBL.apiPost;
   FBL.apiGet = async function (table) {
     if (table === MASTER_TABLE && await masterReady()) return clone(masterRouteRows);
+    if (table === JOB_TABLE && await masterJobsReady()) return masterJobRows();
     return baseApiGet(table);
   };
   FBL.apiGetMultiple = async function (tables) {
     const useMaster = tables.indexOf(MASTER_TABLE) !== -1 && await masterReady();
-    const out = await baseApiGetMultiple(useMaster ? tables.filter(function (t) { return t !== MASTER_TABLE; }) : tables);
+    const useJobs = tables.indexOf(JOB_TABLE) !== -1 && await masterJobsReady();
+    const out = await baseApiGetMultiple(tables.filter(function (t) { return !(useMaster && t === MASTER_TABLE) && !(useJobs && t === JOB_TABLE); }));
     if (useMaster) out[MASTER_TABLE] = clone(masterRouteRows);
+    if (useJobs) out[JOB_TABLE] = await masterJobRows();
     return out;
   };
   FBL.rows = function (table) {
     if (table === MASTER_TABLE && masterRouteRows) return clone(masterRouteRows);
+    if (table === JOB_TABLE && masterWorkCodes) return toAdminJobRows(masterWorkCodes, baseRows(JOB_TABLE));
     return baseRows(table);
   };
   FBL.loaded = function (table) {
     if (table === MASTER_TABLE && masterRouteRows) return true;
+    if (table === JOB_TABLE && masterWorkCodes) return true;
     return baseLoaded(table);
   };
   FBL.apiPost = async function (action, table, data, id, options) {
     if (table === MASTER_TABLE && await masterReady()) {
       if (confirm('ข้อมูลสายทางแก้ไขได้ที่ฐานข้อมูลกลาง ทุกระบบเห็นข้อมูลใหม่ทันที\n\nเปิดฐานข้อมูลกลางหรือไม่?')) {
         window.open(FBL.MASTER_EDIT_URL, '_blank', 'noopener');
+      }
+      throw new Error('แก้ไขได้ที่ฐานข้อมูลกลาง (ไม่ได้บันทึกในระบบนี้)');
+    }
+    if (table === JOB_TABLE && await masterJobsReady()) {
+      if (confirm('รหัสงานและหน่วยนับแก้ไขได้ที่ฐานข้อมูลกลาง (แท็บรหัสงาน) ทุกระบบเห็นข้อมูลใหม่ทันที\n\nเปิดฐานข้อมูลกลางหรือไม่?')) {
+        window.open(FBL.MASTER_JOB_EDIT_URL, '_blank', 'noopener');
       }
       throw new Error('แก้ไขได้ที่ฐานข้อมูลกลาง (ไม่ได้บันทึกในระบบนี้)');
     }
