@@ -1183,9 +1183,6 @@
             <h2><span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2a930" stroke-width="2"><circle cx="10" cy="10" r="6"/><path d="m21 21-4.3-4.3"/></svg></span>
               ข้อมูลอ้างอิงงาน
             </h2>
-            <div class="toolbar">
-              <button class="btn btn-primary" onclick="openJcForm()">+ เพิ่มรหัสงาน</button>
-            </div>
           </div>
           <div class="refdata-layout">
             <div class="refdata-list-pane">
@@ -1792,6 +1789,22 @@ function ucFormulaTableHtml(r){
       </div>
     </div>`;
 }
+/* ข้อมูลรหัสงานมาจากฐานข้อมูลกลาง — รหัสที่เป็นหัวข้อหมวด (เช่น 21110) ฐานกลางไม่มีหน่วยนับ/ผลผลิต/ลักษณะงานของตัวเอง
+   จึงสรุปให้อัตโนมัติจากรหัสงานย่อยที่อยู่ใต้หมวดนั้น (รวมทุกชั้น) */
+function jcDisplayInfo(rec){
+  const kids = jobCodeReference.filter(r=>r.parent===rec.code).sort((a,b)=>a.code.localeCompare(b.code,'th'));
+  const desc = [];
+  (function walk(code){ jobCodeReference.filter(r=>r.parent===code).forEach(r=>{ desc.push(r); walk(r.code); }); })(rec.code);
+  const uniq = arr => [...new Set(arr.map(s=>s.trim()).filter(s=>s && s!=='-'))];
+  const unit = rec.unit || uniq(desc.flatMap(r=>(r.unit||'').split(','))).join(', ') || '-';
+  const output = (rec.output && rec.output!=='-') ? rec.output : (uniq(desc.map(r=>r.output||'')).join(', ') || '-');
+  let descHtml;
+  if(rec.desc) descHtml = rec.desc;
+  else if(kids.length) descHtml = 'ประกอบด้วยรหัสงานย่อย:<ul style="margin:4px 0 0;padding-left:20px;">' +
+    kids.map(k=>`<li><a href="javascript:void(0)" onclick="pickRefCode('${k.code}')" style="color:var(--navy-900);">${k.code}</a> ${k.name}${k.unit?` <span style="color:var(--ink-400);">(${k.unit})</span>`:''}</li>`).join('') + '</ul>';
+  else descHtml = rec.parentName ? `อยู่ในหมวด ${rec.parent} ${rec.parentName}` : '—';
+  return { unit, output, descHtml };
+}
 /* ฝั่งขวา: การ์ดรายละเอียดรหัสงาน + การ์ด UNIT COST (ทุกอัตราย่อยของรหัสที่เลือก เรียงเป็นตารางสูตรเต็มทุกแถว) */
 function renderRefDetail(){
   const el = document.getElementById('refdata-detail');
@@ -1802,6 +1815,7 @@ function renderRefDetail(){
     return;
   }
   const variants = unitCostRecords.filter(u=>u.code===rec.code);
+  const info = jcDisplayInfo(rec);
   const ucHtml = variants.length
     ? variants.map(r=>`<div class="uc-variant-card"><div class="uc-variant-title"><span>${r.variantLabel ? r.variantLabel : 'อัตรามาตรฐาน'}</span><span><button class="btn btn-ghost btn-sm" onclick="openUcForm(${r.no})">แก้ไข</button> <button class="btn btn-ghost btn-sm" style="color:var(--danger);" onclick="deleteUcEntry(${r.no})">ลบ</button></span></div>${ucFormulaTableHtml(r)}</div>`).join('')
     : `<div style="text-align:center;padding:30px 0;color:var(--ink-400);">
@@ -1813,15 +1827,14 @@ function renderRefDetail(){
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px;">
         <span style="${rec.level==='main'?'background:var(--navy-900);color:#fff;':'background:var(--paper-100);color:var(--ink-600);'}display:inline-block;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:700;font-family:'Kanit';">${rec.level==='main'?'หลัก':'ย่อย'}</span>
         <span style="font-family:'Kanit';font-size:12px;color:var(--ink-400);">รหัสงาน ${rec.code}</span>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="openJcForm('${rec.code}')">แก้ไขรหัสงาน</button>
       </div>
       <h2 style="font-family:'Kanit';font-size:18px;font-weight:600;color:var(--navy-900);margin:0 0 12px;">${rec.name}</h2>
       <div style="display:flex;gap:28px;margin-bottom:12px;flex-wrap:wrap;">
-        <div><div style="font-size:10.5px;color:var(--ink-400);margin-bottom:3px;">หน่วยนับ</div><div style="font-family:'Kanit';font-size:13px;font-weight:600;color:var(--ink-900);">${rec.unit||'-'}</div></div>
-        <div><div style="font-size:10.5px;color:var(--ink-400);margin-bottom:3px;">ผลผลิต</div><div style="font-family:'Kanit';font-size:13px;font-weight:600;color:var(--ink-900);">${rec.output||'-'}</div></div>
+        <div><div style="font-size:10.5px;color:var(--ink-400);margin-bottom:3px;">หน่วยนับ</div><div style="font-family:'Kanit';font-size:13px;font-weight:600;color:var(--ink-900);">${info.unit}</div></div>
+        <div><div style="font-size:10.5px;color:var(--ink-400);margin-bottom:3px;">ผลผลิต</div><div style="font-family:'Kanit';font-size:13px;font-weight:600;color:var(--ink-900);">${info.output}</div></div>
       </div>
       <div style="font-size:10.5px;color:var(--ink-400);margin-bottom:5px;">ลักษณะงาน</div>
-      <p style="font-size:12.5px;color:var(--ink-600);line-height:1.7;margin:0;">${rec.desc||'—'}</p>
+      <div style="font-size:12.5px;color:var(--ink-600);line-height:1.7;margin:0;">${info.descHtml}</div>
     </div>
     <div class="refdata-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
