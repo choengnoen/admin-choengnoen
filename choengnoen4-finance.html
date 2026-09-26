@@ -27,7 +27,7 @@
   .sidebar{width:76px;flex-shrink:0;background:linear-gradient(185deg,var(--navy-950),var(--navy-900) 60%);color:#dfe7f0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow:hidden;transition:width .22s cubic-bezier(.2,.8,.3,1);z-index:30;}
   .sidebar:hover{width:264px;overflow-y:auto;box-shadow:6px 0 28px -10px rgba(7,27,48,.5);}
   .brand{padding:22px 20px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.08);}
-  .brand-mark{width:46px;height:46px;flex-shrink:0;}
+  .brand-mark{width:40px;height:40px;flex-shrink:0;}
   .brand-text{opacity:0;white-space:nowrap;transition:opacity .1s ease;}
   .sidebar:hover .brand-text{opacity:1;transition-delay:.08s;}
   .brand-text .t1{font-family:'Kanit';font-size:15px;font-weight:600;color:#fff;line-height:1.25;}
@@ -318,7 +318,7 @@
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <img class="brand-mark" src="logo.jpg" alt="ตรากรมทางหลวง" style="border-radius:50%;object-fit:cover;">
+      <img class="brand-mark" src="logo.jpg" alt="ตรากรมทางหลวง" style="border-radius:50%;object-fit:contain;">
       <div class="brand-text">
         <div class="t1">หมวดทางหลวงเชิงเนิน</div>
         <div class="t2">Choeng Noen Highway Maintenance Section</div>

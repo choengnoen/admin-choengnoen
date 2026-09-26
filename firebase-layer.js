@@ -203,7 +203,7 @@
   .fbl-gate{position:fixed;inset:0;z-index:5000;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto;background:radial-gradient(1100px 520px at 15% -10%,#4b5563 0%,#111827 60%);font-family:'Sarabun',sans-serif}
   .fbl-gate.hidden{display:none}
   .fbl-card{background:#fff;border-radius:18px;padding:30px 28px 26px;width:100%;max-width:410px;box-shadow:0 16px 40px -14px rgba(0,0,0,.45);text-align:center;font-size:15px;line-height:1.55;color:#182430}
-  .fbl-logo{display:block;width:72px;height:72px;margin:0 auto 6px;border-radius:50%;object-fit:cover}
+  .fbl-logo{display:block;width:72px;height:72px;margin:0 auto 6px;border-radius:50%;object-fit:contain}
   .fbl-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:22px;color:#111827;margin:4px 0 2px}
   .fbl-sub{font-size:13px;color:#8792a0;margin:0 0 18px}
   .fbl-head{font-family:'Kanit',sans-serif;font-weight:700;font-size:16px;margin:0 0 12px;text-align:left}
@@ -305,7 +305,7 @@
     gateCard(
       '<div class="fbl-head">เข้าสู่ระบบ</div>' +
       (message ? '<div class="fbl-err">' + esc(message) + '</div>' : '') +
-      '<div class="fbl-field"><label class="fbl-label" for="fbl-user">ชื่อ-นามสกุล</label>' +
+      '<div class="fbl-field"><label class="fbl-label" for="fbl-user">ชื่อผู้ใช้งาน</label>' +
       '<input class="fbl-input" id="fbl-user" autocomplete="username" placeholder="— พิมพ์หรือเลือกชื่อของคุณ —">' +
       '<div class="fbl-dd hidden" id="fbl-dd"></div></div>' +
       '<div class="fbl-field"><label class="fbl-label" for="fbl-pass">รหัสผ่าน</label>' +
@@ -1229,9 +1229,11 @@
   const MASTER_TABLE = 'controlled_routes';
   let masterRouteRows = null; // null = ยังไม่ได้/ใช้ไม่ได้ → ใช้ตารางเดิม
   let masterPromise = null;
+  let masterClientPromise = null;
   function loadMasterClient() {
     if (window.CNMaster) return Promise.resolve(true);
-    return new Promise(function (resolve) {
+    if (masterClientPromise) return masterClientPromise;
+    return masterClientPromise = new Promise(function (resolve) {
       const s = document.createElement('script');
       s.src = MASTER_CLIENT_URL;
       s.onload = function () { resolve(!!window.CNMaster); };
@@ -1280,6 +1282,8 @@
   }
   FBL.masterRoutesReady = masterReady;
   FBL.MASTER_EDIT_URL = 'https://choengnoen.github.io/choengnoen-hub/master-data.html#routes';
+  // โหลดทันทีทุกหน้า (รวมหน้าล็อกอิน) เพื่อให้ตรากรมทางหลวงใช้ไฟล์กลางจาก CN-Hub — โหลดไม่ได้ก็ใช้ logo.jpg ของระบบนี้ต่อ
+  loadMasterClient();
 
   const baseApiGet = FBL.apiGet, baseApiGetMultiple = FBL.apiGetMultiple, baseRows = FBL.rows, baseLoaded = FBL.loaded, baseApiPost = FBL.apiPost;
   FBL.apiGet = async function (table) {
