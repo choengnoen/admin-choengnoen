@@ -600,7 +600,6 @@
         <div class="sec-tab" data-sec="routine">งานบำรุงปกติ</div>
         <div class="sec-tab" data-sec="routine2">แผนงาน - ผลงาน</div>
         <div class="sec-tab" data-sec="refdata">ข้อมูลอ้างอิงงาน</div>
-        <div class="sec-tab" data-sec="permit">งานขออนุญาตในเขตทาง</div>
         <div class="sec-tab" data-sec="encroach">งานรุกล้ำ</div>
         <div class="sec-tab" data-sec="emergency">รายงานเหตุฉุกเฉิน</div>
       </div>
@@ -673,84 +672,6 @@
           <div class="legend-block" id="routes-foot-block">
             <button type="button" class="legend-dot-btn no-print" id="routes-foot-toggle" onclick="__toggleNote('routes-foot-note',this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
             <div class="foot-note" id="routes-foot-note" style="display:none;background:transparent;border-top:none;"><b>ฐานข้อมูลกลาง</b> ของสายทางที่หมวดทางหลวงเชิงเนินรับผิดชอบดูแล<br>หากในอนาคตหมวดมีการเปลี่ยนแปลงสายทางที่ควบคุม (เพิ่ม/ลด/ปรับช่วง กม.) ผู้มีสิทธิ์แก้ไขสามารถแก้ไขรายการได้ที่ตารางนี้โดยตรง ระบบตรวจสอบทุกจุดจะปรับปรุงตามทันทีโดยไม่ต้องแก้ไขโค้ดของระบบ</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ============ PERMIT ============ -->
-      <div class="panel" id="panel-permit">
-        <div class="section">
-          <div class="section-head">
-            <h2><span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f2a930" stroke-width="2"><path d="M9 12h6M9 16h6M8 3h8l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg></span>
-              งานขออนุญาต ดำเนินการใดๆ ในเขตทางหลวง
-            </h2>
-            <div class="toolbar">
-              <div class="search-box">🔍 <input id="permit-search" placeholder="ค้นหาชื่อผู้ขอ / กม."></div>
-              <button class="btn btn-primary" onclick="togglePermitForm()">+ บันทึกคำขอใหม่</button>
-            </div>
-          </div>
-          <div id="permit-form-overlay" class="modal-overlay hidden no-print">
-            <div class="modal-box gmodal-box">
-              <div class="modal-head gmodal-head">
-                <div class="gmodal-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 12h6M9 16h6M8 3h8l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg></div>
-                <div>
-                  <h3>บันทึกคำขอใหม่</h3>
-                  <div class="gmodal-subtitle">งานขออนุญาต ดำเนินการใดๆ ในเขตทางหลวง</div>
-                </div>
-                <button class="modal-close" onclick="togglePermitForm()">✕</button>
-              </div>
-              <div class="modal-body">
-                <div class="dw-group">
-                  <div class="dw-group-title"><span class="dot"></span>ข้อมูลผู้ขออนุญาต</div>
-                  <div class="two-col">
-                    <div class="f-row"><label>ประเภทการขออนุญาต</label>
-                      <select id="pf-type">
-                        <option>ทางเข้า-ออก</option><option>ติดตั้งป้าย</option><option>เชื่อมท่อระบายน้ำ</option>
-                        <option>ติดตั้งไฟฟ้า/กล้อง</option><option>ก่อสร้างซุ้มประตู/ศาลา</option><option>ปักเสา/วางท่อ</option>
-                      </select>
-                    </div>
-                    <div class="f-row"><label>ผู้ขออนุญาต</label><input id="pf-name" placeholder="ชื่อ-สกุลผู้ขออนุญาต"></div>
-                  </div>
-                  <div class="two-col">
-                    <div class="f-row"><label>เบอร์ติดต่อ</label><input id="pf-phone" placeholder="0xx-xxx-xxxx"></div>
-                    <div class="f-row"><label>วันที่เอกสารครบถ้วน (เริ่มนับ SLA 3 วัน)</label>
-                      <div class="thdate-wrap" onclick="openThaiDatePicker(this)">
-                        <input type="date" id="pf-doc" class="thdate-native" onchange="thdateSync(this)">
-                        <div class="thdate-box"><span class="thdate-text placeholder">เลือกวันที่</span><svg class="thdate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="dw-group">
-                  <div class="dw-group-title"><span class="dot"></span>ตำแหน่งที่ตั้ง</div>
-                  <div class="f-row"><label>สายทางที่ควบคุม</label><select id="pf-route" onchange="validateRouteKm('pf-route','pf-km','pf-km-msg')"></select></div>
-                  <div class="f-row"><label>ตำแหน่ง กม. (ซ้าย/ขวาทาง)</label><input id="pf-km" placeholder="เช่น กม.12+500 ขวาทาง" oninput="validateRouteKm('pf-route','pf-km','pf-km-msg')">
-                    <div id="pf-km-msg" style="margin-top:4px;"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="gmodal-footer">
-                <div style="display:flex;gap:8px;margin-left:auto;">
-                  <button class="btn btn-ghost" id="permit-form-cancel-btn" onclick="togglePermitForm()">ยกเลิก</button>
-                  <button class="btn btn-primary" id="permit-form-save-btn" onclick="savePermit()">บันทึกคำขอ</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="tabs">
-            <div class="tab active" data-permittab="all">ทั้งหมด</div>
-            <div class="tab" data-permittab="pending">รอนำส่งเรื่อง</div>
-            <div class="tab" data-permittab="sent">นำส่งแล้ว</div>
-            <div class="tab" data-permittab="approved">ได้รับอนุญาต</div>
-            <div class="tab" data-permittab="denied">ไม่อนุญาต</div>
-          </div>
-          <div class="table-wrap"><table>
-            <thead><tr><th>เลขที่คำขอ</th><th>ประเภท</th><th>ผู้ขออนุญาต</th><th>เบอร์ติดต่อ</th><th>ตำแหน่ง กม.</th><th>เอกสารครบ</th><th>กำหนดนำส่ง (SLA)</th><th>สถานะ</th><th></th></tr></thead>
-            <tbody id="permit-body"></tbody>
-          </table></div>
-          <div class="legend-block" id="permit-foot-block">
-            <button type="button" class="legend-dot-btn no-print" id="permit-foot-toggle" onclick="__toggleNote('permit-foot',this)" aria-expanded="false" title="แสดง/ซ่อนหมายเหตุ">⋮</button>
-            <div class="foot-note" id="permit-foot" style="display:none;background:transparent;border-top:none;">ระบบแจ้งเตือน (SLA Countdown): เมื่อเอกสารหลักฐานครบถ้วน ระบบจะเริ่มนับถอยหลัง 3 วัน เพื่อให้เจ้าหน้าที่นำส่งเรื่อง — ป้ายจะเปลี่ยนเป็นสีแจ้งเตือนเมื่อใกล้หรือเกินกำหนด</div>
           </div>
         </div>
       </div>
@@ -1480,31 +1401,6 @@ function slaBadge(daysLeft){
   return `<span class="pill pill-neutral">เหลือ ${daysLeft} วัน</span>`;
 }
 
-/* ---- คำขออนุญาตในเขตทางหลวง ---- */
-function permitFromApi(row){
-  return { no:Number(row.no), type:row.type, name:row.name, phone:row.phone||'', km:row.km||'', doc:row.doc, status:row.status||'pending' };
-}
-function permitToApi(p){
-  return { no:p.no, type:p.type, name:p.name, phone:p.phone||'', km:p.km||'', doc:p.doc, status:p.status||'pending' };
-}
-/* ข้อมูลคำขออนุญาตในเขตทางจริงย้ายไปอยู่ที่ Google Sheets แท็บ "permits" แล้ว (ตารางใหม่
-   ที่ไม่เคยมีใน backend มาก่อน) หน้านี้โหลดจาก API ตอนเปิดหน้าเสมอ ดูฟังก์ชัน
-   loadPermitsFromApi() ด้านล่าง */
-let permits = [];
-async function loadPermitsFromApi(){
-  try{
-    permits = (await apiGet('permits')).map(permitFromApi);
-  }catch(err){
-    console.error('โหลดข้อมูลคำขออนุญาตในเขตทางจากฐานข้อมูลกลางล้มเหลว', err);
-    alert('โหลดข้อมูลคำขออนุญาตในเขตทางจากฐานข้อมูลกลางไม่สำเร็จ: ' + err.message + '\nกรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรชหน้าใหม่');
-  }
-}
-function permitDue(p){ return daysLeftFrom(p.doc, 3); }
-function permitStatusPill(st){
-  return {pending:'<span class="pill pill-warn">รอนำส่งเรื่อง</span>',sent:'<span class="pill pill-in">นำส่งแล้ว</span>',
-    approved:'<span class="pill pill-ok">ได้รับอนุญาต</span>',denied:'<span class="pill pill-danger">ไม่อนุญาต</span>'}[st] || st;
-}
-
 /* ---- การรุกล้ำเขตทาง ---- */
 function encFromApi(row){
   return { code:row.code, name:row.name, km:row.km||'', dist:Number(row.dist)||0, structure:row.structure||'',
@@ -1799,7 +1695,8 @@ function jcDisplayInfo(rec){
   const unit = rec.unit || uniq(desc.flatMap(r=>(r.unit||'').split(','))).join(', ') || '-';
   const output = (rec.output && rec.output!=='-') ? rec.output : (uniq(desc.map(r=>r.output||'')).join(', ') || '-');
   let descHtml;
-  if(rec.desc) descHtml = rec.desc;
+  /* ลักษณะงานจากฐานกลางเป็นข้อความหลายบรรทัด ("หมายถึง ..." ตามด้วย "- กรณี ...") — คงการขึ้นบรรทัดตามต้นฉบับ */
+  if(rec.desc) descHtml = `<div style="white-space:pre-line;">${String(rec.desc).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
   else if(kids.length) descHtml = 'ประกอบด้วยรหัสงานย่อย:<ul style="margin:4px 0 0;padding-left:20px;">' +
     kids.map(k=>`<li><a href="javascript:void(0)" onclick="pickRefCode('${k.code}')" style="color:var(--navy-900);">${k.code}</a> ${k.name}${k.unit?` <span style="color:var(--ink-400);">(${k.unit})</span>`:''}</li>`).join('') + '</ul>';
   else descHtml = rec.parentName ? `อยู่ในหมวด ${rec.parent} ${rec.parentName}` : '—';
@@ -2083,7 +1980,7 @@ function routeOptionsHtml(selected){
   return opts;
 }
 function populateRouteSelects(){
-  ['pf-route','ef-route','af-route','dw-route','thf-route','ef2-route'].forEach(id=>{
+  ['ef-route','af-route','dw-route','thf-route','ef2-route'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.innerHTML = routeOptionsHtml(el.value);
   });
@@ -2440,92 +2337,6 @@ document.querySelectorAll('.sec-tab').forEach(t=>{
     document.getElementById('panel-'+t.dataset.sec).classList.add('active');
   });
 });
-
-/* ============================================================
-   PERMIT
-   ============================================================ */
-function renderPermits(filter){
-  filter = filter || document.querySelector('[data-permittab].active')?.dataset.permittab || 'all';
-  const q = (document.getElementById('permit-search')?.value || '').toLowerCase();
-  let rows = permits.filter(p=> filter==='all' || p.status===filter);
-  if(q) rows = rows.filter(p=> p.name.toLowerCase().includes(q) || p.km.toLowerCase().includes(q));
-  const dis = isAdmin() ? '' : 'disabled';
-  document.getElementById('permit-body').innerHTML = rows.map(p=>{
-    const due = permitDue(p);
-    return `<tr>
-      <td>${String(p.no).padStart(4,'0')}</td>
-      <td>${p.type}</td>
-      <td><div class="person"><div class="p-avatar">${p.name.slice(0,1)}</div><div class="p-name">${p.name}</div></div></td>
-      <td>${p.phone}</td>
-      <td>${p.km}</td>
-      <td>${fmtDateShort(p.doc)}</td>
-      <td>${p.status==='pending' ? slaBadge(due) : '<span class="pill pill-neutral">—</span>'}</td>
-      <td>${permitStatusPill(p.status)}</td>
-      <td>${isAdmin() ? `<select class="edit-input" ${dis} onchange="updatePermitStatus(${p.no},this.value)">
-        <option value="pending" ${p.status==='pending'?'selected':''}>รอนำส่งเรื่อง</option>
-        <option value="sent" ${p.status==='sent'?'selected':''}>นำส่งแล้ว</option>
-        <option value="approved" ${p.status==='approved'?'selected':''}>ได้รับอนุญาต</option>
-        <option value="denied" ${p.status==='denied'?'selected':''}>ไม่อนุญาต</option>
-      </select>` : ''}</td>
-    </tr>`;
-  }).join('');
-}
-async function updatePermitStatus(no, val){
-  if(!isAdmin()) return;
-  const p = permits.find(x=>x.no===no); if(!p) return;
-  const before = p.status;
-  p.status = val;
-  renderPermits();
-  try{
-    await apiPost('update', 'permits', permitToApi(p));
-  }catch(err){
-    p.status = before;
-    alert('บันทึกสถานะคำขออนุญาตไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
-    renderPermits();
-  }
-}
-function togglePermitForm(){
-  if(!requireAdmin()) return;
-  document.getElementById('permit-form-overlay').classList.toggle('hidden');
-  document.getElementById('pf-doc').value = TODAY.toISOString().slice(0,10);
-  thdateSync(document.getElementById('pf-doc'));
-}
-async function savePermit(){
-  if(!isAdmin()) return;
-  const name = document.getElementById('pf-name').value.trim();
-  if(!name){ alert('กรุณาระบุชื่อผู้ขออนุญาต'); return; }
-  if(!confirmRouteSave('pf-route','pf-km')) return;
-  const p = {
-    no: permits.length ? Math.max(...permits.map(p=>p.no))+1 : 1,
-    type: document.getElementById('pf-type').value,
-    name, phone: document.getElementById('pf-phone').value,
-    km: routeLabelPrefix('pf-route') + document.getElementById('pf-km').value,
-    doc: document.getElementById('pf-doc').value || TODAY.toISOString().slice(0,10),
-    status:'pending'
-  };
-  const permitSaveBtn = document.getElementById('permit-form-save-btn');
-  const permitCancelBtn = document.getElementById('permit-form-cancel-btn');
-  const permitSaveBtnOrigText = permitSaveBtn ? permitSaveBtn.textContent : '';
-  if(permitSaveBtn){ permitSaveBtn.disabled = true; permitSaveBtn.textContent = 'กำลังบันทึก...'; }
-  if(permitCancelBtn) permitCancelBtn.disabled = true;
-  try{
-    const saved = await apiPost('add', 'permits', permitToApi(p));
-    permits.push(permitFromApi(saved));
-  }catch(err){
-    alert('บันทึกคำขออนุญาตไปยังฐานข้อมูลกลางไม่สำเร็จ: ' + err.message);
-    if(permitSaveBtn){ permitSaveBtn.disabled = false; permitSaveBtn.textContent = permitSaveBtnOrigText; }
-    if(permitCancelBtn) permitCancelBtn.disabled = false;
-    return;
-  }
-  if(permitSaveBtn){ permitSaveBtn.disabled = false; permitSaveBtn.textContent = permitSaveBtnOrigText; }
-  if(permitCancelBtn) permitCancelBtn.disabled = false;
-  document.getElementById('permit-form-overlay').classList.add('hidden');
-  renderAll();
-}
-document.querySelectorAll('[data-permittab]').forEach(t=>t.addEventListener('click',()=>{
-  document.querySelectorAll('[data-permittab]').forEach(x=>x.classList.remove('active')); t.classList.add('active'); renderPermits(t.dataset.permittab);
-}));
-document.getElementById('permit-search').addEventListener('input', ()=>renderPermits());
 
 /* ============================================================
    ENCROACHMENT
@@ -4964,7 +4775,7 @@ document.getElementById('em-search').addEventListener('input', ()=>renderEm());
 function renderAll(){
   populateLogin();
   renderRoutes();
-  renderPermits(); renderEnc(); renderRoutine(); renderEm();
+  renderEnc(); renderRoutine(); renderEm();
   renderJobCodeRef();
 }
 
@@ -4997,7 +4808,6 @@ renderAll();
     loadDailyWorkOrdersFromApi(),
     loadBmmEntriesFromApi(),
     loadUnitCostRecordsFromApi(),
-    loadPermitsFromApi(),
     loadEncroachmentsFromApi(),
     loadEmergenciesFromApi(),
     loadSubsys3RefDataFromApi(),
