@@ -302,29 +302,45 @@
     let hasOwner = true;
     try { hasOwner = (await db.collection('config').doc('bootstrap').get()).exists; } catch (e) { /* ถือว่ามีแล้ว */ }
     if (!hasOwner) { showBootstrap(); return; }
+    const names = await loadLoginNames();
+    // มีรายชื่อ → ใช้รายการเลือกชื่อแบบเดียวกับระบบอื่น / โหลดรายชื่อไม่ได้ → ให้พิมพ์ชื่อเอง
+    const useSelect = names.length > 0;
+    const userField = useSelect
+      ? '<select class="fbl-input" id="fbl-user"><option value="">— เลือกชื่อของคุณ —</option>' +
+        names.map(function (n) { return '<option value="' + esc(n.name) + '">' + esc(n.name) + '</option>'; }).join('') +
+        '</select>'
+      : '<input class="fbl-input" id="fbl-user" autocomplete="username" placeholder="— พิมพ์ชื่อของคุณ —">' +
+        '<div class="fbl-dd hidden" id="fbl-dd"></div>';
     gateCard(
       '<div class="fbl-head">เข้าสู่ระบบ</div>' +
       (message ? '<div class="fbl-err">' + esc(message) + '</div>' : '') +
-      '<div class="fbl-field"><label class="fbl-label" for="fbl-user">ชื่อผู้ใช้งาน</label>' +
-      '<input class="fbl-input" id="fbl-user" autocomplete="username" placeholder="— พิมพ์หรือเลือกชื่อของคุณ —">' +
-      '<div class="fbl-dd hidden" id="fbl-dd"></div></div>' +
+      '<div class="fbl-field"><label class="fbl-label" for="fbl-user">ชื่อผู้ใช้งาน</label>' + userField + '</div>' +
       '<div class="fbl-field"><label class="fbl-label" for="fbl-pass">รหัสผ่าน</label>' +
+      (useSelect ? '<input type="text" id="fbl-user-shadow" name="username" autocomplete="username" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">' : '') +
       '<input class="fbl-input" id="fbl-pass" type="password" autocomplete="current-password" placeholder="รหัสผ่าน">' + pwToggleHtml('fbl-pass') + '</div>' +
       '<div class="fbl-err" id="fbl-login-err"></div>' +
       '<button class="fbl-btn" id="fbl-login-btn">เข้าสู่ระบบ</button>'
     );
     const u = document.getElementById('fbl-user');
     const p = document.getElementById('fbl-pass');
-    const dd = document.getElementById('fbl-dd');
     const btn = document.getElementById('fbl-login-btn');
-    const names = await loadLoginNames();
-    function renderDd() {
+    if (useSelect) {
+      // ช่องชื่อซ่อนไว้ให้ตัวจัดการรหัสผ่านของเบราว์เซอร์กรอก แล้วซิงก์กับรายการเลือกชื่อ
+      const shadow = document.getElementById('fbl-user-shadow');
+      u.addEventListener('change', function () { shadow.value = u.value; if (u.value) p.focus(); });
+      shadow.addEventListener('input', function () {
+        if (Array.prototype.some.call(u.options, function (o) { return o.value === shadow.value; })) u.value = shadow.value;
+      });
+    }
+    const dd = document.getElementById('fbl-dd');
+    if (dd) {
+    const renderDd = function () {
       const q = normUsername(u.value).replace(/\s/g, '').toLowerCase();
       const list = names.filter(function (n) { return !q || String(n.name).replace(/\s/g, '').toLowerCase().indexOf(q) !== -1; });
       dd.innerHTML = list.length ? list.map(function (n) {
         return '<div class="fbl-opt" data-u="' + esc(n.name) + '">' + esc(n.name) + '</div>';
       }).join('') : '<div class="fbl-opt" style="color:#8792a0;cursor:default">ไม่พบชื่อนี้</div>';
-    }
+    };
     u.addEventListener('focus', function () { renderDd(); dd.classList.remove('hidden'); });
     u.addEventListener('input', function () { renderDd(); dd.classList.remove('hidden'); });
     u.addEventListener('blur', function () { setTimeout(function () { dd.classList.add('hidden'); }, 150); });
@@ -336,6 +352,8 @@
       dd.classList.add('hidden');
       p.focus();
     });
+    u.addEventListener('keydown', function (e) { if (e.key === 'Enter') { dd.classList.add('hidden'); p.focus(); } });
+    }
     async function go() {
       const err = document.getElementById('fbl-login-err');
       err.textContent = '';
@@ -352,7 +370,6 @@
     }
     btn.onclick = go;
     p.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
-    u.addEventListener('keydown', function (e) { if (e.key === 'Enter') { dd.classList.add('hidden'); p.focus(); } });
     setTimeout(function () { u.focus(); }, 50);
   }
 
